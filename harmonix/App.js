@@ -13,8 +13,10 @@ export default function App() {
     async function loadFonts() {
       await Font.loadAsync({
         'Montserrat-Regular': require('./assets/fonts/Montserrat-Regular.ttf'),
+        'Montserrat-Medium': require('./assets/fonts/Montserrat-Medium.ttf'),
         'Montserrat-Bold': require('./assets/fonts/Montserrat-Bold.ttf'),
         'Roboto-Regular': require('./assets/fonts/Roboto-Regular.ttf'),
+        'Roboto-Medium': require('./assets/fonts/Roboto-Medium.ttf'),
         'Roboto-Bold': require('./assets/fonts/Roboto-Bold.ttf'),
       });
       setFontsLoaded(true);

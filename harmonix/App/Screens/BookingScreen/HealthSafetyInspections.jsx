@@ -1,26 +1,13 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, TouchableOpacity, TextInput, FlatList, StyleSheet, SafeAreaView, StatusBar, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, FlatList, StyleSheet, SafeAreaView, StatusBar } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Switch } from 'react-native-gesture-handler';
 import { MaterialIcons } from '@expo/vector-icons';
 import Colors from '../../Utils/Colors';
 import Sizes from '../../Utils/Sizes';
-import Header from '../Header/Header';
 
+import { applyFontToStyle, globalTextStyle, globalMediumTextStyle, globalBoldTextStyle  } from '../../Utils/GlobalStyles';
 
-const selectFont = (options = {}) => {
-  const ios = Platform.OS === 'ios';
-  return {
-    fontFamily: ios
-      ? options.bold
-        ? 'System'
-        : 'System'
-      : options.bold
-      ? 'Roboto-Bold'
-      : 'Roboto-Regular',
-    fontWeight: options.bold ? 'bold' : 'normal',
-  };
-};
 
 const mockData = [
   { id: 1, projectNumber: 'PRJ001', date: '2024-08-28', address: '123 Main St, London', completedBy: 'Dev Team A', status: 'Closed', score: 95, updates: 2 },
@@ -43,31 +30,31 @@ const mockData = [
 const renderItem = ({ item }) => (
   <View style={styles.card} accessibilityLabel={`Inspection ${item.projectNumber}`}>
     <View style={styles.cardHeader}>
-      <Text style={[styles.projectNumber, selectFont({ bold: true })]}>{item.projectNumber}</Text>
-      <Text style={[styles.date, selectFont()]}>{item.date}</Text>
+      <Text style={[styles.projectNumber, globalBoldTextStyle]}>{item.projectNumber}</Text>
+      <Text style={[styles.date, globalTextStyle]}>{item.date}</Text>
     </View>
-    <Text style={[styles.address, selectFont()]}>{item.address}</Text>
+    <Text style={[styles.address, globalMediumTextStyle]}>{item.address}</Text>
     <View style={styles.cardDetails}>
       <View style={[styles.detailColumn, { flex: 2 }]}>
-        <Text style={[styles.detailLabel, selectFont()]}>Completed By</Text>
-        <Text style={[styles.detailValue, selectFont({ bold: true })]}>{item.completedBy || 'Not completed'}</Text>
+        <Text style={[styles.detailLabel, globalTextStyle]}>Completed By</Text>
+        <Text style={[styles.detailValue, globalMediumTextStyle]}>{item.completedBy || 'Not completed'}</Text>
       </View>
       <View style={styles.detailColumn}>
-        <Text style={[styles.detailLabel, selectFont()]}>Status</Text>
-        <Text style={[styles.detailValue, selectFont({ bold: true }), { color: item.status === 'Closed' ? Colors.STATUS_CLOSED : item.status === 'Open' ? Colors.STATUS_OPEN : Colors.STATUS_DRAFT }]}>{item.status}</Text>
+        <Text style={[styles.detailLabel, globalTextStyle]}>Status</Text>
+        <Text style={[styles.detailValue, globalBoldTextStyle, { color: item.status === 'Closed' ? Colors.STATUS_CLOSED : item.status === 'Open' ? Colors.STATUS_OPEN : Colors.STATUS_DRAFT }]}>{item.status}</Text>
       </View>
       <View style={styles.detailColumn}>
-        <Text style={[styles.detailLabel, selectFont()]}>Score</Text>
-        <Text style={[styles.detailValue, selectFont({ bold: true })]}>{item.score}</Text>
+        <Text style={[styles.detailLabel, globalTextStyle]}>Score</Text>
+        <Text style={[styles.detailValue, globalBoldTextStyle]}>{item.score}</Text>
       </View>
       <View style={styles.detailColumn}>
-        <Text style={[styles.detailLabel, selectFont()]}>Updates</Text>
-        <Text style={[styles.detailValue, selectFont({ bold: true })]}>{item.updates}</Text>
+        <Text style={[styles.detailLabel, globalTextStyle]}>Updates</Text>
+        <Text style={[styles.detailValue, globalBoldTextStyle]}>{item.updates}</Text>
       </View>
     </View>
     <View style={styles.cardFooter}>
       <TouchableOpacity style={styles.viewButton} accessibilityLabel={`View details of inspection ${item.projectNumber}`}>
-        <Text style={[styles.viewButtonText, selectFont({ bold: true })]}>View Details</Text>
+        <Text style={[styles.viewButtonText, globalBoldTextStyle]}>View Details</Text>
       </TouchableOpacity>
       <TouchableOpacity accessibilityLabel={`Delete inspection ${item.projectNumber}`}>
         <MaterialIcons name="delete" size={24} color={Colors.ERROR} />
@@ -97,12 +84,12 @@ export const HealthSafetyInspections = () => {
       <StatusBar barStyle="light-content" backgroundColor={Colors.BACKGROUND} />
       <View style={styles.container}>
         <TouchableOpacity style={styles.newInspectionButton} accessibilityLabel="Create new inspection">
-          <Text style={[styles.newInspectionButtonText, selectFont({ bold: true })]}>New Inspection</Text>
+          <Text style={[styles.newInspectionButtonText, globalBoldTextStyle]}>New Inspection</Text>
         </TouchableOpacity>
 
         <View style={styles.filters}>
           <TextInput
-            style={[styles.dateInput, selectFont()]}
+            style={[styles.dateInput, globalTextStyle]}
             placeholder="Search by date"
             value={searchDate}
             onChangeText={setSearchDate}
@@ -111,7 +98,7 @@ export const HealthSafetyInspections = () => {
           <View style={styles.pickerContainer}>
             <Picker
               selectedValue={resultsCount}
-              style={[styles.picker, selectFont()]}
+              style={[styles.picker, globalTextStyle]}
               onValueChange={(itemValue) => setResultsCount(itemValue)}
               accessibilityLabel="Select number of results"
             >
@@ -132,7 +119,7 @@ export const HealthSafetyInspections = () => {
             />
             <Text style={[
               styles.switchLabel,
-              selectFont({ bold: true }),
+              globalBoldTextStyle,
               showCompleted ? styles.switchLabelCompleted : styles.switchLabelOpen
             ]}>
               {showCompleted ? 'Closed' : 'Open'}
@@ -294,5 +281,3 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
-
-export default HealthSafetyInspections;

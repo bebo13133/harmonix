@@ -6,11 +6,10 @@ import Colors from '../Utils/Colors';
 import Home from '../Screens/HomeScreen/Home';
 
 import Header from '../Screens/Header/Header';
-import HealthSafetyInspections from '../Screens/BookingScreen/HealthSafetyInspections';
+import { HealthSafetyInspections } from '../Screens/BookingScreen/HealthSafetyInspections';
 
 const Tab = createBottomTabNavigator();
 
-// Функция за избор на шрифт според платформата
 const selectFont = (options = {}) => {
   const ios = Platform.OS === 'ios';
   return {
