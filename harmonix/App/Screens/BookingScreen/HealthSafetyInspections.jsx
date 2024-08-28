@@ -7,7 +7,7 @@ import Colors from '../../Utils/Colors';
 import Sizes from '../../Utils/Sizes';
 import Header from '../Header/Header';
 
-// Функция за избор на шрифт според платформата
+
 const selectFont = (options = {}) => {
   const ios = Platform.OS === 'ios';
   return {
