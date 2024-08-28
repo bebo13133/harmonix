@@ -10,8 +10,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 >>>>>>> Stashed changes
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import Colors from '../Utils/Colors'
+import Colors from '../Utils/Colors';
 import Home from '../Screens/HomeScreen/Home';
 <<<<<<< Updated upstream
 const Tab = createBottomTabNavigator()
