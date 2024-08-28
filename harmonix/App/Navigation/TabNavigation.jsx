@@ -1,46 +1,80 @@
-import { View, Text } from 'react-native'
-import React from 'react'
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
-
+import React from 'react';
+import { View, Text, StyleSheet, Platform } from 'react-native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import Colors from '../Utils/Colors'
+import Colors from '../Utils/Colors';
 import Home from '../Screens/HomeScreen/Home';
-const Tab = createBottomTabNavigator()
+
+import Header from '../Screens/Header/Header';
+import HealthSafetyInspections from '../Screens/BookingScreen/HealthSafetyInspections';
+
+const Tab = createBottomTabNavigator();
+
+// Функция за избор на шрифт според платформата
+const selectFont = (options = {}) => {
+  const ios = Platform.OS === 'ios';
+  return {
+    fontFamily: ios
+      ? options.bold
+        ? 'System'
+        : 'System'
+      : options.bold
+      ? 'Roboto-Bold'
+      : 'Roboto-Regular',
+    fontWeight: options.bold ? 'bold' : 'normal',
+  };
+};
+
 export default function TabNavigation() {
   return (
-    <Tab.Navigator screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor:Colors.PRIMARY
-    }}>
-     <Tab.Screen name="home" component={Home} 
-     options={{
-        tabBarLabel: ({color})=>(
-           <Text style={{color:color, fontSize:12, marginTop:-7,}}>Home</Text>
-        ),
-        tabBarIcon: ({color,size})=>(
-<FontAwesome name="home" size={size} color={color} />
-        )
-     }}
-     />
-     {/* <Tab.Screen name="booking" component={BookingScreen}
-     options={{
-        tabBarLabel: ({color})=>(
-           <Text style={{color:color, fontSize:12, marginTop:-7}}>Booking</Text>
-        ),
-        tabBarIcon: ({color,size})=>(
-<FontAwesome name="book" size={size} color={color} />
-        )
-     }} />
-     <Tab.Screen name="profile" component={ProfileScreen} 
-     options={{
-        tabBarLabel: ({color})=>(
-           <Text style={{color:color, fontSize:12, marginTop:-7}}>Profile</Text>
-        ),
-        tabBarIcon: ({color,size})=>(
-<MaterialCommunityIcons name="face-man-profile" size={size} color={color} />
-        )
-     }}/> */}
-    </Tab.Navigator>
-  )
+    <View style={{ flex: 1 }}>
+      <Header />
+      <Tab.Navigator 
+        screenOptions={{
+          headerShown: false,
+          tabBarActiveTintColor: Colors.PRIMARY,
+          tabBarStyle: styles.tabBar,
+        }}
+      >
+        <Tab.Screen 
+          name="home" 
+          component={Home} 
+          options={{
+            tabBarLabel: ({color}) => (
+              <Text style={[styles.tabBarLabel, {color}]}>Home</Text>
+            ),
+            tabBarIcon: ({color, size}) => (
+              <FontAwesome name="home" size={size} color={color} />
+            )
+          }}
+        />
+        <Tab.Screen 
+          name="HealthSafety" 
+          component={HealthSafetyInspections}
+          options={{
+            tabBarLabel: ({color}) => (
+              <Text style={[styles.tabBarLabel, {color}]}>Health Safety</Text>
+            ),
+            tabBarIcon: ({color, size}) => (
+              <FontAwesome name="book" size={size} color={color} />
+            )
+          }} 
+        />
+      </Tab.Navigator>
+    </View>
+  );
 }
+
+const styles = StyleSheet.create({
+  tabBar: {
+    ...selectFont(),
+    height: 60,
+    paddingBottom: 5,
+    paddingTop: 5,
+  },
+  tabBarLabel: {
+    ...selectFont({ bold: false }),
+    fontSize: 12,
+    marginTop: -7,
+  },
+});
