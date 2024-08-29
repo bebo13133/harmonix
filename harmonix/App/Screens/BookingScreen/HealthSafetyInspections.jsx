@@ -6,7 +6,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import Colors from '../../Utils/Colors';
 import Sizes from '../../Utils/Sizes';
 
-import { applyFontToStyle, globalTextStyle, globalMediumTextStyle, globalBoldTextStyle  } from '../../Utils/GlobalStyles';
+import {  globalTextStyle, globalMediumTextStyle, globalBoldTextStyle  } from '../../Utils/GlobalStyles';
 
 
 const mockData = [
