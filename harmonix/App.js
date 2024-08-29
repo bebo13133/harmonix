@@ -11,6 +11,22 @@ import AppLoading from "expo-app-loading";
 import * as Font from 'expo-font';
 import { useEffect, useState } from "react";
 import MainNavigator from "./App/Navigation/TabNavigation";
+import LoginScreen from "./App/Screens/LoginScreen/LoginScreen";
+import { UserProvider, useUser } from "./App/Contexts/UserContext";
+import { AuthGuard, PublicGuard } from "./App/Guards/Guards";
+
+
+
+const AppContent = () => {
+  const { isAuthenticated } = useUser();
+
+  return (
+    <View style={styles.container}>
+      <StatusBar style="light" />
+      {isAuthenticated ? <AuthGuard /> : <PublicGuard />}
+    </View>
+  );
+};
 export default function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   useEffect(() => {
@@ -34,22 +50,9 @@ export default function App() {
   }
 
   return (
-
-    <View style={styles.container}>
-      <StatusBar style="auto" />
-
-      <GestureHandlerRootView style={{ flex: 1 }}>
-
-        <NavigationContainer>
-          {/* <TabNavigation /> */}
-          <MainNavigator />
-        </NavigationContainer>
-      </GestureHandlerRootView>
-
-
-
-
-    </View>
+    <UserProvider>
+      <AppContent />
+    </UserProvider>
   );
 }
 
