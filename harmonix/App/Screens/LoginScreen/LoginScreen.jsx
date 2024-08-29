@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, ImageBackground, StyleSheet, Animated, Ea
 import { useNavigation } from '@react-navigation/native';
 import Sizes from '../../Utils/Sizes';
 import Colors from '../../Utils/Colors';
+import { applyFontToStyle } from '../../Utils/GlobalStyles';
 
 const LoginScreen = () => {
   const navigation = useNavigation();
@@ -65,13 +66,13 @@ const LoginScreen = () => {
             },
           ]}
         />
-        <Text style={styles.title}>Welcome to Harmonix</Text>
-        <Text style={styles.subtitle}>Your partner in building management</Text>
+        <Text style={applyFontToStyle(styles.title, 'bold')}>Welcome to Harmonix</Text>
+        <Text style={applyFontToStyle(styles.subtitle, 'medium')}>Your partner in building management</Text>
         <TouchableOpacity 
           style={styles.button}
           onPress={() => navigation.navigate('LoginForm')}
         >
-          <Text style={styles.buttonText}>Get Started</Text>
+          <Text style={applyFontToStyle(styles.buttonText, 'bold')}>Get Started</Text>
         </TouchableOpacity>
       </View>
     </ImageBackground>
@@ -99,7 +100,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,  
     color: Colors.WHITE,
-    fontWeight: 'bold',
     marginBottom: Sizes.PADDING,
     textAlign: 'center',
   },
@@ -117,7 +117,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: Colors.WHITE,
     fontSize: Sizes.FONT_SIZE_MEDIUM,
-    fontWeight: 'bold',
   },
 });
 
