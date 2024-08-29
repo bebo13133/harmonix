@@ -1,11 +1,51 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, ImageBackground, StyleSheet,Image } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, ImageBackground, StyleSheet, Animated, Easing } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Sizes from '../../Utils/Sizes';
 import Colors from '../../Utils/Colors';
 
 const LoginScreen = () => {
   const navigation = useNavigation();
+  const translateX = useRef(new Animated.Value(-300)).current;
+  const rotate = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.sequence([
+      Animated.timing(translateX, {
+        toValue: 0,
+        duration: 1000,
+        useNativeDriver: true,
+        easing: Easing.out(Easing.exp),
+      }),
+      Animated.sequence([
+        Animated.timing(rotate, {
+          toValue: 0.1,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+        Animated.timing(rotate, {
+          toValue: -0.1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(rotate, {
+          toValue: 0.1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(rotate, {
+          toValue: 0,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start();
+  }, []);
+
+  const spin = rotate.interpolate({
+    inputRange: [-0.1, 0.1],
+    outputRange: ['-10deg', '10deg'],
+  });
 
   return (
     <ImageBackground
@@ -13,9 +53,17 @@ const LoginScreen = () => {
       style={styles.background}
     >
       <View style={styles.overlay}>
-      <Image
-          source={{ uri:'https://harmonix.emage.co.uk/images/logo/logo.png' }}
-          style={styles.logo}
+        <Animated.Image
+          source={{ uri: 'https://harmonix.emage.co.uk/images/logo/logo.png' }}
+          style={[
+            styles.logo,
+            {
+              transform: [
+                { translateX: translateX },
+                { rotate: spin },
+              ],
+            },
+          ]}
         />
         <Text style={styles.title}>Welcome to Harmonix</Text>
         <Text style={styles.subtitle}>Your partner in building management</Text>
@@ -44,12 +92,12 @@ const styles = StyleSheet.create({
     padding: Sizes.PADDING,
   },
   logo: {
-    width: Sizes.LOGO_WIDTH,
-    height: Sizes.LOGO_HEIGHT,
+    width: Sizes.LOGO_WIDTH * 2,  
+    height: Sizes.LOGO_HEIGHT * 2,
     marginBottom: Sizes.PADDING * 2,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,  
     color: Colors.WHITE,
     fontWeight: 'bold',
     marginBottom: Sizes.PADDING,
