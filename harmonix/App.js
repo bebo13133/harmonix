@@ -3,15 +3,14 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { NavigationContainer } from "@react-navigation/native";
 import TabNavigation from "./App/Navigation/TabNavigation";
-<<<<<<< Updated upstream
 import Home from "./App/Screens/HomeScreen/Home";
-=======
+
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import AppLoading from "expo-app-loading";
 import * as Font from 'expo-font';
 import { useEffect, useState } from "react";
 import MainNavigator from "./App/Navigation/TabNavigation";
->>>>>>> Stashed changes
+
 export default function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   useEffect(() => {
@@ -37,9 +36,7 @@ export default function App() {
   return (
 
     <View style={styles.container}>
-<<<<<<< Updated upstream
-      <Home/>
-=======
+
       <StatusBar style="auto" />
 
       <GestureHandlerRootView style={{ flex: 1 }}>
@@ -47,12 +44,6 @@ export default function App() {
         <NavigationContainer>
           {/* <TabNavigation /> */}
           <MainNavigator />
-        </NavigationContainer>
-      </GestureHandlerRootView>
->>>>>>> Stashed changes
-
-        <NavigationContainer>
-          <TabNavigation />
         </NavigationContainer>
       </GestureHandlerRootView>
 
