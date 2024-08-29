@@ -1,20 +1,19 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ImageBackground } from 'react-native';
 import Sizes from '../../Utils/Sizes';
 import Colors from '../../Utils/Colors';
-
+import { useForm } from '../../Hooks/useForm';
+import { applyFontToStyle} from '../../Utils/GlobalStyles';
 
 export const LoginForm = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-
-  const handleLogin = () => {
-r
+  const initialValues = { email: '', password: '' };
+  
+  const handleLogin = (formValues) => {
+    console.log('Login with', formValues);
+    //ще се взима от контекста 
   };
 
-  const handleForgetPassword = () => {
-    console.log('Send new password');
-  };
+  const { values, errors, onChangeHandler, onSubmit } = useForm(initialValues, handleLogin);
 
   return (
     <ImageBackground
@@ -27,26 +26,31 @@ r
             source={{ uri: 'https://harmonix.emage.co.uk/images/logo/logo.png' }}
             style={styles.logo}
           />
-          <TextInput
-            style={styles.input}
-            placeholder="Username"
+           <TextInput
+            style={applyFontToStyle(styles.input)}
+            placeholder="Email"
             placeholderTextColor={Colors.TEXT_LIGHT}
-            value={username}
-            onChangeText={setUsername}
+            value={values.email}
+            onChangeText={(text) => onChangeHandler('email', text)}
+            keyboardType="email-address" 
           />
+          {errors.email && <Text style={applyFontToStyle(styles.errorText)}>{errors.email}</Text>}
+          
           <TextInput
-            style={styles.input}
+            style={applyFontToStyle(styles.input)}
             placeholder="Password"
             placeholderTextColor={Colors.TEXT_LIGHT}
-            value={password}
-            onChangeText={setPassword}
+            value={values.password}
+            onChangeText={(text) => onChangeHandler('password', text)}
             secureTextEntry
           />
-          <TouchableOpacity style={styles.forgotPasswordContainer} onPress={handleForgetPassword}>
-            <Text style={styles.forgotPasswordText}>Forget password</Text>
+          {errors.password && <Text style={applyFontToStyle(styles.errorText)}>{errors.password}</Text>}
+
+          <TouchableOpacity style={styles.forgotPasswordContainer} onPress={() => console.log('Forgot password')}>
+            <Text style={applyFontToStyle(styles.forgotPasswordText, 'medium')}>Forgot password</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={handleLogin}>
-            <Text style={styles.buttonText}>Login</Text>
+          <TouchableOpacity style={styles.button} onPress={onSubmit}>
+            <Text style={applyFontToStyle(styles.buttonText, 'bold')}>Login</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -86,6 +90,11 @@ const styles = StyleSheet.create({
     marginBottom: Sizes.PADDING,
     borderRadius: Sizes.BORDER_RADIUS,
   },
+  errorText: {
+    color: Colors.ERROR,
+    fontSize: Sizes.FONT_SIZE_MEDIUM,
+    marginBottom: Sizes.PADDING,
+  },
   forgotPasswordContainer: {
     width: '100%',
     alignItems: 'flex-end',
@@ -105,7 +114,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: Colors.WHITE,
     fontSize: Sizes.FONT_SIZE_MEDIUM,
-    fontWeight: 'bold',
   },
 });
 
