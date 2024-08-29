@@ -3,14 +3,13 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { NavigationContainer } from "@react-navigation/native";
 import TabNavigation from "./App/Navigation/TabNavigation";
-
 import Home from "./App/Screens/HomeScreen/Home";
-
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import AppLoading from "expo-app-loading";
 import * as Font from 'expo-font';
 import { useEffect, useState } from "react";
 import MainNavigator from "./App/Navigation/TabNavigation";
+
 import LoginScreen from "./App/Screens/LoginScreen/LoginScreen";
 import { UserProvider, useUser } from "./App/Contexts/UserContext";
 import { AuthGuard, PublicGuard } from "./App/Guards/Guards";
@@ -27,6 +26,7 @@ const AppContent = () => {
     </View>
   );
 };
+
 export default function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   useEffect(() => {
@@ -50,9 +50,11 @@ export default function App() {
   }
 
   return (
+
     <UserProvider>
       <AppContent />
     </UserProvider>
+
   );
 }
 

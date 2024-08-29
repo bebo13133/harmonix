@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
+
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Colors from '../Utils/Colors';
 import Home from '../Screens/HomeScreen/Home';
@@ -87,4 +88,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: -7,
   },
+
 });
+
+
