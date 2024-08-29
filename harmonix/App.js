@@ -4,7 +4,6 @@ import { StyleSheet, Text, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import TabNavigation from "./App/Navigation/TabNavigation";
 import Home from "./App/Screens/HomeScreen/Home";
-
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import AppLoading from "expo-app-loading";
 import * as Font from 'expo-font';
