@@ -31,7 +31,7 @@ const Home = () => {
   ];
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} >
       <View style={styles.header}>
         <Image
           source={{ uri: 'https://harmonix.emage.co.uk/storage/photos/1714728588.jpg' }}
@@ -91,6 +91,7 @@ const Home = () => {
         </LinearGradient>
       </View>
     </ScrollView>
+    
   );
 };
 
@@ -101,7 +102,7 @@ const styles = StyleSheet.create({
   },
   header: {
     height: 180,
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
     padding: Sizes.PADDING,
   },
   backgroundImage: {
@@ -111,6 +112,9 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     opacity: 0.7,
+    borderBottomLeftRadius: 25,
+    borderBottomRightRadius: 25,
+    overflow: 'hidden',
   },
   darkOverlay: {
     position: 'absolute',
@@ -118,7 +122,10 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',  
+    backgroundColor: 'rgba(0, 0, 0, 0.4)', 
+    borderBottomLeftRadius: 25,
+    borderBottomRightRadius: 25,
+    overflow: 'hidden', 
   },
   welcome: {
     color: Colors.WHITE,
@@ -184,6 +191,7 @@ const styles = StyleSheet.create({
   statsContainer: {
     padding: Sizes.PADDING,
     marginTop: Sizes.PADDING,
+    marginBottom: Sizes.PADDING,
     marginHorizontal: Sizes.PADDING,
     borderRadius: Sizes.BORDER_RADIUS,
     shadowColor: Colors.BLACK,
