@@ -19,4 +19,6 @@ export default {
     SWITCH_THUMB_ON: "#f5dd4b",
     SWITCH_LABEL_COMPLETED: '#FF6B6B',
     SWITCH_LABEL_OPEN: '#4ECB71',
+    GRAY:'#575551',
+    ACTIVE: '#2c3e50'
 };

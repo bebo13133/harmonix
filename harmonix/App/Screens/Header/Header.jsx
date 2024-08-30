@@ -46,16 +46,21 @@ export default function Header() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
+      <TouchableOpacity onPress={() => navigation.navigate('MainTabs', { screen: 'Home' })}>
+
+
         <Image 
           source={{ uri: 'https://harmonix.emage.co.uk/images/logo/logo.png' }} 
           style={styles.logo} 
           accessibilityLabel="Лого на Harmonix"
+       
         />
+        </TouchableOpacity>
         <TouchableOpacity onPress={toggleMenu}>
           <Image 
             source={require('../../../assets/images/bobi.jpg')} 
             style={styles.userImage} 
-            accessibilityLabel="Аватар на потребителя"
+            accessibilityLabel="User Avatar"
           />
         </TouchableOpacity>
       </View>
