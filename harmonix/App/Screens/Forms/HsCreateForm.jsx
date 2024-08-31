@@ -205,7 +205,6 @@ const FormSection = ({ section }) => {
 
     return (
         <View style={styles.sectionContainer}>
-            
             <TouchableOpacity onPress={toggleExpanded} style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>{section.title}</Text>
                 <MaterialIcons name={expanded ? 'expand-less' : 'expand-more'} size={24} color={Colors.PRIMARY} />
