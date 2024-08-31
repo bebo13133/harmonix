@@ -20,5 +20,12 @@ export default {
     SWITCH_LABEL_COMPLETED: '#FF6B6B',
     SWITCH_LABEL_OPEN: '#4ECB71',
     GRAY:'#575551',
-    ACTIVE: '#2c3e50'
+    ACTIVE: '#2c3e50',
+    BACKGROUND_DARK: '#161d31',
+    FORM_TEXT: '#b4b7bd',
+    RED_BORDER: '#ea5455',
+    GRAY: '#808080',
+    GREEN: '#4CAF50',
+    AMBER: '#FFC107',
+    RED: '#F44336'
 };

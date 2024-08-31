@@ -24,10 +24,15 @@ const Home = () => {
   const navigation = useNavigation();
 
   const quickAccessItems = [
-    { title: 'Health & Safety', icon: 'security', route: 'HealthSafety' },
-    { title: 'Observation', icon: 'visibility', route: 'ObservationInspections' },
-    { title: 'Scaffold', icon: 'build', route: 'ScaffoldInspections' },
-    { title: 'Temporary Works', icon: 'construction', route: 'TemporaryWorksInspections' },
+    { 
+      title: 'Health & Safety', 
+      icon: 'security', 
+      onPress: () => {navigation.navigate('HealthSafety', { screen: 'HealthSafetyList' }) 
+        console.log("Hello")}
+    },
+    { title: 'Observation', icon: 'visibility', onPress: () => navigation.navigate('ObservationInspections') },
+    { title: 'Scaffold', icon: 'build', onPress: () => navigation.navigate('ScaffoldInspections') },
+    { title: 'Temporary Works', icon: 'construction', onPress: () => navigation.navigate('TemporaryWorksInspections') },
   ];
 
   return (
@@ -51,7 +56,7 @@ const Home = () => {
                 key={index}
                 title={item.title}
                 icon={item.icon}
-                onPress={() => navigation.navigate(item.route)}
+                onPress={item.onPress}
               />
             ))}
           </View>
@@ -144,7 +149,7 @@ const styles = StyleSheet.create({
     paddingBottom: Sizes.PADDING / 2,
   },
   sectionTitle: {
-    fontSize: Sizes.FONT_SIZE_LARGE,
+    fontSize: Sizes.FONT_SIZE_MEDIUM,
     fontWeight: 'bold',
     marginBottom: Sizes.PADDING / 2,
     color: Colors.BLACK,

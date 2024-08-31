@@ -5,7 +5,7 @@ import { Switch } from 'react-native-gesture-handler';
 import { MaterialIcons } from '@expo/vector-icons';
 import Colors from '../../Utils/Colors';
 import Sizes from '../../Utils/Sizes';
-
+import { useNavigation } from '@react-navigation/native';
 import {  globalTextStyle, globalMediumTextStyle, globalBoldTextStyle  } from '../../Utils/GlobalStyles';
 
 
@@ -69,7 +69,7 @@ export const HealthSafetyInspections = () => {
   const [showCompleted, setShowCompleted] = useState(true);
   const [showScrollTopButton, setShowScrollTopButton] = useState(false);
   const flatListRef = useRef(null);
-
+  const navigation = useNavigation();
   const handleScroll = (event) => {
     const scrollPosition = event.nativeEvent.contentOffset.y;
     setShowScrollTopButton(scrollPosition > 200);
@@ -83,7 +83,11 @@ export const HealthSafetyInspections = () => {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.BACKGROUND} />
       <View style={styles.container}>
-        <TouchableOpacity style={styles.newInspectionButton} accessibilityLabel="Create new inspection">
+        <TouchableOpacity 
+        style={styles.newInspectionButton} 
+        accessibilityLabel="Create new inspection"
+        onPress={() => navigation.navigate('CreateInspectionHs')}
+        >
           <Text style={[styles.newInspectionButtonText, globalBoldTextStyle]}>New Inspection</Text>
         </TouchableOpacity>
 
