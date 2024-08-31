@@ -14,6 +14,7 @@ import ProfileSettings from '../Screens/Profile/ProfileSettings';
 import NotificationScreen from '../Screens/NotificationScreen/NotificationScreen';
 import SearchScreen from '../Screens/SearchScreen/SearchScreen';
 import { HealthSafetyInspections } from '../Screens/BookingScreen/HealthSafetyInspections';
+import HsCreateForm from '../Screens/Forms/HsCreateForm';
 
 const Stack = createStackNavigator();
 const { width } = Dimensions.get('window');
@@ -26,8 +27,8 @@ const selectFont = (options = {}) => {
         ? 'System'
         : 'System'
       : options.bold
-      ? 'Roboto-Bold'
-      : 'Roboto-Regular',
+        ? 'Roboto-Bold'
+        : 'Roboto-Regular',
     fontWeight: options.bold ? 'bold' : 'normal',
   };
 };
@@ -160,7 +161,16 @@ function MainContent({ activeTab, switchTab }) {
     </GestureDetector>
   );
 }
+const HealthSafetyStack = createStackNavigator();
 
+function HealthSafetyNavigator() {
+  return (
+    <HealthSafetyStack.Navigator screenOptions={{ headerShown: false }}>
+      <HealthSafetyStack.Screen name="HealthSafetyList" component={HealthSafetyInspections} />
+      <HealthSafetyStack.Screen name="CreateInspectionHs" component={HsCreateForm} />
+    </HealthSafetyStack.Navigator>
+  );
+}
 function TabNavigator() {
   const [activeTab, setActiveTab] = useState('Home');
 
@@ -183,7 +193,7 @@ export default function MainNavigator() {
       <Header />
       <Stack.Navigator screenOptions={{ headerShown: false, presentation: 'modal' }}>
         <Stack.Screen name="MainTabs" component={TabNavigator} />
-        <Stack.Screen name="HealthSafety" component={HealthSafetyInspections} />
+        <Stack.Screen name="HealthSafety" component={HealthSafetyNavigator} />
         <Stack.Screen name="ProfileSettings" component={ProfileSettings} />
       </Stack.Navigator>
     </View>
@@ -217,7 +227,7 @@ const styles = StyleSheet.create({
   },
   activeTopTab: {
     borderBottomWidth: 4,  // Увеличено подчертаване
-    borderBottomColor:"red", // Променено за активния таб
+    borderBottomColor: "red", // Променено за активния таб
     borderRadius: 10,
   },
   topTabText: {
