@@ -413,8 +413,49 @@ const styles = StyleSheet.create({
         fontSize: Sizes.FONT_SIZE_SMALL,
         fontWeight: 'bold',
     },
-    
-   
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: Sizes.PADDING,
+        marginBottom: Sizes.PADDING * 2,
+        paddingHorizontal: Sizes.PADDING,
+    },
+    button: {
+        flex: 1,
+        padding: Sizes.PADDING,
+        borderRadius: Sizes.BORDER_RADIUS,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginHorizontal: Sizes.PADDING / 2,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+    saveButton: {
+        backgroundColor: Colors.GREEN,
+    },
+    submitButton: {
+        backgroundColor: Colors.BLUE,
+    },
+    buttonText: {
+        color: Colors.WHITE,
+        fontSize: Sizes.FONT_SIZE_MEDIUM,
+        fontWeight: 'bold',
+        ...Platform.select({
+            ios: {
+                fontFamily: 'System',
+            },
+            android: {
+                fontFamily: 'Roboto-Bold',
+            },
+        }),
+    },
+    imageContainer: {}
 
 });
 export default styles;

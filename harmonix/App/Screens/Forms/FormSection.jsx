@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, Modal, StyleSheet } from 'react-native';
+
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, Modal } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import Colors from '../../Utils/Colors';
-import Sizes from '../../Utils/Sizes';
 import styles from './styles';
 
 const CheckBox = ({ selected, onPress, color }) => (
@@ -14,7 +14,7 @@ const CheckBox = ({ selected, onPress, color }) => (
     </TouchableOpacity>
 );
 
-const FormSection = ({ section }) => {
+const FormSection = ({ section, updateFormSection }) => {
     const [expanded, setExpanded] = useState(false);
     const [selectedStatuses, setSelectedStatuses] = useState({});
     const [comments, setComments] = useState({});
@@ -22,6 +22,14 @@ const FormSection = ({ section }) => {
     const [modalVisible, setModalVisible] = useState(false);
     const [modalContent, setModalContent] = useState(null);
     const [previewImage, setPreviewImage] = useState(null);
+
+    useEffect(() => {
+        updateFormSection({
+            selectedStatuses,
+            comments,
+            images
+        });
+    }, [selectedStatuses, comments, images]);
 
     const toggleExpanded = () => {
         setExpanded(!expanded);
@@ -46,7 +54,7 @@ const FormSection = ({ section }) => {
             const fileInfo = await FileSystem.getInfoAsync(uri);
             return fileInfo.size;
         } catch (error) {
-            console.error('Error getting image size:', error);
+            console.error('Грешка при получаване на размера на изображението:', error);
             return null;
         }
     };
@@ -54,7 +62,7 @@ const FormSection = ({ section }) => {
     const handleImagePick = async (questionId) => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
-            alert('Sorry, we need camera roll permissions to make this work!');
+            alert('Съжаляваме, но се нуждаем от разрешение за достъп до галерията!');
             return;
         }
 
@@ -81,12 +89,12 @@ const FormSection = ({ section }) => {
     const handleCameraCapture = async (questionId) => {
         const { status } = await ImagePicker.requestCameraPermissionsAsync();
         if (status !== 'granted') {
-            alert('Sorry, we need camera permissions to make this work!');
+            alert('Съжаляваме, но се нуждаем от разрешение за достъп до камерата!');
             return;
         }
 
         let result = await ImagePicker.launchCameraAsync({
-            allowsEditing: false, // Променено от true на false
+            allowsEditing: false,
             aspect: [4, 3],
             quality: 1,
         });
@@ -101,12 +109,14 @@ const FormSection = ({ section }) => {
             }));
         }
     };
+
     const handleDeleteImage = (questionId, index) => {
         setImages(prev => ({
             ...prev,
             [questionId]: prev[questionId].filter((_, i) => i !== index)
         }));
     };
+
     const showPreviousStatusModal = (question) => {
         setModalContent(question);
         setModalVisible(true);
