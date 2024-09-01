@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, TouchableOpacity, TextInput, FlatList, StyleSheet, SafeAreaView, StatusBar } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, TouchableOpacity, TextInput, FlatList, StyleSheet, SafeAreaView, StatusBar,Animated  } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Switch } from 'react-native-gesture-handler';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -27,6 +27,56 @@ const mockData = [
   { id: 15, projectNumber: 'PRJ015', date: '2024-09-13', address: '333 Pine Ln, York', completedBy: '', status: 'Draft', score: 0, updates: 0 },
 ];
 
+const CustomSwitch = ({ value, onValueChange }) => {
+  const [toggleAnimation] = useState(new Animated.Value(value ? 1 : 0));
+
+  useEffect(() => {
+    Animated.timing(toggleAnimation, {
+      toValue: value ? 1 : 0,
+      duration: 200,
+      useNativeDriver: false,
+    }).start();
+  }, [value]);
+
+  const toggleSwitch = () => {
+    onValueChange(!value);
+  };
+
+  const switchTranslate = toggleAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [2, 68], 
+  });
+
+  const textTranslate = toggleAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -40], 
+  });
+
+  return (
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onPress={toggleSwitch}
+      style={[
+        styles.switchContainer,
+        { backgroundColor: value ? Colors.STATUS_CLOSED : Colors.STATUS_OPEN }
+      ]}
+    >
+      <Animated.View
+        style={[
+          styles.switchThumb,
+          { transform: [{ translateX: switchTranslate }] }
+        ]}
+      />
+      <Animated.Text style={[
+        styles.switchLabel,
+        globalBoldTextStyle,
+        { color: Colors.WHITE, transform: [{ translateX: textTranslate }] }
+      ]}>
+        {value ? 'Closed' : 'Open'}
+      </Animated.Text>
+    </TouchableOpacity>
+  );
+};
 const renderItem = ({ item }) => (
   <View style={styles.card} accessibilityLabel={`Inspection ${item.projectNumber}`}>
     <View style={styles.cardHeader}>
@@ -70,6 +120,7 @@ export const HealthSafetyInspections = () => {
   const [showScrollTopButton, setShowScrollTopButton] = useState(false);
   const flatListRef = useRef(null);
   const navigation = useNavigation();
+
   const handleScroll = (event) => {
     const scrollPosition = event.nativeEvent.contentOffset.y;
     setShowScrollTopButton(scrollPosition > 200);
@@ -84,9 +135,9 @@ export const HealthSafetyInspections = () => {
       <StatusBar barStyle="light-content" backgroundColor={Colors.BACKGROUND} />
       <View style={styles.container}>
         <TouchableOpacity 
-        style={styles.newInspectionButton} 
-        accessibilityLabel="Create new inspection"
-        onPress={() => navigation.navigate('CreateInspectionHs')}
+          style={styles.newInspectionButton} 
+          accessibilityLabel="Create new inspection"
+          onPress={() => navigation.navigate('CreateInspectionHs')}
         >
           <Text style={[styles.newInspectionButtonText, globalBoldTextStyle]}>New Inspection</Text>
         </TouchableOpacity>
@@ -113,22 +164,10 @@ export const HealthSafetyInspections = () => {
               <Picker.Item label="100" value="100" />
             </Picker>
           </View>
-          <View style={styles.switchContainer}>
-            <Switch
-              value={showCompleted}
-              onValueChange={setShowCompleted}
-              trackColor={{ false: Colors.SWITCH_TRACK_OFF, true: Colors.SWITCH_TRACK_ON }}
-              thumbColor={showCompleted ? Colors.SWITCH_THUMB_ON : Colors.SWITCH_THUMB_OFF}
-              accessibilityLabel={`Show completed inspections: ${showCompleted ? 'on' : 'off'}`}
-            />
-            <Text style={[
-              styles.switchLabel,
-              globalBoldTextStyle,
-              showCompleted ? styles.switchLabelCompleted : styles.switchLabelOpen
-            ]}>
-              {showCompleted ? 'Closed' : 'Open'}
-            </Text>
-          </View>
+          <CustomSwitch
+            value={showCompleted}
+            onValueChange={setShowCompleted}
+          />
         </View>
 
         <FlatList
@@ -169,6 +208,14 @@ const styles = StyleSheet.create({
     borderRadius: Sizes.BORDER_RADIUS,
     alignItems: 'center',
     marginBottom: Sizes.PADDING,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.30,
+    shadowRadius: 4.65,
+    elevation: 8,
   },
   newInspectionButtonText: {
     color: Colors.WHITE,
@@ -198,15 +245,33 @@ const styles = StyleSheet.create({
     height: Sizes.PICKER_HEIGHT,
   },
   switchContainer: {
+    width: 105,
+    height: 34,
+    borderRadius: 15,
+    padding: 3,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.CARD_BACKGROUND,
-    borderRadius: Sizes.BORDER_RADIUS * 2,
-    padding: 5,
+    justifyContent: 'space-between',
+    overflow: 'hidden',
+  },
+  switchThumb: {
+    width: 30,
+    height: 30,
+    borderRadius: 13,
+    backgroundColor: Colors.WHITE,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   switchLabel: {
-    fontSize: Sizes.FONT_SIZE_MEDIUM,
-    marginLeft: 10,
+    fontSize: Sizes.FONT_SIZE_SMALL,
+    marginLeft: 8, // Добавено ляво отстояние
+    marginRight: 8,
   },
   switchLabelCompleted: {
     color: Colors.SWITCH_LABEL_COMPLETED,
@@ -222,6 +287,14 @@ const styles = StyleSheet.create({
     borderRadius: Sizes.BORDER_RADIUS,
     padding: Sizes.CARD_PADDING,
     marginBottom: Sizes.CARD_MARGIN_BOTTOM,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.23,
+    shadowRadius: 2.62,
+    elevation: 4,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -268,6 +341,14 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: Sizes.BORDER_RADIUS,
     alignItems: 'center',
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.27,
+    shadowRadius: 4.65,
+    elevation: 6,
   },
   viewButtonText: {
     color: Colors.WHITE,
@@ -283,5 +364,13 @@ const styles = StyleSheet.create({
     height: Sizes.SCROLL_TOP_BUTTON_SIZE,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.30,
+    shadowRadius: 4.65,
+    elevation: 8,
   },
 });
