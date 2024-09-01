@@ -205,17 +205,40 @@ const FormSection = ({ section }) => {
 
     return (
         <View style={styles.sectionContainer}>
-            <TouchableOpacity onPress={toggleExpanded} style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>{section.title}</Text>
-                <MaterialIcons name={expanded ? 'expand-less' : 'expand-more'} size={24} color={Colors.PRIMARY} />
-            </TouchableOpacity>
-            {expanded && (
-                <LinearGradient
-                    colors={['#2c3e50', '#3498db']}
-                    style={styles.expandedContent}
-                >
-                    {section.questions.map(renderQuestion)}
-                </LinearGradient>
+           {expanded ? (
+        <LinearGradient
+          colors={['#8B0000', '#4B0000']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={[styles.sectionHeader, { opacity: 0.6 }]}
+        //   style={styles.sectionHeader}
+        >
+          <TouchableOpacity onPress={() => setExpanded(!expanded)} style={styles.sectionHeaderContent}>
+            <Text style={styles.sectionTitle}>{section.title}</Text>
+            <MaterialIcons name="expand-less" size={24} color={Colors.WHITE} />
+          </TouchableOpacity>
+        </LinearGradient>
+      ) : (
+        
+        <TouchableOpacity 
+          onPress={() => setExpanded(!expanded)} 
+          style={[styles.sectionHeader, { backgroundColor: Colors.BACKGROUND }]}
+        >
+          <View style={styles.sectionHeaderContent}>
+            <Text style={[styles.sectionTitle, { color: Colors.WHITE }]}>{section.title}</Text>
+            <MaterialIcons name="expand-more" size={24} color={Colors.WHITE} />
+          </View>
+        </TouchableOpacity>
+      )}
+      {expanded && (
+        <LinearGradient
+          colors={['#2c3e50', '#3498db']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.expandedContent}
+        >
+          {section.questions.map(renderQuestion)}
+        </LinearGradient>
             )}
             <Modal
                 animationType="slide"
@@ -488,27 +511,64 @@ const styles = StyleSheet.create({
     },
     sectionContainer: {
         marginBottom: Sizes.PADDING * 1.5,
+        // Добавяме сянка за целия контейнер на секцията
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.30,
+        shadowRadius: 4.65,
+        elevation: 8,
     },
     sectionHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         padding: Sizes.PADDING,
-        // paddingRight: Sizes.PADDING * 2, 
+        paddingRight: Sizes.PADDING * 2, 
         backgroundColor: Colors.WHITE,
         borderRadius: Sizes.BORDER_RADIUS,
+        overflow: 'hidden',
+        // Добавяме допълнителна сянка за заглавието
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+    sectionHeaderContent: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
     },
     sectionTitle: {
         ...selectFont({ bold: true }),
         fontSize: Sizes.FONT_SIZE_MEDIUM - 2,
-        color: Colors.PRIMARY,
-        flexShrink: 1, // Позволява на текста да се свие, ако е необходимо
+        color: Colors.WHITE,
+        flexShrink: 1,
         marginRight: 20,
-
+        flex: 1,
+        // Добавяме сянка на текста за по-добър контраст
+        textShadowColor: 'rgba(0, 0, 0, 0.3)',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 2,
     },
     expandedContent: {
         padding: Sizes.PADDING,
         borderRadius: Sizes.BORDER_RADIUS,
+        // Добавяме сянка за разширеното съдържание
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 3,
+        },
+        shadowOpacity: 0.27,
+        shadowRadius: 4.65,
+        elevation: 6,
     },
     questionContainer: {
         marginBottom: Sizes.PADDING * 1.2,
@@ -632,7 +692,6 @@ const styles = StyleSheet.create({
         ...selectFont({ bold: true }),
         color: Colors.WHITE,
     },
-    // Новые стили для предварительного просмотра изображений
     previewModalContainer: {
         flex: 1,
         justifyContent: 'center',
