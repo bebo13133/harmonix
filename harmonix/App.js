@@ -8,8 +8,6 @@ import { useEffect, useState } from "react";
 import { UserProvider, useUser } from "./App/Contexts/UserContext";
 import { AuthGuard, PublicGuard } from "./App/Guards/Guards";
 
-
-
 const AppContent = () => {
   const { isAuthenticated } = useUser();
 
