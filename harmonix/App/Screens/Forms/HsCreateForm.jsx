@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useRef } from 'react';
-import { View, Text, ScrollView, Image, TouchableOpacity, RefreshControl, Platform, TextInput, Modal, Dimensions, StyleSheet, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import React, { useState, useCallback, useRef, useEffect, useImperativeHandle } from 'react';
+import { View, Text, ScrollView, Image, TouchableOpacity, RefreshControl, Platform, TextInput, Modal, Dimensions, StyleSheet, TouchableWithoutFeedback, Keyboard, Alert } from 'react-native';
 import { Svg, Circle, Text as SvgText, LinearGradient as SvgLinearGradient, Stop, Path } from 'react-native-svg';
 import { Picker } from '@react-native-picker/picker';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -14,10 +14,20 @@ import hsFormQuestions from './hsFormQuestions';
 // import Sizes from '../../Utils/Sizes';
 import styles from './styles';
 import FormSection from './FormSection';
+import { useUser } from '../../Contexts/UserContext';
+import { saveImage } from '../../SQLiteBase/FileSystemManager';
 
-const SignatureField = () => {
+const SignatureField = React.forwardRef((props, ref) => {
     const [paths, setPaths] = useState([]);
     const [currentPath, setCurrentPath] = useState([]);
+
+    // Позволява на родителския компонент да използва методите в този компонент
+    useImperativeHandle(ref, () => ({
+        clearSignature() {
+            setPaths([]);
+            setCurrentPath([]);
+        }
+    }));
 
     const onGestureEvent = (event) => {
         const { x, y } = event.nativeEvent;
@@ -28,12 +38,16 @@ const SignatureField = () => {
         if (event.nativeEvent.state === State.END) {
             setPaths(prevPaths => [...prevPaths, currentPath]);
             setCurrentPath([]);
+
+            // Генериране на подписа и предаване към родителския компонент
+            const signature = generateSignatureFromPaths([...paths, currentPath]);
+            props.onSign(signature);
         }
     };
 
-    const clearSignature = () => {
-        setPaths([]);
-        setCurrentPath([]);
+    const generateSignatureFromPaths = (paths) => {
+        // Преобразуване на масива от координати в JSON
+        return JSON.stringify(paths);
     };
 
     return (
@@ -62,15 +76,18 @@ const SignatureField = () => {
                     )}
                 </Svg>
             </PanGestureHandler>
-            <TouchableOpacity style={styles.clearButton} onPress={clearSignature}>
+            <TouchableOpacity style={styles.clearButton} onPress={() => ref.current.clearSignature()}>
                 <Text style={styles.clearButtonText}>Clear</Text>
             </TouchableOpacity>
         </View>
     );
-};
+});
+
+
 
 const HsCreateForm = () => {
     const navigation = useNavigation();
+    const { saveFormData, db,loadFormData } = useUser();
     const [showPerformance, setShowPerformance] = useState(false);
     const [selectedProject, setSelectedProject] = useState('');
     const [selectedInspector, setSelectedInspector] = useState('');
@@ -80,23 +97,104 @@ const HsCreateForm = () => {
     const [refreshing, setRefreshing] = useState(false);
     const [generalComments, setGeneralComments] = useState('');
     const [advisory, setAdvisory] = useState('');
-
     const [signature, setSignature] = useState(null);
+    const [formSections, setFormSections] = useState({});
+    const [isLoading, setIsLoading] = useState(false);
+
     const signatureRef = useRef();
+
+ 
+    useEffect(() => {
+        if (!db) {
+            Alert.alert('Warning', 'Database is not initialized. Some features may not work properly.');
+        }
+        loadFormData()
+    }, [db]);
+
     const clearSignature = () => {
         signatureRef.current.clearSignature();
         setSignature(null);
     };
+
     const handleSignature = (signature) => {
-        setSignature(signature);
-        console.log("Signature saved:", signature);
+        if (signature) {
+            setSignature(signature);
+        }
     };
+
     const onRefresh = useCallback(() => {
         setRefreshing(true);
         setTimeout(() => {
             setRefreshing(false);
         }, 2000);
     }, []);
+
+    const handleSave = async () => {
+        if (isLoading) return;
+    
+        setIsLoading(true);
+        try {
+            // Обработване на изображенията във всяка секция на формуляра
+            const updatedFormSections = await Promise.all(
+                Object.entries(formSections).map(async ([sectionKey, sectionData]) => {
+                    const updatedQuestions = await Promise.all(
+                        Object.entries(sectionData.images || {}).map(async ([questionId, images]) => {
+                            const updatedImages = await Promise.all(
+                                images.map(async (image) => {
+                                    const savedUri = await saveImage(image.uri); // Запазване на изображението и връщане на новия URI
+                                    return { ...image, uri: savedUri };
+                                })
+                            );
+                            return [questionId, updatedImages];
+                        })
+                    );
+                    return [
+                        sectionKey,
+                        {
+                            ...sectionData,
+                            images: Object.fromEntries(updatedQuestions)
+                        }
+                    ];
+                })
+            );
+    
+            const data = {
+                selectedProject,
+                selectedInspector,
+                selectedPersonInControl,
+                selectedProjectDirector,
+                selectedDivisionalDirector,
+                generalComments,
+                advisory,
+                signature,
+                formSections: Object.fromEntries(updatedFormSections),
+                date: new Date().toISOString().split('T')[0],
+                status: 'Draft',
+            };
+    
+            await saveFormData(data); // Запазване на данните в базата
+            Alert.alert('Success', 'Inspection saved successfully!', [
+                { text: 'OK', onPress: () => navigation.goBack() }
+            ]);
+        } catch (error) {
+            console.error('Error saving form:', error);
+            Alert.alert('Error', 'There was a problem saving the inspection. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
+    const handleSubmit = () => {
+        // To be implemented in the future
+        Alert.alert('Info', 'Submit functionality will be implemented later.');
+    };
+
+    const updateFormSection = (sectionKey, sectionData) => {
+        setFormSections(prev => ({
+            ...prev,
+            [sectionKey]: sectionData
+        }));
+    };
 
     const PerformanceChart = ({ performance }) => (
         <View style={styles.performanceContainer}>
@@ -174,7 +272,6 @@ const HsCreateForm = () => {
         </View>
     );
 
-  
     return (
         <ScrollView
             style={styles.container}
@@ -207,7 +304,11 @@ const HsCreateForm = () => {
                     </View>
 
                     {Object.entries(hsFormQuestions).map(([key, section]) => (
-                        <FormSection key={key} section={section} />
+                        <FormSection 
+                            key={key} 
+                            section={section} 
+                            updateFormSection={(sectionData) => updateFormSection(key, sectionData)}
+                        />
                     ))}
 
                     <View style={styles.additionalSection}>
@@ -239,6 +340,19 @@ const HsCreateForm = () => {
                     <View style={styles.signatureSection}>
                         <Text style={styles.signatureSectionTitle}>Signed by Harmonix Compliance Representative</Text>
                         <SignatureField ref={signatureRef} onSign={handleSignature} />
+                    </View>
+
+                    <View style={styles.buttonContainer}>
+                        <TouchableOpacity 
+                            style={[styles.button, styles.saveButton, isLoading && styles.disabledButton]} 
+                            onPress={handleSave}
+                            disabled={isLoading}
+                        >
+                            <Text style={styles.buttonText}>{isLoading ? 'Saving...' : 'Save'}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={[styles.button, styles.submitButton]} onPress={handleSubmit}>
+                            <Text style={styles.buttonText}>Submit</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
             </TouchableWithoutFeedback>
