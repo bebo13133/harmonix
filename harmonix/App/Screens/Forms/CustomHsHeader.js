@@ -30,7 +30,7 @@ const CustomHsHeader = ({ sections, currentSectionIndex, onSectionChange, formDa
                 // console.log('Status for question', {sectionFormData, questionId, status, completedQuestions, totalQuestions  });
                 // console.log('Status', section.WELFARE );
 
-                if (status === 'Green' || status === 'Amber') {
+                if (status === 'Green' || status === 'Amber'|| status === 'Red'|| status === 'N/A') {
                     completedQuestions++;
                 }
             }

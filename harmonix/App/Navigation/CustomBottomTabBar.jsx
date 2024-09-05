@@ -1,12 +1,12 @@
-// CustomBottomTabBar.jsx
 import React, { useState } from 'react';
 import { View, TouchableOpacity, Text, Animated } from 'react-native';
 import { styled } from 'nativewind';
 import { FontAwesome, Feather, Ionicons } from '@expo/vector-icons';
-import Colors from '../Utils/Colors';
 
 import { useNavigation } from '@react-navigation/native';
 import InspectionModal from '../Screens/Forms/InspectionModal';
+import { applyFontToStyle } from '../Utils/GlobalStyles';
+import Colors from '../Utils/Colors';
 
 const StyledView = styled(View);
 const StyledTouchableOpacity = styled(TouchableOpacity);
@@ -19,8 +19,11 @@ const TabButton = ({ icon, label, isActive, onPress }) => (
   >
     {icon}
     <StyledText 
-      className="text-xs mt-1"
-      style={{ color: isActive ? Colors.ACTIVE_TAB : Colors.GRAY }}
+      className="text-xs mt-2"
+      style={[
+        applyFontToStyle({}, isActive ? 'bold' : 'medium'),
+        { color: isActive ? Colors.WHITE : Colors.GRAY }
+      ]}
     >
       {label}
     </StyledText>
@@ -50,39 +53,52 @@ export default function CustomBottomTabBar({ activeTab, switchTab }) {
   };
 
   const handleStartInspection = (formData) => {
-
     setIsModalVisible(false);
     
-    // Изолиране на навигацията
     setTimeout(() => {
       try {
+        let screenName;
+        switch(formData.formType) {
+          case 'healthSafety':
+            screenName = 'CreateInspectionHs';
+            break;
+          case 'environmental':
+            screenName = 'CreateInspectionEnvironmental';
+            break;
+          case 'qualityAssurance':
+            screenName = 'CreateInspectionQa';
+            break;
+          case 'documentControl':
+            screenName = 'CreateInspectionDc';
+            break;
+          default:
+            screenName = 'CreateInspectionHs';
+        }
         navigation.navigate('HealthSafety', { 
-          screen: 'CreateInspectionHs', 
+          screen: screenName, 
           params: formData 
         });
       } catch (error) {
-        console.error("Грешка при навигация:", error);
-  
+        console.error("Грешка:", error);
       }
     }, 0);
   };
-
   return (
     <>
       <StyledView 
-        className="flex-row h-16 items-center justify-between px-2 relative"
-        style={{ backgroundColor: Colors.BACKGROUND }}
+        className="flex-row h-16 items-center justify-between px-1 relative"
+        style={{ backgroundColor: Colors.BACKGROUND,  }}
       >
         {/* Лява група */}
-        <StyledView className="flex-row flex-1">
+        <StyledView className="flex-row flex-1 justify-start">
           <TabButton 
-            icon={<FontAwesome name="home" size={26} color={activeTab === 'Home' ? Colors.ACTIVE_TAB : Colors.GRAY} />}
+            icon={<FontAwesome name="home" size={26} color={activeTab === 'Home' ? Colors.WHITE : Colors.GRAY} />}
             label="Home"
             isActive={activeTab === 'Home'}
             onPress={() => switchTab('Home')}
           />
           <TabButton 
-            icon={<Feather name="search" size={26} color={activeTab === 'Search' ? Colors.ACTIVE_TAB : Colors.GRAY} />}
+            icon={<Feather name="search" size={26} color={activeTab === 'Search' ? Colors.WHITE : Colors.GRAY} />}
             label="Search"
             isActive={activeTab === 'Search'}
             onPress={() => switchTab('Search')}
@@ -105,13 +121,13 @@ export default function CustomBottomTabBar({ activeTab, switchTab }) {
         {/* Дясна група */}
         <StyledView className="flex-row flex-1 justify-end">
           <TabButton 
-            icon={<Ionicons name="notifications" size={26} color={activeTab === 'Notifications' ? Colors.ACTIVE_TAB : Colors.GRAY} />}
-            label="Notifications"
+            icon={<Ionicons name="notifications" size={24} color={activeTab === 'Notifications' ? Colors.WHITE : Colors.GRAY} />}
+            label="Notify"
             isActive={activeTab === 'Notifications'}
             onPress={() => switchTab('Notifications')}
           />
           <TabButton 
-            icon={<FontAwesome name="user" size={26} color={activeTab === 'ProfileSettings' ? Colors.ACTIVE_TAB : Colors.GRAY} />}
+            icon={<FontAwesome name="user" size={24} color={activeTab === 'ProfileSettings' ? Colors.WHITE : Colors.GRAY} />}
             label="Profile"
             isActive={activeTab === 'ProfileSettings'}
             onPress={() => switchTab('ProfileSettings')}
