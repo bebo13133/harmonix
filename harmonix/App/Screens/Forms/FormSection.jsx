@@ -19,9 +19,10 @@ const FormSection = ({ section, updateFormSection }) => {
     const [noteText, setNoteText] = useState('');
     const [imageIndex, setImageIndex] = useState(0);
     const [isImageViewVisible, setIsImageViewVisible] = useState(false);
+    const [previousStatusModalVisible, setPreviousStatusModalVisible] = useState(false);
+    const [currentQuestion, setCurrentQuestion] = useState(null);
 
     useEffect(() => {
-    
         updateFormSection({
             selectedStatuses,
             comments,
@@ -30,16 +31,12 @@ const FormSection = ({ section, updateFormSection }) => {
     }, [selectedStatuses, comments, images]);
 
     const handleStatusChange = (questionId, status) => {
-     
-        setSelectedStatuses(prev => {
-            const newStatuses = {
-                ...prev,
-                [questionId]: status
-            };
-   
-            return newStatuses;
-        });
+        setSelectedStatuses(prev => ({
+            ...prev,
+            [questionId]: status
+        }));
     };
+
     const handleAddNote = (questionId) => {
         setCurrentQuestionId(questionId);
         setNoteText(comments[questionId] || '');
@@ -122,6 +119,11 @@ const FormSection = ({ section, updateFormSection }) => {
         }
     };
 
+    const showPreviousStatusModal = (question) => {
+        setCurrentQuestion(question);
+        setPreviousStatusModalVisible(true);
+    };
+
     const renderQuestion = (question) => {
         const status = selectedStatuses[question.id] || 'N/A';
         const statusColors = {
@@ -133,7 +135,18 @@ const FormSection = ({ section, updateFormSection }) => {
 
         return (
             <StyledView key={question.id} className="mb-4 p-2 rounded-lg" style={{ backgroundColor: Colors.BACKGROUND }}>
-                <Text className="text-lg font-bold text-white mb-4">{question.text}</Text>
+                <StyledView className="flex-row justify-between items-center mb-2">
+                    <Text className="text-lg font-bold text-white flex-1">{question.text}</Text>
+                    {question.previousStatus && (question.previousStatus === 'Amber' || question.previousStatus === 'RED') && (
+                        <TouchableOpacity onPress={() => showPreviousStatusModal(question)}>
+                            <MaterialIcons 
+                                name="warning" 
+                                size={24} 
+                                color={question.previousStatus === 'Amber' ? Colors.AMBER : Colors.RED} 
+                            />
+                        </TouchableOpacity>
+                    )}
+                </StyledView>
 
                 {['N/A', 'Green', 'Amber', 'Red'].map(statusOption => (
                     <TouchableOpacity
@@ -260,6 +273,32 @@ const FormSection = ({ section, updateFormSection }) => {
                     </View>
                 )}
             />
+
+            <Modal
+                visible={previousStatusModalVisible}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setPreviousStatusModalVisible(false)}
+            >
+                <StyledView className="flex-1 justify-center items-center bg-black bg-opacity-50">
+                    <StyledView className="bg-background-dark p-4 rounded-lg w-4/5">
+                        <StyledText className="text-lg font-bold text-white mb-2">Previous Status</StyledText>
+                        {currentQuestion && (
+                            <>
+                                <StyledText className="text-white mb-2">Status: {currentQuestion.previousStatus}</StyledText>
+                                <StyledText className="text-white mb-2">Date: {currentQuestion.previousStatusDate}</StyledText>
+                                <StyledText className="text-white mb-4">Description: {currentQuestion.previousStatusDescription}</StyledText>
+                            </>
+                        )}
+                        <TouchableOpacity
+                            onPress={() => setPreviousStatusModalVisible(false)}
+                            className="bg-blue-500 p-2 rounded-lg"
+                        >
+                            <StyledText className="text-white text-center">Close</StyledText>
+                        </TouchableOpacity>
+                    </StyledView>
+                </StyledView>
+            </Modal>
         </StyledView>
     );
 };

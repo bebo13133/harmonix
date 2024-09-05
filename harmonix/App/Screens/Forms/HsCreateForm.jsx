@@ -298,8 +298,10 @@ const HsCreateForm = ({ route }) => {
                     {renderQuestions()}
 
                 </StyledView>
-            </StyledScrollView>
 
+            </StyledScrollView>
+          
+                   
             <View style={styles.paginationContainer}>
                 {currentSectionIndex > 0 && (
                     <TouchableOpacity
@@ -307,11 +309,12 @@ const HsCreateForm = ({ route }) => {
                         onPress={() => setCurrentSectionIndex(prev => Math.max(prev - 1, 0))}
                     >
                         <MaterialIcons name="arrow-back-ios" size={24} color={Colors.WHITE} />
-                        <Text style={[applyFontToStyle(), { color: Colors.WHITE }]}>Back</Text>
+      
+                        <Text style={[applyFontToStyle(), { color: Colors.WHITE, fontSize:16,paddingVertical:8 }]}>Back</Text>
                     </TouchableOpacity>
                 )}
 
-                <Text style={[applyFontToStyle({ medium: true }), { color: Colors.WHITE }, styles.paginationText]}>
+                <Text style={[applyFontToStyle({ medium: true }), { color: Colors.WHITE,fontSize:16 }, styles.paginationText]}>
                     Section {currentSectionIndex + 1} / {sections.length}
                 </Text>
 
@@ -320,7 +323,7 @@ const HsCreateForm = ({ route }) => {
                         style={[styles.paginationButton, styles.paginationBorder]}
                         onPress={() => setCurrentSectionIndex(prev => Math.min(prev + 1, sections.length - 1))}
                     >
-                        <Text style={[applyFontToStyle(), { color: Colors.WHITE }]}>Next</Text>
+                        <Text style={[applyFontToStyle(), { color: Colors.WHITE,fontSize:16,paddingVertical:8 }]}>Next</Text>
                         <MaterialIcons name="arrow-forward-ios" size={24} color={Colors.WHITE} />
                     </TouchableOpacity>
                 )}
@@ -336,6 +339,13 @@ const styles = StyleSheet.create({
     },
     contentContainer: {
         paddingBottom: 80,
+      
+    },
+    before: {
+        backgroundColor: Colors.WHITE,
+        height: 15,
+        // paddingHorizontal: 20,
+        width: '100%',
     },
     buttonContainer: {
         flexDirection: 'row',
@@ -359,8 +369,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         backgroundColor: Colors.BACKGROUND,
-        paddingVertical: 10,
-        paddingHorizontal: 16,
+        borderTopWidth: 6, 
+        borderTopColor: Colors.BACKGROUND_DARK, 
+
         position: 'absolute',
         bottom: 0,
         left: 0,
@@ -369,6 +380,7 @@ const styles = StyleSheet.create({
     paginationButton: {
         flexDirection: 'row',
         alignItems: 'center',
+
     },
     paginationBorder: {
         borderColor: Colors.BACKGROUND_DARK,
@@ -378,6 +390,7 @@ const styles = StyleSheet.create({
     },
     paginationText: {
         paddingHorizontal: 16,
+        
     },
     signatureContainer: {
         borderWidth: 1,
