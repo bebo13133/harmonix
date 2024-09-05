@@ -1,54 +1,51 @@
-import React, { useState, useCallback, useRef, useEffect, useImperativeHandle } from 'react';
-import { View, Text, ScrollView, Image, TouchableOpacity, RefreshControl, Platform, TextInput, Modal, Dimensions, StyleSheet, TouchableWithoutFeedback, Keyboard, Alert } from 'react-native';
-import { Svg, Circle, Text as SvgText, LinearGradient as SvgLinearGradient, Stop, Path } from 'react-native-svg';
-import { Picker } from '@react-native-picker/picker';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { RefreshControl, Alert, ScrollView, View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
-// import * as ImagePicker from 'expo-image-picker';
-// import * as FileSystem from 'expo-file-system';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
-import Colors from '../../Utils/Colors';
-import { projects, inspectors, personsInControl, projectDirectors, divisionalDirectors } from '../../Utils/mockData';
+import Svg, { Path } from 'react-native-svg';
+import { useNavigation } from '@react-navigation/native';
+import { styled } from 'nativewind';
+
+import { applyFontToStyle } from '../../Utils/GlobalStyles';
 import hsFormQuestions from './hsFormQuestions';
-// import Sizes from '../../Utils/Sizes';
-import styles from './styles';
 import FormSection from './FormSection';
 import { useUser } from '../../Contexts/UserContext';
 import { saveImage } from '../../SQLiteBase/FileSystemManager';
+import PerformanceChart from './PerformanceChart';
+import Colors from '../../Utils/Colors';
+import CustomHsHeader from './CustomHsHeader';
+
+const StyledScrollView = styled(ScrollView);
+const StyledView = styled(View);
+const StyledTouchableOpacity = styled(TouchableOpacity);
+const StyledText = styled(Text);
+const StyledTextInput = styled(TextInput);
 
 const SignatureField = React.forwardRef((props, ref) => {
     const [paths, setPaths] = useState([]);
     const [currentPath, setCurrentPath] = useState([]);
 
-    // Позволява на родителския компонент да използва методите в този компонент
-    useImperativeHandle(ref, () => ({
+    React.useImperativeHandle(ref, () => ({
         clearSignature() {
             setPaths([]);
             setCurrentPath([]);
+            props.onSign(null);
         }
     }));
 
-    const onGestureEvent = (event) => {
+    const onGestureEvent = useCallback((event) => {
         const { x, y } = event.nativeEvent;
         setCurrentPath(prevPath => [...prevPath, { x, y }]);
-    };
+    }, []);
 
-    const onHandlerStateChange = (event) => {
+    const onHandlerStateChange = useCallback((event) => {
         if (event.nativeEvent.state === State.END) {
             setPaths(prevPaths => [...prevPaths, currentPath]);
             setCurrentPath([]);
-
-            // Генериране на подписа и предаване към родителския компонент
-            const signature = generateSignatureFromPaths([...paths, currentPath]);
+            const signature = JSON.stringify([...paths, currentPath]);
             props.onSign(signature);
         }
-    };
-
-    const generateSignatureFromPaths = (paths) => {
-        // Преобразуване на масива от координати в JSON
-        return JSON.stringify(paths);
-    };
+    }, [paths, currentPath, props]);
 
     return (
         <View style={styles.signatureContainer}>
@@ -56,71 +53,76 @@ const SignatureField = React.forwardRef((props, ref) => {
                 onGestureEvent={onGestureEvent}
                 onHandlerStateChange={onHandlerStateChange}
             >
-                <Svg height="200" width="100%" style={styles.signatureSvg}>
-                    {paths.map((path, index) => (
+                <Svg height="200" width="100%">
+                    {[...paths, currentPath].map((path, index) => (
                         <Path
                             key={index}
-                            d={`M ${path[0].x} ${path[0].y} ${path.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ')}`}
+                            d={`M ${path[0]?.x ?? 0} ${path[0]?.y ?? 0} ${path.slice(1).map(p => `L ${p.x ?? 0} ${p.y ?? 0}`).join(' ')}`}
                             stroke="black"
                             strokeWidth="2"
                             fill="none"
                         />
                     ))}
-                    {currentPath.length > 0 && (
-                        <Path
-                            d={`M ${currentPath[0].x} ${currentPath[0].y} ${currentPath.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ')}`}
-                            stroke="black"
-                            strokeWidth="2"
-                            fill="none"
-                        />
-                    )}
                 </Svg>
             </PanGestureHandler>
-            <TouchableOpacity style={styles.clearButton} onPress={() => ref.current.clearSignature()}>
-                <Text style={styles.clearButtonText}>Clear</Text>
+            <TouchableOpacity onPress={() => ref.current.clearSignature()} style={styles.clearButton}>
+                <Text style={[applyFontToStyle(), styles.clearText]}>Clear</Text>
             </TouchableOpacity>
         </View>
     );
 });
 
 
-
-const HsCreateForm = () => {
+const HsCreateForm = ({ route }) => {
     const navigation = useNavigation();
-    const { saveFormData, db,loadFormData } = useUser();
-    const [showPerformance, setShowPerformance] = useState(false);
-    const [selectedProject, setSelectedProject] = useState('');
-    const [selectedInspector, setSelectedInspector] = useState('');
-    const [selectedPersonInControl, setSelectedPersonInControl] = useState('');
-    const [selectedProjectDirector, setSelectedProjectDirector] = useState('');
-    const [selectedDivisionalDirector, setSelectedDivisionalDirector] = useState('');
+    const { saveFormData } = useUser();
+    const initialData = route.params || {};
+
+    const [formData, setFormData] = useState({
+        selectedProject: initialData.selectedProject || '',
+        selectedInspector: initialData.selectedInspector || '',
+        selectedPersonInControl: initialData.selectedPersonInControl || '',
+        selectedProjectDirector: initialData.selectedProjectDirector || '',
+        selectedDivisionalDirector: initialData.selectedDivisionalDirector || '',
+        generalComments: '',
+        advisory: '',
+        signature: null,
+        formSections: {},
+    });
+
     const [refreshing, setRefreshing] = useState(false);
-    const [generalComments, setGeneralComments] = useState('');
-    const [advisory, setAdvisory] = useState('');
-    const [signature, setSignature] = useState(null);
-    const [formSections, setFormSections] = useState({});
     const [isLoading, setIsLoading] = useState(false);
+    const [showPerformance, setShowPerformance] = useState(false);
+    const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+    const questionsPerPage = 3;
+
+    const sections = Object.entries(hsFormQuestions);
+    const totalPages = Math.ceil((sections.length + 3) / questionsPerPage);
 
     const signatureRef = useRef();
+    const scrollViewRef = useRef();
 
- 
     useEffect(() => {
-        if (!db) {
-            Alert.alert('Warning', 'Database is not initialized. Some features may not work properly.');
+        if (formData.selectedProject) {
+            setShowPerformance(true);
         }
-        loadFormData()
-    }, [db]);
+    }, [formData.selectedProject]);
 
-    const clearSignature = () => {
-        signatureRef.current.clearSignature();
-        setSignature(null);
-    };
-
-    const handleSignature = (signature) => {
-        if (signature) {
-            setSignature(signature);
-        }
-    };
+    useEffect(() => {
+        navigation.setOptions({
+            header: () => (
+                <CustomHsHeader
+                    sections={sections}
+                    currentSectionIndex={currentSectionIndex}
+                    onSectionChange={(index) => {
+                        setCurrentSectionIndex(index);
+                        scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+                    }}
+                    formData={formData}
+                />
+            ),
+        });
+    }, [navigation, currentSectionIndex, formData, sections]);
 
     const onRefresh = useCallback(() => {
         setRefreshing(true);
@@ -129,19 +131,44 @@ const HsCreateForm = () => {
         }, 2000);
     }, []);
 
+    const handleInputChange = (field, value) => {
+        setFormData(prevData => ({
+            ...prevData,
+            [field]: value
+        }));
+    };
+    const updateFormSection = useCallback((sectionKey, sectionData) => {
+
+        setFormData(prevData => {
+            const updatedFormSections = {
+                ...prevData.formSections,
+                [sectionKey]: sectionData // Тук съхраняваме целия обект с данни
+            };
+           
+            
+            return {
+                ...prevData,
+                formSections: updatedFormSections
+            };
+        });
+    }, []);
+
+    useEffect(() => {
+    
+    }, [formData]);
+  
     const handleSave = async () => {
         if (isLoading) return;
     
         setIsLoading(true);
         try {
-            // Обработване на изображенията във всяка секция на формуляра
             const updatedFormSections = await Promise.all(
-                Object.entries(formSections).map(async ([sectionKey, sectionData]) => {
+                Object.entries(formData.formSections).map(async ([sectionKey, sectionData]) => {
                     const updatedQuestions = await Promise.all(
                         Object.entries(sectionData.images || {}).map(async ([questionId, images]) => {
                             const updatedImages = await Promise.all(
                                 images.map(async (image) => {
-                                    const savedUri = await saveImage(image.uri); // Запазване на изображението и връщане на новия URI
+                                    const savedUri = await saveImage(image.uri);
                                     return { ...image, uri: savedUri };
                                 })
                             );
@@ -158,206 +185,221 @@ const HsCreateForm = () => {
                 })
             );
     
-            const data = {
-                selectedProject,
-                selectedInspector,
-                selectedPersonInControl,
-                selectedProjectDirector,
-                selectedDivisionalDirector,
-                generalComments,
-                advisory,
-                signature,
+            const dataToSave = {
+                ...formData,
                 formSections: Object.fromEntries(updatedFormSections),
                 date: new Date().toISOString().split('T')[0],
                 status: 'Draft',
             };
     
-            await saveFormData(data); // Запазване на данните в базата
-            Alert.alert('Success', 'Inspection saved successfully!', [
-                { text: 'OK', onPress: () => navigation.goBack() }
-            ]);
+            await saveFormData(dataToSave);
         } catch (error) {
-            console.error('Error saving form:', error);
-            Alert.alert('Error', 'There was a problem saving the inspection. Please try again.');
+            Alert.alert('Error while saving form', 'Please try again.');
         } finally {
             setIsLoading(false);
         }
     };
     
     const handleSubmit = () => {
-        // To be implemented in the future
-        Alert.alert('Info', 'Submit functionality will be implemented later.');
+     
     };
 
-    const updateFormSection = (sectionKey, sectionData) => {
-        setFormSections(prev => ({
-            ...prev,
-            [sectionKey]: sectionData
-        }));
-    };
-
-    const PerformanceChart = ({ performance }) => (
-        <View style={styles.performanceContainer}>
-            <Text style={styles.previousReportText}>Previous Report: Roberts Glen, Meadow, Pateltown, PE21 8PT</Text>
-            <Image
-                source={{ uri: projects.find(p => p.id === selectedProject)?.imageUrl }}
-                style={styles.projectImage}
+    const renderQuestions = () => {
+        const startIndex = currentSectionIndex;
+        const endIndex = startIndex + 1;
+    
+        const questionEntries = sections.slice(startIndex, endIndex).map(([key, section]) => (
+            <FormSection 
+                key={key} 
+                section={section} 
+                updateFormSection={(sectionData) => updateFormSection(key, sectionData)}
             />
-            <Svg height="150" width="150">
-                <SvgLinearGradient id="grad" x1="0" y1="0" x2="1" y2="0">
-                    <Stop offset="0%" stopColor="#FF0000" stopOpacity="1" />
-                    <Stop offset="25%" stopColor="#FFA500" stopOpacity="1" />
-                    <Stop offset="50%" stopColor="#FFFF00" stopOpacity="1" />
-                    <Stop offset="75%" stopColor="#90EE90" stopOpacity="1" />
-                    <Stop offset="100%" stopColor="#00FF00" stopOpacity="1" />
-                </SvgLinearGradient>
-                <Circle
-                    cx="75"
-                    cy="75"
-                    r="70"
-                    stroke="#ddd"
-                    strokeWidth="10"
-                    fill="transparent"
-                />
-                <Circle
-                    cx="75"
-                    cy="75"
-                    r="70"
-                    stroke="url(#grad)"
-                    strokeWidth="10"
-                    fill="transparent"
-                    strokeDasharray={`${performance * 4.4} ${440 - performance * 4.4}`}
-                    strokeLinecap="round"
-                    transform="rotate(-90 75 75)"
-                />
-                <SvgText
-                    x="75"
-                    y="75"
-                    fontSize="24"
-                    fill={Colors.WHITE}
-                    textAnchor="middle"
-                    alignmentBaseline="central"
-                >
-                    {`${performance}%`}
-                </SvgText>
-            </Svg>
-            <Text style={styles.performanceText}>Performance</Text>
-            <Text style={styles.performanceText}>NCN: 5</Text>
-            <Text style={styles.performanceText}>John Doe - ACME Corp</Text>
-            <Text style={styles.performanceText}>Date: {new Date().toLocaleDateString()}</Text>
-        </View>
-    );
-
-    const renderPicker = (label, value, setValue, items) => (
-        <View style={styles.pickerContainer}>
-            <Text style={styles.label}>{label}</Text>
-            <LinearGradient
-                colors={['#2c3e50', '#3498db']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.pickerWrapper}
-            >
-                <Picker
-                    selectedValue={value}
-                    onValueChange={(itemValue) => setValue(itemValue)}
-                    style={styles.picker}
-                    dropdownIconColor={Colors.BLACK}
-                >
-                    <Picker.Item label={`Select ${label}`} value="" color={Colors.BLACK} />
-                    {items.map((item) => (
-                        <Picker.Item key={item.id} label={item.name} value={item.id} color={Colors.BLACK} />
-                    ))}
-                </Picker>
-            </LinearGradient>
-        </View>
-    );
+            
+        ));
+    
+        if (currentSectionIndex === sections.length - 1) {
+            questionEntries.push(
+                <StyledView className="mb-4" key="general-comments">
+                    <StyledText className="text-lg font-semibold mb-2 text-white">General Comments</StyledText>
+                    <StyledTextInput
+                        className="bg-white p-2 rounded border border-gray-300"
+                        style={applyFontToStyle({ bold: true })}
+                        multiline
+                        numberOfLines={4}
+                        value={formData.generalComments}
+                        onChangeText={(text) => handleInputChange('generalComments', text)}
+                        placeholder="Enter general comments here"
+                        placeholderTextColor={Colors.GRAY}
+                    />
+                </StyledView>,
+                <StyledView className="mb-4" key="advisory">
+                    <StyledText className="text-lg font-semibold mb-2 text-white">Advisory</StyledText>
+                    <StyledTextInput
+                        className="bg-white p-2 rounded border border-gray-300"
+                        multiline
+                        style={applyFontToStyle({ bold: true })}
+                        numberOfLines={4}
+                        value={formData.advisory}
+                        onChangeText={(text) => handleInputChange('advisory', text)}
+                        placeholder="Enter advisory notes here"
+                        placeholderTextColor={Colors.GRAY}
+                    />
+                </StyledView>,
+                <StyledView className="mb-4" key="signature">
+                    <StyledText className="text-lg font-semibold mb-2 text-white">Signature</StyledText>
+                    <SignatureField 
+                        ref={signatureRef} 
+                        onSign={(signature) => handleInputChange('signature', signature)} 
+                    />
+                </StyledView>,
+                <View style={styles.buttonContainer} key="buttons">
+                    <TouchableOpacity 
+                        style={[styles.button, { backgroundColor: Colors.GREEN }]}
+                        onPress={handleSave}
+                        disabled={isLoading}
+                    >
+                        <Text style={[applyFontToStyle(), styles.buttonText]}>{isLoading ? 'Saving...' : 'Save'}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                        style={[styles.button, { backgroundColor: Colors.GRAY }]}
+                        onPress={handleSubmit}
+                    >
+                        <Text style={[applyFontToStyle(), styles.buttonText]}>Submit</Text>
+                    </TouchableOpacity>
+                </View>
+            );
+        }
+    
+        return questionEntries;
+    };
 
     return (
-        <ScrollView
-            style={styles.container}
-            refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }
-        >
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-                <View>
-                    <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                        <MaterialIcons name="arrow-back" size={24} color={Colors.WHITE} />
-                        <Text style={styles.backButtonText}>Back</Text>
-                    </TouchableOpacity>
-
-                    <Text style={styles.formTitle}>New Health & Safety Inspection</Text>
-
-                    {showPerformance && selectedProject && (
-                        <PerformanceChart performance={projects.find(p => p.id === selectedProject)?.performance || 0} />
+        <SafeAreaView style={styles.container}>
+            <StyledScrollView
+                ref={scrollViewRef}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                }
+                contentContainerStyle={styles.contentContainer}
+            >
+                <StyledView className="p-4" style={{ marginTop: 60 }}>
+                    {showPerformance && formData.selectedProject && initialData.projectData && (
+                        <PerformanceChart 
+                            performance={initialData.projectData.performance || 0}
+                            projectData={{
+                                previousReport: initialData.projectData.previousReport || "No previous report",
+                                imageUrl: initialData.projectData.imageUrl,
+                                ncn: initialData.projectData.ncn || 0,
+                                inspector: initialData.projectData.inspector || "No inspector assigned"
+                            }}
+                        />
                     )}
 
-                    <View style={styles.formContainer}>
-                        {renderPicker('Project number', selectedProject, (value) => {
-                            setSelectedProject(value);
-                            setShowPerformance(true);
-                        }, projects)}
-                        {renderPicker('Inspection completed in the presence of', selectedInspector, setSelectedInspector, inspectors)}
-                        {renderPicker('Person in Control of Site', selectedPersonInControl, setSelectedPersonInControl, personsInControl)}
-                        {renderPicker('Project Director', selectedProjectDirector, setSelectedProjectDirector, projectDirectors)}
-                        {renderPicker('Divisional Director', selectedDivisionalDirector, setSelectedDivisionalDirector, divisionalDirectors)}
-                    </View>
+                    {renderQuestions()}
 
-                    {Object.entries(hsFormQuestions).map(([key, section]) => (
-                        <FormSection 
-                            key={key} 
-                            section={section} 
-                            updateFormSection={(sectionData) => updateFormSection(key, sectionData)}
-                        />
-                    ))}
+                </StyledView>
+            </StyledScrollView>
 
-                    <View style={styles.additionalSection}>
-                        <Text style={styles.additionalSectionTitle}>General Comments</Text>
-                        <TextInput
-                            style={styles.additionalSectionInput}
-                            multiline
-                            numberOfLines={4}
-                            value={generalComments}
-                            onChangeText={setGeneralComments}
-                            placeholder="Enter general comments here"
-                            placeholderTextColor={Colors.PLACEHOLDER_TEXT}
-                        />
-                    </View>
+            <View style={styles.paginationContainer}>
+                {currentSectionIndex > 0 && (
+                    <TouchableOpacity
+                        style={[styles.paginationButton, styles.paginationBorder]}
+                        onPress={() => setCurrentSectionIndex(prev => Math.max(prev - 1, 0))}
+                    >
+                        <MaterialIcons name="arrow-back-ios" size={24} color={Colors.WHITE} />
+                        <Text style={[applyFontToStyle(), { color: Colors.WHITE }]}>Back</Text>
+                    </TouchableOpacity>
+                )}
 
-                    <View style={styles.additionalSection}>
-                        <Text style={styles.additionalSectionTitle}>Advisory</Text>
-                        <TextInput
-                            style={styles.additionalSectionInput}
-                            multiline
-                            numberOfLines={4}
-                            value={advisory}
-                            onChangeText={setAdvisory}
-                            placeholder="Enter advisory here"
-                            placeholderTextColor={Colors.PLACEHOLDER_TEXT}
-                        />
-                    </View>
+                <Text style={[applyFontToStyle({ medium: true }), { color: Colors.WHITE }, styles.paginationText]}>
+                    Section {currentSectionIndex + 1} / {sections.length}
+                </Text>
 
-                    <View style={styles.signatureSection}>
-                        <Text style={styles.signatureSectionTitle}>Signed by Harmonix Compliance Representative</Text>
-                        <SignatureField ref={signatureRef} onSign={handleSignature} />
-                    </View>
-
-                    <View style={styles.buttonContainer}>
-                        <TouchableOpacity 
-                            style={[styles.button, styles.saveButton, isLoading && styles.disabledButton]} 
-                            onPress={handleSave}
-                            disabled={isLoading}
-                        >
-                            <Text style={styles.buttonText}>{isLoading ? 'Saving...' : 'Save'}</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={[styles.button, styles.submitButton]} onPress={handleSubmit}>
-                            <Text style={styles.buttonText}>Submit</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </TouchableWithoutFeedback>
-        </ScrollView>
+                {currentSectionIndex < sections.length - 1 && (
+                    <TouchableOpacity
+                        style={[styles.paginationButton, styles.paginationBorder]}
+                        onPress={() => setCurrentSectionIndex(prev => Math.min(prev + 1, sections.length - 1))}
+                    >
+                        <Text style={[applyFontToStyle(), { color: Colors.WHITE }]}>Next</Text>
+                        <MaterialIcons name="arrow-forward-ios" size={24} color={Colors.WHITE} />
+                    </TouchableOpacity>
+                )}
+            </View>
+        </SafeAreaView>
     );
 };
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#161d31',
+    },
+    contentContainer: {
+        paddingBottom: 80,
+    },
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 20,
+        marginBottom: 20,
+    },
+    button: {
+        flex: 1,
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        borderRadius: 8,
+        marginHorizontal: 8,
+    },
+    buttonText: {
+        color: '#FFF',
+        textAlign: 'center',
+    },
+    paginationContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: Colors.BACKGROUND,
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+    },
+    paginationButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    paginationBorder: {
+        borderColor: Colors.BACKGROUND_DARK,
+        borderWidth: 1,
+        padding: 8,
+        borderRadius: 4,
+    },
+    paginationText: {
+        paddingHorizontal: 16,
+    },
+    signatureContainer: {
+        borderWidth: 1,
+        borderColor: Colors.GRAY,
+        backgroundColor: Colors.WHITE,
+        height: 200,
+        marginBottom: 16,
+        position: 'relative',
+    },
+    clearButton: {
+        position: 'absolute',
+        bottom: 5,
+        right: 5,
+        backgroundColor: Colors.GRAY,
+        paddingHorizontal: 10,
+        borderRadius: 8,
+        paddingVertical: 5,
+    },
+    clearText: {
+        color: Colors.WHITE,
+        textAlign: 'center',
+    },
+});
 
 export default HsCreateForm;

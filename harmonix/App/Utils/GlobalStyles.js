@@ -8,11 +8,11 @@ const selectFont = (options = {}) => {
     fontFamily = 'System';
   } else {
     if (options.bold) {
-      fontFamily = 'Roboto-Bold';
+      fontFamily = 'Montserrat-Bold';
     } else if (options.medium) {
-      fontFamily = 'Roboto-Medium';
+      fontFamily = 'Montserrat-Medium';
     } else {
-      fontFamily = 'Roboto-Regular';
+      fontFamily = 'Montserrat-Regular';
     }
   }
 
