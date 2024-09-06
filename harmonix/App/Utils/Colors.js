@@ -27,7 +27,7 @@ export default {
     FORM_TEXT: '#b4b7bd',
     RED_BORDER: '#ea5455',
     GRAY: '#808080',
-    GREEN: '#4CAF50',
-    AMBER: '#FFC107',
-    RED: '#F44336'
+    GREEN: '#28C76F',
+    AMBER: '#FF9F43',
+    RED: '#EA5455'
 };

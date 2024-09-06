@@ -147,6 +147,7 @@ const InspectionModal = ({ isVisible, onClose, onStartInspection }) => {
         right: 0,
         height: '90%',
       }}
+      
       className="bg-gray-800 rounded-t-3xl"
     >
       <StyledView className="flex-1">

@@ -168,7 +168,7 @@ const FormSection = ({ section, updateFormSection }) => {
                 <View className="flex-row justify-between mt-4">
                     <TouchableOpacity onPress={() => handleAddNote(question.id)} className="flex-row items-center">
                         <MaterialIcons name="note-add" size={24} color={Colors.WHITE} />
-                        <Text style={applyFontToStyle({}, 'regular', 16)} className="text-white ml-2">Add Note</Text>
+                        <Text style={applyFontToStyle({}, 'regular', 16)} className="text-white ml-2">Comment</Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => handleAddMedia(question.id)} className="flex-row items-center">
                         <MaterialIcons name="photo-library" size={24} color={Colors.WHITE} />

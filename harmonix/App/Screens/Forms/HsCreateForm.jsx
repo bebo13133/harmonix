@@ -364,8 +364,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     paginationBorder: {
-        borderColor: Colors.BACKGROUND_DARK,
-        borderWidth: 1,
+        // borderColor: Colors.BACKGROUND_DARK,
+        // borderWidth: 1,
         padding: 8,
         borderRadius: 4,
     },

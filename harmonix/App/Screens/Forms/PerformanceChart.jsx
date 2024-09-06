@@ -11,19 +11,21 @@ const StyledText = styled(Text);
 const StyledImage = styled(Image);
 
 const PerformanceChart = ({ performance, projectData }) => (
-  <StyledScrollView className="bg-gray-100 mb-4">
-    <StyledView className="p-4">
-      <StyledText style={applyFontToStyle({}, 'bold', 22)} className="mb-2 text-gray-800">Performance Overview</StyledText>
-      <StyledView className="bg-white rounded-lg shadow-md p-4 mb-4">
-        <StyledText style={applyFontToStyle({}, 'regular', 17)} className="text-gray-600 mb-2">Previous Report: {projectData.previousReport}</StyledText>
+  <StyledScrollView className=" mb-4" >
+    <StyledView className="p-4"  style={{backgroundColor: Colors.BACKGROUND_DARK, borderRadius:20}}>
+      <StyledText style={applyFontToStyle({}, 'bold', 22)} className="mb-2 text-white bold">Performance Overview</StyledText>
+      <StyledView className=" rounded-lg shadow-md p-4 mb-4"
+        style={{backgroundColor: Colors.BACKGROUND,}}
+      >
+        <StyledText style={applyFontToStyle({}, 'bold', 17)} className="text-white bold mb-2">Previous Report: {projectData.previousReport}</StyledText>
         <StyledImage
           source={{ uri: projectData.imageUrl }}
           className="w-full h-40 rounded-md mb-4"
         />
         <StyledView className="flex-row justify-between items-center">
           <StyledView className="flex-1">
-            <StyledText style={applyFontToStyle({}, 'bold', 24)} className="text-gray-800">{performance}%</StyledText>
-            <StyledText style={applyFontToStyle({}, 'regular', 17)} className="text-gray-600">Overall Performance</StyledText>
+            <StyledText style={applyFontToStyle({}, 'bold', 24)} className="text-white bold">{performance}%</StyledText>
+            <StyledText style={applyFontToStyle({}, 'regular', 17)} className="text-white">Overall Performance</StyledText>
           </StyledView>
           <Svg height="100" width="100">
             <LinearGradient id="grad" x1="0" y1="0" x2="1" y2="0">
@@ -64,18 +66,18 @@ const PerformanceChart = ({ performance, projectData }) => (
           </Svg>
         </StyledView>
       </StyledView>
-      <StyledView className="bg-white rounded-lg shadow-md p-4">
+      <StyledView className=" rounded-lg shadow-md p-4"  style={{backgroundColor: Colors.BACKGROUND,}}>
         <StyledView className="flex-row justify-between mb-2">
-          <StyledText style={applyFontToStyle({}, 'regular', 17)} className="text-gray-600">NCN:</StyledText>
-          <StyledText style={applyFontToStyle({}, 'bold', 17)} className="text-gray-800">{projectData.ncn}</StyledText>
+          <StyledText style={applyFontToStyle({}, 'regular', 17)} className="text-white">NCN:</StyledText>
+          <StyledText style={applyFontToStyle({}, 'bold', 17)} className="text-white">{projectData.ncn}</StyledText>
         </StyledView>
         <StyledView className="flex-row justify-between mb-2">
-          <StyledText style={applyFontToStyle({}, 'regular', 17)} className="text-gray-600">Inspector:</StyledText>
-          <StyledText style={applyFontToStyle({}, 'bold', 17)} className="text-gray-800">{projectData.inspector}</StyledText>
+          <StyledText style={applyFontToStyle({}, 'regular', 17)} className="text-white">Inspector:</StyledText>
+          <StyledText style={applyFontToStyle({}, 'bold', 17)} className="text-white">{projectData.inspector}</StyledText>
         </StyledView>
         <StyledView className="flex-row justify-between">
-          <StyledText style={applyFontToStyle({}, 'regular', 17)} className="text-gray-600">Date:</StyledText>
-          <StyledText style={applyFontToStyle({}, 'bold', 17)} className="text-gray-800">{new Date().toLocaleDateString()}</StyledText>
+          <StyledText style={applyFontToStyle({}, 'regular', 17)} className="text-white">Date:</StyledText>
+          <StyledText style={applyFontToStyle({}, 'bold', 17)} className="text-white">{new Date().toLocaleDateString()}</StyledText>
         </StyledView>
       </StyledView>
     </StyledView>

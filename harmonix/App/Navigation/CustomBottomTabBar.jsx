@@ -21,9 +21,9 @@ const TabButton = ({ icon, label, isActive, onPress }) => (
     <StyledText 
       style={[
         applyFontToStyle({}, isActive ? 'bold' : 'medium', 16), 
-        { color: isActive ? Colors.WHITE : Colors.GRAY }
+        { color: isActive ? Colors.WHITE : Colors.WHITE }
       ]}
-      className="mt-1" 
+      className="mt-1 mb-2" 
     >
       {label}
     </StyledText>
@@ -93,13 +93,13 @@ export default function CustomBottomTabBar({ activeTab, switchTab }) {
         {/* Left group */}
         <StyledView className="flex-row flex-1 justify-start">
           <TabButton 
-            icon={<FontAwesome name="home" size={22} color={activeTab === 'Home' ? Colors.WHITE : Colors.GRAY} />}
+            icon={<FontAwesome name="home" size={22} color={activeTab === 'Home' ? Colors.WHITE : Colors.PRIMARY} />}
             label="Home"
             isActive={activeTab === 'Home'}
             onPress={() => switchTab('Home')}
           />
           <TabButton 
-            icon={<Feather name="search" size={22} color={activeTab === 'Search' ? Colors.WHITE : Colors.GRAY} />}
+            icon={<Feather name="search" size={22} color={activeTab === 'Search' ? Colors.WHITE : Colors.PRIMARY} />}
             label="Search"
             isActive={activeTab === 'Search'}
             onPress={() => switchTab('Search')}
@@ -122,13 +122,13 @@ export default function CustomBottomTabBar({ activeTab, switchTab }) {
         {/* Right group */}
         <StyledView className="flex-row flex-1 justify-end">
           <TabButton 
-            icon={<Ionicons name="notifications" size={22} color={activeTab === 'Notifications' ? Colors.WHITE : Colors.GRAY} />}
+            icon={<Ionicons name="notifications" size={22} color={activeTab === 'Notifications' ? Colors.WHITE : Colors.PRIMARY} />}
             label="Notify"
             isActive={activeTab === 'Notifications'}
             onPress={() => switchTab('Notifications')}
           />
           <TabButton 
-            icon={<FontAwesome name="user" size={22} color={activeTab === 'ProfileSettings' ? Colors.WHITE : Colors.GRAY} />}
+            icon={<FontAwesome name="user" size={22} color={activeTab === 'ProfileSettings' ? Colors.WHITE : Colors.PRIMARY} />}
             label="Profile"
             isActive={activeTab === 'ProfileSettings'}
             onPress={() => switchTab('ProfileSettings')}
