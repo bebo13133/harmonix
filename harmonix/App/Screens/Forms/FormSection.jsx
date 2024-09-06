@@ -1,27 +1,30 @@
-
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, Modal } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { MaterialIcons } from '@expo/vector-icons';
+import { View, Text, TouchableOpacity, TextInput, Modal, ScrollView, Image, Alert } from 'react-native';
+import { MaterialIcons, AntDesign } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
 import Colors from '../../Utils/Colors';
-import styles from './styles';
+import { styled } from 'nativewind';
+import ImageView from "react-native-image-viewing";
+import { applyFontToStyle } from '../../Utils/GlobalStyles';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const CheckBox = ({ selected, onPress, color }) => (
-    <TouchableOpacity onPress={onPress} style={[styles.checkbox, { borderColor: color }]}>
-        {selected && <View style={[styles.checkboxInner, { backgroundColor: color }]} />}
-    </TouchableOpacity>
-);
+const StyledView = styled(View);
+const StyledText = styled(Text);
 
 const FormSection = ({ section, updateFormSection }) => {
-    const [expanded, setExpanded] = useState(false);
     const [selectedStatuses, setSelectedStatuses] = useState({});
     const [comments, setComments] = useState({});
     const [images, setImages] = useState({});
-    const [modalVisible, setModalVisible] = useState(false);
-    const [modalContent, setModalContent] = useState(null);
-    const [previewImage, setPreviewImage] = useState(null);
+    const [noteModalVisible, setNoteModalVisible] = useState(false);
+    const [mediaModalVisible, setMediaModalVisible] = useState(false);
+    const [currentQuestionId, setCurrentQuestionId] = useState(null);
+    const [noteText, setNoteText] = useState('');
+    const [imageIndex, setImageIndex] = useState(0);
+    const [isImageViewVisible, setIsImageViewVisible] = useState(false);
+    const [previousStatusModalVisible, setPreviousStatusModalVisible] = useState(false);
+    const [currentQuestion, setCurrentQuestion] = useState(null);
+
+    const insets = useSafeAreaInsets();
 
     useEffect(() => {
         updateFormSection({
@@ -31,10 +34,6 @@ const FormSection = ({ section, updateFormSection }) => {
         });
     }, [selectedStatuses, comments, images]);
 
-    const toggleExpanded = () => {
-        setExpanded(!expanded);
-    };
-
     const handleStatusChange = (questionId, status) => {
         setSelectedStatuses(prev => ({
             ...prev,
@@ -42,27 +41,52 @@ const FormSection = ({ section, updateFormSection }) => {
         }));
     };
 
-    const handleCommentChange = (questionId, comment) => {
+    const handleAddNote = (questionId) => {
+        setCurrentQuestionId(questionId);
+        setNoteText(comments[questionId] || '');
+        setNoteModalVisible(true);
+    };
+
+    const handleSaveNote = () => {
         setComments(prev => ({
             ...prev,
-            [questionId]: comment
+            [currentQuestionId]: noteText
         }));
+        setNoteModalVisible(false);
     };
 
-    const getImageSize = async (uri) => {
-        try {
-            const fileInfo = await FileSystem.getInfoAsync(uri);
-            return fileInfo.size;
-        } catch (error) {
-            console.error('Грешка при получаване на размера на изображението:', error);
-            return null;
+    const handleAddMedia = (questionId) => {
+        setCurrentQuestionId(questionId);
+        setMediaModalVisible(true);
+    };
+
+    const handleTakePhoto = async () => {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Permission Required', 'We need permission to access the camera.');
+            return;
         }
+
+        let result = await ImagePicker.launchCameraAsync({
+            allowsEditing: false,
+            aspect: [4, 3],
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            const newImage = { uri: result.assets[0].uri };
+            setImages(prev => ({
+                ...prev,
+                [currentQuestionId]: [...(prev[currentQuestionId] || []), newImage]
+            }));
+        }
+        setMediaModalVisible(false);
     };
 
-    const handleImagePick = async (questionId) => {
+    const handleChooseImage = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
-            alert('Съжаляваме, но се нуждаем от разрешение за достъп до галерията!');
+            Alert.alert('Permission Required', 'We need permission to access the media library.');
             return;
         }
 
@@ -74,40 +98,19 @@ const FormSection = ({ section, updateFormSection }) => {
         });
 
         if (!result.canceled) {
-            const newImages = await Promise.all(result.assets.map(async (asset) => {
-                const size = await getImageSize(asset.uri);
-                return { uri: asset.uri, size };
-            }));
-
+            const newImages = result.assets.map(asset => ({ uri: asset.uri }));
             setImages(prev => ({
                 ...prev,
-                [questionId]: [...(prev[questionId] || []), ...newImages]
+                [currentQuestionId]: [...(prev[currentQuestionId] || []), ...newImages]
             }));
         }
+        setMediaModalVisible(false);
     };
 
-    const handleCameraCapture = async (questionId) => {
-        const { status } = await ImagePicker.requestCameraPermissionsAsync();
-        if (status !== 'granted') {
-            alert('Съжаляваме, но се нуждаем от разрешение за достъп до камерата!');
-            return;
-        }
-
-        let result = await ImagePicker.launchCameraAsync({
-            allowsEditing: false,
-            aspect: [4, 3],
-            quality: 1,
-        });
-
-        if (!result.canceled) {
-            const size = await getImageSize(result.assets[0].uri);
-            const newImage = { uri: result.assets[0].uri, size };
-
-            setImages(prev => ({
-                ...prev,
-                [questionId]: [...(prev[questionId] || []), newImage]
-            }));
-        }
+    const handleImagePreview = (questionId, index) => {
+        setCurrentQuestionId(questionId);
+        setImageIndex(index);
+        setIsImageViewVisible(true);
     };
 
     const handleDeleteImage = (questionId, index) => {
@@ -115,138 +118,193 @@ const FormSection = ({ section, updateFormSection }) => {
             ...prev,
             [questionId]: prev[questionId].filter((_, i) => i !== index)
         }));
+        if (images[questionId].length === 1) {
+            setIsImageViewVisible(false);
+        }
     };
 
     const showPreviousStatusModal = (question) => {
-        setModalContent(question);
-        setModalVisible(true);
-    };
-
-    const showImagePreview = (uri) => {
-        setPreviewImage(uri);
+        setCurrentQuestion(question);
+        setPreviousStatusModalVisible(true);
     };
 
     const renderQuestion = (question) => {
         const status = selectedStatuses[question.id] || 'N/A';
-        const statusColor = status === 'Green' ? Colors.GREEN : status === 'Amber' ? Colors.AMBER : status === 'Red' ? Colors.RED : Colors.GRAY;
+        const statusColors = {
+            'N/A': Colors.GRAY,
+            'Green': Colors.GREEN,
+            'Amber': Colors.AMBER,
+            'Red': Colors.RED
+        };
 
         return (
-            <View key={question.id} style={styles.questionContainer}>
-                <View style={styles.questionHeader}>
-                    <Text style={[styles.questionText, { color: statusColor }]}>{question.text}</Text>
-                    {question.previousStatus && question.previousStatus !== 'N/A' && question.previousStatus !== 'Green' && (
+            <StyledView key={question.id} className="mb-4 p-2 rounded-lg" style={{ backgroundColor: Colors.BACKGROUND }}>
+                <StyledView className="flex-row justify-between items-center mb-3">
+                    <Text style={applyFontToStyle({}, 'bold', 22)} className="text-white flex-1">{question.text}</Text>
+                    {question.previousStatus && (question.previousStatus === 'Amber' || question.previousStatus === 'RED') && (
                         <TouchableOpacity onPress={() => showPreviousStatusModal(question)}>
-                            <MaterialIcons name="warning" size={24} color={question.previousStatus === 'Amber' ? Colors.AMBER : Colors.RED} />
+                            <MaterialIcons 
+                                name="warning" 
+                                size={24} 
+                                color={question.previousStatus === 'Amber' ? Colors.AMBER : Colors.RED} 
+                            />
                         </TouchableOpacity>
                     )}
+                </StyledView>
+
+                {['N/A', 'Green', 'Amber', 'Red'].map(statusOption => (
+                    <TouchableOpacity
+                        key={statusOption}
+                        onPress={() => handleStatusChange(question.id, statusOption)}
+                        className={`py-4 px-4 mb-3 rounded-lg`}
+                        style={{
+                            backgroundColor: selectedStatuses[question.id] === statusOption ? statusColors[statusOption] : Colors.BACKGROUND_DARK,
+                        }}
+                    >
+                        <Text style={applyFontToStyle({}, 'medium', 18)} className="text-center text-white">{statusOption}</Text>
+                    </TouchableOpacity>
+                ))}
+
+                <View className="flex-row justify-between mt-4">
+                    <TouchableOpacity onPress={() => handleAddNote(question.id)} className="flex-row items-center">
+                        <MaterialIcons name="note-add" size={24} color={Colors.WHITE} />
+                        <Text style={applyFontToStyle({}, 'regular', 16)} className="text-white ml-2">Add Note</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => handleAddMedia(question.id)} className="flex-row items-center">
+                        <MaterialIcons name="photo-library" size={24} color={Colors.WHITE} />
+                        <Text style={applyFontToStyle({}, 'regular', 16)} className="text-white ml-2">Media</Text>
+                    </TouchableOpacity>
                 </View>
-                <View style={styles.checkboxesContainer}>
-                    {['N/A', 'Green', 'Amber', 'Red'].map((checkboxStatus) => (
-                        <View key={checkboxStatus} style={styles.checkboxWrapper}>
-                            <CheckBox
-                                selected={status === checkboxStatus}
-                                onPress={() => handleStatusChange(question.id, checkboxStatus)}
-                                color={checkboxStatus === 'N/A' ? Colors.GRAY : checkboxStatus === 'Green' ? Colors.GREEN : checkboxStatus === 'Amber' ? Colors.AMBER : Colors.RED}
-                            />
-                            <Text style={styles.checkboxLabel}>{checkboxStatus}</Text>
-                        </View>
+
+                <ScrollView horizontal className="mt-4">
+                    {images[question.id]?.map((image, index) => (
+                        <TouchableOpacity key={index} onPress={() => handleImagePreview(question.id, index)}>
+                            <View className="mr-2">
+                                <Image source={{ uri: image.uri }} className="w-24 h-24 rounded" />
+                            </View>
+                        </TouchableOpacity>
                     ))}
-                </View>
-                {status !== 'N/A' && (
-                    <View style={styles.additionalFieldsContainer}>
-                        <TextInput
-                            style={[styles.commentInput, { borderColor: statusColor }]}
-                            placeholder="Add a comment"
-                            value={comments[question.id] || ''}
-                            onChangeText={(text) => handleCommentChange(question.id, text)}
-                            multiline={true}
-                            numberOfLines={4}
-                        />
-                        <View style={styles.imageButtonsContainer}>
-                            <TouchableOpacity style={[styles.imagePickerButton, { backgroundColor: statusColor }]} onPress={() => handleImagePick(question.id)}>
-                                <Text style={styles.imagePickerButtonText}>Choose Images</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={[styles.imagePickerButton, { backgroundColor: statusColor }]} onPress={() => handleCameraCapture(question.id)}>
-                                <Text style={styles.imagePickerButtonText}>Take Photo</Text>
-                            </TouchableOpacity>
-                        </View>
-                        <ScrollView horizontal style={styles.imagesContainer}>
-                            {images[question.id]?.map((image, index) => (
-                                <View key={index} style={styles.imageWrapper}>
-                                    <TouchableOpacity onPress={() => showImagePreview(image.uri)}>
-                                        <Image source={{ uri: image.uri }} style={styles.image} />
-                                    </TouchableOpacity>
-                                    <Text style={styles.imageSize}>Size: {(image.size / 1024).toFixed(2)} KB</Text>
-                                    <TouchableOpacity
-                                        style={styles.deleteImageButton}
-                                        onPress={() => handleDeleteImage(question.id, index)}
-                                    >
-                                        <MaterialIcons name="delete" size={24} color={Colors.RED} />
-                                    </TouchableOpacity>
-                                </View>
-                            ))}
-                        </ScrollView>
-                    </View>
-                )}
-            </View>
+                </ScrollView>
+            </StyledView>
         );
     };
 
     return (
-        <View style={styles.sectionContainer}>
-        <TouchableOpacity onPress={toggleExpanded}>
-            <LinearGradient
-                colors={expanded ? ['#8B0000', '#4B0000'] : [Colors.BACKGROUND, Colors.BACKGROUND]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={[styles.sectionHeader, { opacity: expanded ? 0.6 : 1 }]}
-            >
-                <View style={styles.sectionHeaderContent}>
-                    <Text style={styles.sectionTitle}>{section.title}</Text>
-                    <MaterialIcons name={expanded ? "expand-less" : "expand-more"} size={24} color={Colors.WHITE} />
-                </View>
-            </LinearGradient>
-        </TouchableOpacity>
-        {expanded && (
-            <LinearGradient
-                colors={['#2c3e50', '#3498db']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.expandedContent}
-            >
-          {section.questions.map(renderQuestion)}
-        </LinearGradient>
-            )}
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={modalVisible}
-                onRequestClose={() => setModalVisible(false)}
-            >
-                <View style={styles.modalContainer}>
-                    <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>{modalContent?.text}</Text>
-                        <Text style={styles.modalDescription}>{modalContent?.previousStatusDescription}</Text>
-                        <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
-                            <Text style={styles.closeButtonText}>Close</Text>
-                        </TouchableOpacity>
+        <StyledView className="p-1 bg-background-dark rounded-lg mb-4" style={{paddingTop:40}}>
+            <StyledText style={applyFontToStyle({}, 'bold', 24)} className="text-white mb-4">{section.title}</StyledText>
+
+            {section.questions.map(renderQuestion)}
+
+            <Modal visible={noteModalVisible} transparent={true}>
+                <View className="flex-1 bg-opacity-75" style={{ backgroundColor: Colors.BACKGROUND, paddingTop: insets.top, paddingBottom: insets.bottom }}>
+                    <View className="bg-background-dark p-4 rounded-lg" style={{ height: '40%' }}>
+                        <View className="flex-row justify-between mb-4">
+                            <TouchableOpacity onPress={() => setNoteModalVisible(false)}>
+                                <MaterialIcons name="close" size={24} color={Colors.WHITE} />
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={handleSaveNote}>
+                                <MaterialIcons name="check" size={24} color={Colors.WHITE} />
+                            </TouchableOpacity>
+                        </View>
+                        <TextInput
+                            className="bg-background p-4 rounded-lg text-white"
+                            style={applyFontToStyle({}, 'regular', 18)}
+                            multiline
+                            numberOfLines={4}
+                            autoFocus={true}
+                            placeholder="Enter note"
+                            placeholderTextColor={Colors.WHITE}
+                            value={noteText}
+                            onChangeText={setNoteText}
+                        />
                     </View>
                 </View>
             </Modal>
-            <Modal
-                animationType="fade"
-                transparent={true}
-                visible={!!previewImage}
-                onRequestClose={() => setPreviewImage(null)}
-            >
-                <View style={styles.previewModalContainer}>
-                    <Image source={{ uri: previewImage }} style={styles.previewImage} resizeMode="contain" />
-                    <TouchableOpacity onPress={() => setPreviewImage(null)} style={styles.closePreviewButton}>
-                        <MaterialIcons name="close" size={24} color={Colors.WHITE} />
+
+            <Modal visible={mediaModalVisible} transparent={true} animationType="slide">
+                <View className="absolute bottom-0 left-0 right-0 p-4 rounded-t-lg" style={{ backgroundColor: Colors.BACKGROUND, minHeight: 200, paddingBottom: insets.bottom }}>
+                    <Text style={applyFontToStyle({}, 'bold', 20)} className="text-white mb-4">Add Media</Text>
+                    <TouchableOpacity onPress={handleTakePhoto} className="flex-row items-center mb-4">
+                        <MaterialIcons name="photo-camera" size={24} color={Colors.WHITE} />
+                        <Text style={applyFontToStyle({}, 'regular', 18)} className="text-white ml-2">Take Photo</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={handleChooseImage} className="flex-row items-center mb-4">
+                        <MaterialIcons name="photo-library" size={24} color={Colors.WHITE} />
+                        <Text style={applyFontToStyle({}, 'regular', 18)} className="text-white ml-2">Choose Image</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => setMediaModalVisible(false)} className="mt-4">
+                        <Text style={applyFontToStyle({}, 'medium', 18)} className="text-center text-white">Cancel</Text>
                     </TouchableOpacity>
                 </View>
             </Modal>
-        </View>
+
+            <ImageView
+                images={images[currentQuestionId]?.map(img => ({ uri: img.uri })) || []}
+                imageIndex={imageIndex}
+                visible={isImageViewVisible}
+                onRequestClose={() => setIsImageViewVisible(false)}
+                HeaderComponent={({ imageIndex }) => (
+                    <View style={{ padding: 20, flexDirection: 'row', justifyContent: 'space-between', paddingTop: insets.top }}>
+                        <TouchableOpacity onPress={() => setIsImageViewVisible(false)}>
+                            <MaterialIcons name="arrow-back" size={26} color={Colors.WHITE} />
+                        </TouchableOpacity>
+                        <TouchableOpacity 
+                            onPress={() => {
+                                Alert.alert(
+                                    "Delete Image",
+                                    "Are you sure you want to delete this image?",
+                                    [
+                                        { text: "Cancel", style: "cancel" },
+                                        { 
+                                            text: "Delete", 
+                                            onPress: () => handleDeleteImage(currentQuestionId, imageIndex),
+                                            style: "destructive"
+                                        }
+                                    ]
+                                );
+                            }}
+                            style={{ alignItems: 'center' }}
+                        >
+                            <AntDesign name="delete" size={24} color="red" />
+                            <Text style={applyFontToStyle({}, 'regular', 16)} className="text-white mt-1">Delete</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
+                FooterComponent={({ imageIndex }) => (
+                    <View style={{ padding: 20, paddingBottom: insets.bottom }}>
+                        <Text style={applyFontToStyle({}, 'regular', 16)} className="text-white text-center">
+                            {imageIndex + 1} / {images[currentQuestionId]?.length}
+                        </Text>
+                    </View>
+                )}
+            />
+
+            <Modal
+                visible={previousStatusModalVisible}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setPreviousStatusModalVisible(false)}
+            >
+                <StyledView className="flex-1 justify-center items-center bg-black bg-opacity-50" style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
+                    <StyledView className="bg-background-dark p-4 rounded-lg w-4/5">
+                        <StyledText style={applyFontToStyle({}, 'bold', 22)} className="text-white mb-2">Previous Status</StyledText>
+                        {currentQuestion && (
+                            <>
+                                <StyledText style={applyFontToStyle({}, 'regular', 18)} className="text-white mb-2">Status: {currentQuestion.previousStatus}</StyledText>
+                                <StyledText style={applyFontToStyle({}, 'regular', 18)} className="text-white mb-2">Date: {currentQuestion.previousStatusDate}</StyledText>
+                                <StyledText style={applyFontToStyle({}, 'regular', 18)} className="text-white mb-4">Description: {currentQuestion.previousStatusDescription}</StyledText>
+                            </>
+                        )}
+                        <TouchableOpacity
+                            onPress={() => setPreviousStatusModalVisible(false)}
+                            className="bg-blue-500 p-2 rounded-lg"
+                        >
+                            <StyledText style={applyFontToStyle({}, 'medium', 18)} className="text-white text-center">Close</StyledText>
+                        </TouchableOpacity>
+                    </StyledView>
+                </StyledView>
+            </Modal>
+        </StyledView>
     );
 };
 

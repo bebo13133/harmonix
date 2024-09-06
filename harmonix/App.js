@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 
 import { UserProvider, useUser } from "./App/Contexts/UserContext";
 import { AuthGuard, PublicGuard } from "./App/Guards/Guards";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 const AppContent = () => {
   const { isAuthenticated } = useUser();
@@ -26,9 +27,7 @@ export default function App() {
         'Montserrat-Regular': require('./assets/fonts/Montserrat-Regular.ttf'),
         'Montserrat-Medium': require('./assets/fonts/Montserrat-Medium.ttf'),
         'Montserrat-Bold': require('./assets/fonts/Montserrat-Bold.ttf'),
-        'Roboto-Regular': require('./assets/fonts/Roboto-Regular.ttf'),
-        'Roboto-Medium': require('./assets/fonts/Roboto-Medium.ttf'),
-        'Roboto-Bold': require('./assets/fonts/Roboto-Bold.ttf'),
+      
       });
       setFontsLoaded(true);
     }
@@ -41,9 +40,11 @@ export default function App() {
   }
 
   return (
+    <SafeAreaProvider>
     <UserProvider>
       <AppContent />
     </UserProvider>
+    </SafeAreaProvider>
   );
 }
 

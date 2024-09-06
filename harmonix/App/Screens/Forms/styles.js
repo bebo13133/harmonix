@@ -12,8 +12,8 @@ const selectFont = (options = {}) => {
                 ? 'System'
                 : 'System'
             : options.bold
-                ? 'Roboto-Bold'
-                : 'Roboto-Regular',
+                ? 'Montserrat-Bold'
+                : 'Montserrat-Regular',
         fontWeight: options.bold ? 'bold' : 'normal',
     };
 };
