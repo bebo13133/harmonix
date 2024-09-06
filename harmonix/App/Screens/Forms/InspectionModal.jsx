@@ -54,7 +54,7 @@ const CustomPicker = ({ label, value, setValue, items }) => {
       <StyledText style={applyFontToStyle({}, 'medium', 18)} className="text-white mb-2">{label}</StyledText>
       <StyledTouchableOpacity 
         className="bg-gray-700 rounded-md p-3 flex-row justify-between items-center"
-        style={getShadowStyle(5)}
+        style={[getShadowStyle(5),  { backgroundColor: Colors.BACKGROUND }]}
         onPress={() => setIsExpanded(!isExpanded)}
       >
         <StyledText style={applyFontToStyle({}, 'regular', 16)} className="text-white">
@@ -65,7 +65,7 @@ const CustomPicker = ({ label, value, setValue, items }) => {
       {isExpanded && (
         <StyledView 
           className="bg-gray-600 rounded-md mt-1"
-          style={getShadowStyle(5)}
+          style={[getShadowStyle(5),{borderBottomLeftRadius:10, borderBottomRightRadius:10, overflow: 'hidden'}]}
         >
           {items.map((item) => (
             <StyledTouchableOpacity

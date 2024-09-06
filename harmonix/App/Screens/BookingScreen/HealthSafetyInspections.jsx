@@ -1,86 +1,30 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TouchableOpacity, SectionList, StyleSheet, SafeAreaView, StatusBar, Animated, Platform } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import { MaterialIcons } from '@expo/vector-icons';
+import React, { useRef, useState } from 'react';
+import { View, Text, TouchableOpacity, SectionList, StyleSheet, StatusBar, Platform } from 'react-native';
+import { MaterialIcons, Ionicons } from '@expo/vector-icons';
+import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import Colors from '../../Utils/Colors';
 import Sizes from '../../Utils/Sizes';
-import { applyFontToStyle, globalBoldTextStyle } from '../../Utils/GlobalStyles';
+import { applyFontToStyle } from '../../Utils/GlobalStyles';
 import moment from 'moment';
 
 const mockData = [
-  { id: 1, projectNumber: 'PRJ001', date: '2024-09-13', address: '123 Main St, London', completedBy: 'Dev Team A', status: 'Closed', score: 95, updates: 2 },
-  { id: 2, projectNumber: 'PRJ002', date: '2024-09-12', address: '456 Oak Ave, Manchester', completedBy: '', status: 'Open', score: 75, updates: 1 },
-  { id: 3, projectNumber: 'PRJ003', date: '2024-09-11', address: '789 Pine Rd, Birmingham', completedBy: '', status: 'Draft', score: 0, updates: 0 },
-  { id: 4, projectNumber: 'PRJ004', date: '2024-09-10', address: '101 Elm St, Leeds', completedBy: 'Dev Team B', status: 'Closed', score: 88, updates: 3 },
-  { id: 5, projectNumber: 'PRJ005', date: '2024-09-09', address: '202 Oak Ln, Liverpool', completedBy: '', status: 'Open', score: 60, updates: 1 },
-  { id: 6, projectNumber: 'PRJ006', date: '2024-09-08', address: '303 Maple Ave, Glasgow', completedBy: '', status: 'Draft', score: 0, updates: 0 },
-  { id: 7, projectNumber: 'PRJ007', date: '2024-09-07', address: '404 Birch Rd, Edinburgh', completedBy: 'Dev Team C', status: 'Closed', score: 92, updates: 2 },
-  { id: 8, projectNumber: 'PRJ008', date: '2024-09-06', address: '505 Cedar St, Bristol', completedBy: '', status: 'Open', score: 70, updates: 1 },
-  { id: 9, projectNumber: 'PRJ009', date: '2024-09-05', address: '606 Pine Ave, Sheffield', completedBy: '', status: 'Draft', score: 0, updates: 0 },
-  { id: 10, projectNumber: 'PRJ010', date: '2024-09-04', address: '707 Oak Rd, Newcastle', completedBy: 'Dev Team A', status: 'Closed', score: 85, updates: 2 },
-  { id: 11, projectNumber: 'PRJ011', date: '2024-09-03', address: '123 Main St, London', completedBy: 'Dev Team A', status: 'Closed', score: 95, updates: 2 },
-  { id: 12, projectNumber: 'PRJ012', date: '2024-09-02', address: '456 Oak Ave, Manchester', completedBy: '', status: 'Open', score: 75, updates: 1 },
-  { id: 13, projectNumber: 'PRJ013', date: '2024-09-01', address: '789 Pine Rd, Birmingham', completedBy: '', status: 'Draft', score: 0, updates: 0 },
-  { id: 14, projectNumber: 'PRJ014', date: '2024-08-31', address: '101 Elm St, Leeds', completedBy: 'Dev Team B', status: 'Closed', score: 88, updates: 3 },
-  { id: 15, projectNumber: 'PRJ015', date: '2024-08-30', address: '202 Oak Ln, Liverpool', completedBy: '', status: 'Open', score: 60, updates: 1 },
-  { id: 16, projectNumber: 'PRJ010', date: '2024-09-04', address: '707 Oak Rd, Newcastle', completedBy: 'Dev Team A', status: 'Closed', score: 85, updates: 2 },
-  { id: 17, projectNumber: 'PRJ011', date: '2024-09-03', address: '123 Main St, London', completedBy: 'Dev Team A', status: 'Closed', score: 95, updates: 2 },
-  { id: 18, projectNumber: 'PRJ012', date: '2024-09-02', address: '456 Oak Ave, Manchester', completedBy: '', status: 'Open', score: 75, updates: 1 },
-  { id: 19, projectNumber: 'PRJ013', date: '2024-09-01', address: '789 Pine Rd, Birmingham', completedBy: '', status: 'Draft', score: 0, updates: 0 },
-  { id: 20, projectNumber: 'PRJ014', date: '2024-08-31', address: '101 Elm St, Leeds', completedBy: 'Dev Team B', status: 'Closed', score: 88, updates: 3 },
-  { id: 21, projectNumber: 'PRJ015', date: '2024-08-30', address: '202 Oak Ln, Liverpool', completedBy: '', status: 'Open', score: 60, updates: 1 },
+  { id: 1, projectNumber: 'PRJ001', date: moment().format('YYYY-MM-DD'), address: '123 Main St, London', status: 'Draft', completionPercentage: 67, score: 85, formType: 'healthSafety' },
+  { id: 2, projectNumber: 'PRJ002', date: '2024-09-12', address: '456 Oak Ave, Manchester', status: 'Pending Upload', completionPercentage: 100, score: 92, formType: 'environmental' },
+  { id: 3, projectNumber: 'PRJ003', date: '2024-09-11', address: '789 Pine Rd, Birmingham', status: 'Draft', completionPercentage: 45, score: 78, formType: 'qualityAssurance' },
+  { id: 4, projectNumber: 'PRJ004', date: '2024-09-10', address: '101 Elm St, Leeds', status: 'Pending Upload', completionPercentage: 100, score: 95, formType: 'documentControl' },
+  { id: 5, projectNumber: 'PRJ005', date: '2024-09-09', address: '202 Oak Ln, Liverpool', status: 'Draft', completionPercentage: 80, score: 88, formType: 'healthSafety' },
+  { id: 6, projectNumber: 'PRJ006', date: '2024-09-08', address: '303 Maple Ave, Glasgow', status: 'Draft', completionPercentage: 60, score: 72, formType: 'environmental' },
+  { id: 7, projectNumber: 'PRJ007', date: '2024-09-07', address: '404 Birch Rd, Edinburgh', status: 'Pending Upload', completionPercentage: 100, score: 90, formType: 'qualityAssurance' },
+  { id: 8, projectNumber: 'PRJ008', date: '2024-09-06', address: '505 Cedar St, Bristol', status: 'Draft', completionPercentage: 75, score: 83, formType: 'documentControl' },
+  { id: 9, projectNumber: 'PRJ009', date: '2024-09-05', address: '606 Pine Ave, Sheffield', status: 'Draft', completionPercentage: 50, score: 70, formType: 'healthSafety' },
+  { id: 10, projectNumber: 'PRJ010', date: '2024-09-04', address: '707 Oak Rd, Newcastle', status: 'Pending Upload', completionPercentage: 100, score: 93, formType: 'environmental' },
+  { id: 11, projectNumber: 'PRJ011', date: '2024-09-03', address: '808 Elm Ln, Cardiff', status: 'Draft', completionPercentage: 85, score: 89, formType: 'qualityAssurance' },
+  { id: 12, projectNumber: 'PRJ012', date: '2024-09-02', address: '909 Birch Ave, Belfast', status: 'Draft', completionPercentage: 70, score: 81, formType: 'documentControl' },
+  { id: 13, projectNumber: 'PRJ013', date: '2024-09-01', address: '111 Cedar Rd, Southampton', status: 'Pending Upload', completionPercentage: 100, score: 94, formType: 'healthSafety' },
+  { id: 14, projectNumber: 'PRJ014', date: '2024-08-31', address: '222 Pine St, Portsmouth', status: 'Draft', completionPercentage: 55, score: 75, formType: 'environmental' },
+  { id: 15, projectNumber: 'PRJ015', date: '2024-08-30', address: '333 Oak Ave, Leicester', status: 'Draft', completionPercentage: 90, score: 91, formType: 'qualityAssurance' },
 ];
-
-const CustomSwitch = ({ value, onValueChange }) => {
-  const [toggleAnimation] = useState(new Animated.Value(value ? 1 : 0));
-
-  useEffect(() => {
-    Animated.timing(toggleAnimation, {
-      toValue: value ? 1 : 0,
-      duration: 200,
-      useNativeDriver: false,
-    }).start();
-  }, [value]);
-
-  const toggleSwitch = () => {
-    onValueChange(!value);
-  };
-
-  const switchTranslate = toggleAnimation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [2, 68],
-  });
-
-  const textTranslate = toggleAnimation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -40],
-  });
-
-  return (
-    <TouchableOpacity
-      activeOpacity={0.8}
-      onPress={toggleSwitch}
-      style={[
-        styles.switchContainer,
-        { backgroundColor: value ? Colors.STATUS_CLOSED : Colors.STATUS_OPEN }
-      ]}
-    >
-      <Animated.View
-        style={[
-          styles.switchThumb,
-          { transform: [{ translateX: switchTranslate }] }
-        ]}
-      />
-      <Animated.Text style={[
-        styles.switchLabel,
-        globalBoldTextStyle,
-        { color: Colors.WHITE, transform: [{ translateX: textTranslate }] }
-      ]}>
-        {value ? 'Closed' : 'Open'}
-      </Animated.Text>
-    </TouchableOpacity>
-  );
-};
 
 const groupInspectionsByDate = (data) => {
   const today = moment().startOf('day');
@@ -117,55 +61,65 @@ const groupInspectionsByDate = (data) => {
   return sections.filter(section => section.data.length > 0);
 };
 
-const filterData = (data, count) => {
-  if (count === 'ALL') return data;
-  return data.slice(0, parseInt(count, 10));
+const getFormTypeIcon = (formType) => {
+  switch (formType) {
+    case 'healthSafety':
+      return 'fitness';
+    case 'environmental':
+      return 'leaf';
+    case 'qualityAssurance':
+      return 'checkmark-circle';
+    case 'documentControl':
+      return 'document-text';
+    default:
+      return 'help-circle';
+  }
 };
 
-const renderItem = ({ item }) => (
-  <View style={styles.card} accessibilityLabel={`Inspection ${item.projectNumber}`}>
-    <View style={styles.cardHeader}>
-      <Text style={[styles.projectNumber, applyFontToStyle({}, 'bold', Sizes.FONT_SIZE_LARGE)]}>{item.projectNumber}</Text>
-      <Text style={[styles.date, applyFontToStyle({}, 'regular', Sizes.FONT_SIZE_LARGE)]}>{item.date}</Text>
+const renderItem = ({ item }, navigation) => (
+  <TouchableOpacity 
+    style={styles.card} 
+    accessibilityLabel={`Inspection ${item.projectNumber}`}
+    onPress={() => navigation.navigate('InspectionDetails', { inspection: item })}
+  >
+    <View style={styles.cardContent}>
+      <View style={styles.iconContainer}>
+        <Ionicons name={getFormTypeIcon(item.formType)} size={24} color={Colors.WHITE} />
+      </View>
+      <View style={styles.cardMainContent}>
+        <View style={styles.cardHeader}>
+          <Text style={[styles.projectNumber, applyFontToStyle({}, 'bold', Sizes.FONT_SIZE_LARGE + 2)]}>{item.projectNumber}</Text>
+        </View>
+        <Text style={[styles.address, applyFontToStyle({}, 'medium', Sizes.FONT_SIZE_MEDIUM + 2)]}>{item.address}</Text>
+        <View style={styles.cardDetails}>
+          <View style={styles.detailColumn}>
+            <Text style={[styles.detailLabel, applyFontToStyle({}, 'bold', Sizes.FONT_SIZE_SMALL + 4)]}>Status</Text>
+            <Text style={[styles.detailValue, applyFontToStyle({}, 'medium', Sizes.FONT_SIZE_SMALL + 3)]}>
+              {item.status === 'Draft' ? `Draft (${item.completionPercentage}% Complete)` : item.status}
+            </Text>
+          </View>
+          <View style={styles.detailColumn}>
+            <Text style={[styles.detailLabel, applyFontToStyle({}, 'bold', Sizes.FONT_SIZE_SMALL + 4)]}>Score</Text>
+            <Text style={[styles.detailValue, applyFontToStyle({}, 'medium', Sizes.FONT_SIZE_SMALL + 3)]}>
+              {item.score}%
+            </Text>
+          </View>
+        </View>
+      </View>
+      <View style={styles.arrowContainer}>
+        <MaterialIcons name="chevron-right" size={24} color={Colors.TEXT_LIGHT} />
+      </View>
     </View>
-    <Text style={[styles.address, applyFontToStyle({}, 'medium', Sizes.FONT_SIZE_LARGE)]}>{item.address}</Text>
-    <View style={styles.cardDetails}>
-      <View style={[styles.detailColumn, { flex: 2 }]}>
-        <Text style={[styles.detailLabel, applyFontToStyle({}, 'bold', 17)]}>Completed By</Text>
-        <Text style={[styles.detailValue, applyFontToStyle({}, 'medium', 15)]}>{item.completedBy || 'Not completed'}</Text>
-      </View>
-      <View style={styles.detailColumn}>
-        <Text style={[styles.detailLabel, applyFontToStyle({}, 'bold', 17)]}>Status</Text>
-        <Text style={[styles.detailValue, applyFontToStyle({}, 'bold', 15), { textAlign: 'center', color: item.status === 'Closed' ? Colors.STATUS_CLOSED : item.status === 'Open' ? Colors.STATUS_OPEN : Colors.STATUS_DRAFT }]}>{item.status}</Text>
-      </View>
-      <View style={styles.detailColumn}>
-        <Text style={[styles.detailLabel, applyFontToStyle({}, 'bold', 17)]}>Score</Text>
-        <Text style={[styles.detailValue, applyFontToStyle({}, 'bold', 15), { textAlign: 'center' }]}>{item.score}%</Text>
-      </View>
-      <View style={styles.detailColumn}>
-        <Text style={[styles.detailLabel, applyFontToStyle({}, 'bold', 17)]}>Update</Text>
-        <Text style={[styles.detailValue, applyFontToStyle({}, 'bold', 15), { textAlign: 'center' }]}>{item.updates}</Text>
-      </View>
-    </View>
-    <View style={styles.cardFooter}>
-      <TouchableOpacity style={styles.viewButton} accessibilityLabel={`View details of inspection ${item.projectNumber}`}>
-        <Text style={[styles.viewButtonText, applyFontToStyle({}, 'bold', Sizes.FONT_SIZE_MEDIUM)]}>View Details</Text>
-      </TouchableOpacity>
-      <TouchableOpacity accessibilityLabel={`Delete inspection ${item.projectNumber}`}>
-        <MaterialIcons name="delete" size={24} color={Colors.ERROR} />
-      </TouchableOpacity>
-    </View>
-  </View>
+  </TouchableOpacity>
 );
 
 export const HealthSafetyInspections = () => {
-  const [resultsCount, setResultsCount] = useState('ALL');
-  const [showCompleted, setShowCompleted] = useState(true);
   const [showScrollTopButton, setShowScrollTopButton] = useState(false);
   const sectionListRef = useRef(null);
+  const insets = useSafeAreaInsets();
+  const navigation = useNavigation();
 
-  const filteredData = filterData(mockData, resultsCount);
-  const sections = groupInspectionsByDate(filteredData);
+  const sections = groupInspectionsByDate(mockData);
 
   const handleScroll = (event) => {
     const scrollPosition = event.nativeEvent.contentOffset.y;
@@ -181,101 +135,47 @@ export const HealthSafetyInspections = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor={Colors.BACKGROUND_DARK} />
-      <View style={styles.container}>
-        <View style={styles.filters}>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={resultsCount}
-              style={[styles.picker, applyFontToStyle()]}
-              onValueChange={(itemValue) => setResultsCount(itemValue)}
-              accessibilityLabel="Select number of results"
-              itemStyle={applyFontToStyle({}, 'regular', Sizes.FONT_SIZE_MEDIUM)}
-            >
-              <Picker.Item label="ALL" value="ALL" />
-              <Picker.Item label="10" value="10" />
-              <Picker.Item label="20" value="20" />
-              <Picker.Item label="50" value="50" />
-              <Picker.Item label="100" value="100" />
-            </Picker>
-          </View>
-          <CustomSwitch
-            value={showCompleted}
-            onValueChange={setShowCompleted}
+    <SafeAreaProvider>
+      <SafeAreaView style={[styles.safeArea, { paddingTop: insets.top }]}>
+        <StatusBar barStyle="light-content" backgroundColor={Colors.BACKGROUND} />
+        <View style={[styles.container, { paddingBottom: insets.bottom }]}>
+          <SectionList
+            ref={sectionListRef}
+            sections={sections}
+            renderItem={(props) => renderItem(props, navigation)}
+            keyExtractor={item => item.id.toString()}
+            renderSectionHeader={({ section: { title } }) => (
+              <Text style={[styles.sectionHeader, applyFontToStyle({}, 'bold', Sizes.FONT_SIZE_LARGE)]}>{title}</Text>
+            )}
+            contentContainerStyle={[styles.listContainer, { paddingBottom: insets.bottom + Sizes.PADDING }]}
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
+            scrollIndicatorInsets={{ right: 1 }}
+            indicatorStyle="white"
           />
-        </View>
 
-        <SectionList
-          ref={sectionListRef}
-          sections={sections}
-          renderItem={renderItem}
-          keyExtractor={item => item.id.toString()}
-          renderSectionHeader={({ section: { title } }) => (
-            <Text style={[styles.sectionHeader, applyFontToStyle({}, 'bold', Sizes.FONT_SIZE_LARGE)]}>{title}</Text>
+          {showScrollTopButton && (
+            <TouchableOpacity 
+              style={[styles.scrollTopButton, { bottom: insets.bottom + 20 }]} 
+              onPress={scrollToTop}
+            >
+              <MaterialIcons name="arrow-upward" size={24} color={Colors.WHITE} />
+            </TouchableOpacity>
           )}
-          contentContainerStyle={styles.listContainer}
-          onScroll={handleScroll}
-          scrollEventThrottle={16}
-          scrollIndicatorInsets={{ right: 1 }}
-          indicatorStyle="white"
-        />
-
-        {showScrollTopButton && (
-          <TouchableOpacity style={styles.scrollTopButton} onPress={scrollToTop}>
-            <MaterialIcons name="arrow-upward" size={24} color={Colors.WHITE} />
-          </TouchableOpacity>
-        )}
-      </View>
-    </SafeAreaView>
+        </View>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 };
+
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: Colors.BACKGROUND_DARK,
-    paddingTop: 10,
   },
   container: {
     flex: 1,
     padding: 10,
-  },
-  filters: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 28,
-    marginBottom: Sizes.PADDING,
-
-  },
-  pickerContainer: {
-    flex: 2,
-    backgroundColor: Colors.WHITE,
-    borderRadius: Sizes.BORDER_RADIUS,
-    justifyContent: 'center',
-  },
-  picker: {
-    height:12,
-    fontSize: Sizes.FONT_SIZE_MEDIUM,
-  },
-  switchContainer: {
-    width: 105,
-    height: 34,
-    borderRadius: 15,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    overflow: 'hidden',
-  },
-  switchThumb: {
-    width: 30,
-    height: 30,
-    borderRadius: 13,
-    backgroundColor: Colors.WHITE,
-  },
-  switchLabel: {
-    fontSize: Sizes.FONT_SIZE_SMALL,
-    marginLeft: 8,
-    marginRight: 8,
   },
   listContainer: {
     paddingBottom: Sizes.PADDING,
@@ -286,63 +186,58 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: Sizes.CARD_MARGIN_BOTTOM,
   },
+  cardContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  cardMainContent: {
+    flex: 1,
+  },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: 5,
+  },
+  iconContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+    backgroundColor:Colors.BACKGROUND_DARK,
+    width: 40,  // Добавяме фиксирана ширина
+    height: 40, // Добавяме фиксирана височина
+    borderRadius: 20,
   },
   projectNumber: {
-    // fontSize: Sizes.FONT_SIZE_LARGE,
     color: Colors.WHITE,
-  },
-  date: {
-    // fontSize: Sizes.FONT_SIZE_MEDIUM,
-    color: Colors.TEXT_LIGHT,
   },
   address: {
-    // fontSize: Sizes.FONT_SIZE_MEDIUM,
     color: Colors.WHITE,
-    marginBottom: 30,
+    marginBottom: 10,
   },
   cardDetails: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 15,
+    // gap: 80,
+    alignItems: 'center',
   },
-  detailColumn: {
-    flex: 1,
-    gap: 10,
-  },
+  // detailColumn: {
+  //   flex: 1,
+  // },
   detailLabel: {
     color: Colors.TEXT_LIGHT,
-    width: '100%',
-    marginBottom: 5,
-    // fontSize: 15,
-    fontWeight: 'bold',
-    textAlign: 'left',
+    marginBottom: 2,
   },
   detailValue: {
     color: Colors.WHITE,
-    // fontSize: 13,
-    textAlign: 'left',
+   
   },
-  cardFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  arrowContainer: {
+    justifyContent: 'center',
     alignItems: 'center',
-  },
-  viewButton: {
-    backgroundColor: Colors.BUTTON_BACKGROUND,
-    padding: 10,
-    borderRadius: Sizes.BORDER_RADIUS,
-    alignItems: 'center',
-  },
-  viewButtonText: {
-    color: Colors.WHITE,
-    // fontSize: Sizes.FONT_SIZE_SMALL,
+    paddingLeft: 10,
   },
   sectionHeader: {
-    // fontSize: Sizes.FONT_SIZE_LARGE,
     color: Colors.TEXT_LIGHT,
     marginVertical: 10,
     backgroundColor: Colors.BACKGROUND_DARK,
@@ -351,7 +246,6 @@ const styles = StyleSheet.create({
   scrollTopButton: {
     position: 'absolute',
     right: 20,
-    bottom: 20,
     backgroundColor: Colors.PRIMARY,
     borderRadius: Sizes.SCROLL_TOP_BUTTON_SIZE / 2,
     width: Sizes.SCROLL_TOP_BUTTON_SIZE,
@@ -369,7 +263,7 @@ const styles = StyleSheet.create({
         shadowRadius: 3.84,
       },
       android: {
-        elevation: 18, // Увеличаваме стойността на elevation за по-видима сянка
+        elevation: 18,
       },
     }),
   },

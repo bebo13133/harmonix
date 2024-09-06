@@ -1,15 +1,18 @@
 import React, { useState, useRef } from 'react';
-import { View, StyleSheet, Image, SafeAreaView, Platform, TouchableOpacity, Text, Animated } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text, Animated } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Sizes from '../../Utils/Sizes';
 import Colors from '../../Utils/Colors';
-import { globalTextStyle, globalBoldTextStyle } from '../../Utils/GlobalStyles';
+import { applyFontToStyle } from '../../Utils/GlobalStyles';
+import { BellIcon } from "react-native-heroicons/outline";
 
 export default function Header() {
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const menuAnimation = useRef(new Animated.Value(0)).current;
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
 
   const toggleMenu = () => {
     const toValue = isMenuVisible ? 0 : 1;
@@ -37,31 +40,20 @@ export default function Header() {
 
   const handleLogout = () => {
     toggleMenu();
-    //  трябва да добави логиката за излизане от системата
-  
-    // AuthService.logout();
     navigation.navigate('LogoutScreen');
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.header}>
+    <View style={[styles.header, { paddingTop: insets.top }]}>
       <TouchableOpacity onPress={() => navigation.navigate('MainTabs', { screen: 'Home' })}>
-
-
-        <Image 
-          source={{ uri: 'https://harmonix.emage.co.uk/images/logo/logo.png' }} 
-          style={styles.logo} 
-          accessibilityLabel="Лого на Harmonix"
-       
-        />
+        <Text style={[styles.logo, applyFontToStyle({}, 'bold', 26)]}>Harmonix</Text>
+      </TouchableOpacity>
+      <View style={styles.rightSection}>
+        <TouchableOpacity style={styles.bellIcon}>
+          <BellIcon size={26} color={Colors.WHITE} />
         </TouchableOpacity>
-        <TouchableOpacity onPress={toggleMenu}>
-          <Image 
-            source={require('../../../assets/images/bobi.jpg')} 
-            style={styles.userImage} 
-            accessibilityLabel="User Avatar"
-          />
+        <TouchableOpacity onPress={toggleMenu} style={styles.initialsContainer}>
+          <Text style={[styles.initials, applyFontToStyle({}, 'bold', 24)]}>BI</Text>
         </TouchableOpacity>
       </View>
       {isMenuVisible && (
@@ -74,44 +66,56 @@ export default function Header() {
         ]}>
           <TouchableOpacity style={styles.menuItem} onPress={handleSettings}>
             <MaterialIcons name="settings" size={24} color={Colors.TEXT} />
-            <Text style={[styles.menuText, globalTextStyle]}>Настройки</Text>
+            <Text style={[styles.menuText, applyFontToStyle({}, 'regular', 16)]}>Настройки</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
             <MaterialIcons name="logout" size={24} color={Colors.TEXT} />
-            <Text style={[styles.menuText, globalTextStyle]}>Изход</Text>
+            <Text style={[styles.menuText, applyFontToStyle({}, 'regular', 16)]}>Изход</Text>
           </TouchableOpacity>
         </Animated.View>
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    backgroundColor: Colors.BACKGROUND,
-    zIndex: 100,
-  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: Sizes.PADDING,
-    paddingBottom: Sizes.PADDING,
-    paddingTop: Platform.OS === 'android' ? 55 : 0,
+    paddingBottom: Sizes.PADDING -2,
+    backgroundColor: Colors.BACKGROUND,
+    zIndex: 100,
+    marginTop: 15,
+    // borderBottomEndRadius:20,
+    // borderBottomStartRadius:20,
+    overflow: 'hidden',
   },
   logo: {
-    width: Sizes.LOGO_WIDTH,
-    height: Sizes.LOGO_HEIGHT,
-    resizeMode: 'contain',
+    color: Colors.WHITE,
   },
-  userImage: {
-    width: Sizes.USER_IMAGE_SIZE,
-    height: Sizes.USER_IMAGE_SIZE,
+  rightSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  bellIcon: {
+    marginRight: 15,
+  },
+  initialsContainer: {
+    width: Sizes.USER_IMAGE_SIZE_MEDIUM,
+    height: Sizes.USER_IMAGE_SIZE_MEDIUM,
     borderRadius: Sizes.USER_IMAGE_SIZE / 2,
+    backgroundColor: Colors.PRIMARY,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  initials: {
+    color: Colors.WHITE,
   },
   menu: {
     position: 'absolute',
-    top: Platform.OS === 'android' ? 115 : 60,
+    top: 60,
     right: Sizes.PADDING,
     backgroundColor: Colors.WHITE,
     borderRadius: 8,
@@ -133,7 +137,6 @@ const styles = StyleSheet.create({
   },
   menuText: {
     marginLeft: 10,
-    fontSize: 16,
     color: Colors.TEXT,
   },
 });

@@ -6,7 +6,7 @@ export default {
     ERROR: '#FF0000',
     SUCCESS: '#00FF00',
     WARNING: '#FFFF00',
-    BACKGROUND: '#3b4253',
+    BACKGROUND: '#283046',
     CARD_BACKGROUND: 'rgba(255, 255, 255, 0.1)',
     TEXT_LIGHT: '#B0B0B0',
     BACKGROUND_LIGHT: '#7367f0',
