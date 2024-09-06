@@ -156,7 +156,7 @@ const FormSection = ({ section, updateFormSection }) => {
                     <TouchableOpacity
                         key={statusOption}
                         onPress={() => handleStatusChange(question.id, statusOption)}
-                        className={`py-4 px-4 mb-3 rounded-lg`}
+                        className={`py-3.5 px-4 mb-3 rounded-lg`}
                         style={{
                             backgroundColor: selectedStatuses[question.id] === statusOption ? statusColors[statusOption] : Colors.BACKGROUND_DARK,
                         }}

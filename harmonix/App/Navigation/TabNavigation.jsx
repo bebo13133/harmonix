@@ -14,6 +14,7 @@ import { HealthSafetyInspections } from '../Screens/BookingScreen/HealthSafetyIn
 import HsCreateForm from '../Screens/Forms/HsCreateForm';
 import CustomBottomTabBar from './CustomBottomTabBar';
 import CustomHsHeader from '../Screens/Forms/CustomHsHeader';
+import EnvCreateForm from '../Screens/Forms/EnvCreateForm';
 
 const Stack = createStackNavigator();
 const { width } = Dimensions.get('window');
@@ -125,6 +126,13 @@ function HealthSafetyNavigator() {
       <HealthSafetyStack.Screen 
         name="CreateInspectionHs" 
         component={HsCreateForm}
+        options={{
+          header: (props) => <CustomHsHeader {...props} />,
+        }}
+      />
+         <HealthSafetyStack.Screen 
+        name="CreateInspectionEnvironmental" 
+        component={EnvCreateForm}
         options={{
           header: (props) => <CustomHsHeader {...props} />,
         }}
