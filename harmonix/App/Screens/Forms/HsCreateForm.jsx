@@ -5,6 +5,7 @@ import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import Svg, { Path } from 'react-native-svg';
 import { useNavigation } from '@react-navigation/native';
 import { styled } from 'nativewind';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { applyFontToStyle } from '../../Utils/GlobalStyles';
 import hsFormQuestions from './hsFormQuestions';
@@ -66,17 +67,17 @@ const SignatureField = React.forwardRef((props, ref) => {
                 </Svg>
             </PanGestureHandler>
             <TouchableOpacity onPress={() => ref.current.clearSignature()} style={styles.clearButton}>
-                <Text style={[applyFontToStyle(), styles.clearText]}>Clear</Text>
+                <Text style={[applyFontToStyle({}, 'regular', 18), styles.clearText]}>Clear</Text>
             </TouchableOpacity>
         </View>
     );
 });
 
-
 const HsCreateForm = ({ route }) => {
     const navigation = useNavigation();
     const { saveFormData } = useUser();
     const initialData = route.params || {};
+    const insets = useSafeAreaInsets();
 
     const [formData, setFormData] = useState({
         selectedProject: initialData.selectedProject || '',
@@ -119,10 +120,11 @@ const HsCreateForm = ({ route }) => {
                         scrollViewRef.current?.scrollTo({ y: 0, animated: true });
                     }}
                     formData={formData}
+                    topInset={insets.top}
                 />
             ),
         });
-    }, [navigation, currentSectionIndex, formData, sections]);
+    }, [navigation, currentSectionIndex, formData, sections, insets.top]);
 
     const onRefresh = useCallback(() => {
         setRefreshing(true);
@@ -137,26 +139,17 @@ const HsCreateForm = ({ route }) => {
             [field]: value
         }));
     };
-    const updateFormSection = useCallback((sectionKey, sectionData) => {
 
-        setFormData(prevData => {
-            const updatedFormSections = {
+    const updateFormSection = useCallback((sectionKey, sectionData) => {
+        setFormData(prevData => ({
+            ...prevData,
+            formSections: {
                 ...prevData.formSections,
-                [sectionKey]: sectionData // Тук съхраняваме целия обект с данни
-            };
-           
-            
-            return {
-                ...prevData,
-                formSections: updatedFormSections
-            };
-        });
+                [sectionKey]: sectionData
+            }
+        }));
     }, []);
 
-    useEffect(() => {
-    
-    }, [formData]);
-  
     const handleSave = async () => {
         if (isLoading) return;
     
@@ -201,7 +194,7 @@ const HsCreateForm = ({ route }) => {
     };
     
     const handleSubmit = () => {
-     
+        // Implement submit logic
     };
 
     const renderQuestions = () => {
@@ -214,16 +207,15 @@ const HsCreateForm = ({ route }) => {
                 section={section} 
                 updateFormSection={(sectionData) => updateFormSection(key, sectionData)}
             />
-            
         ));
     
         if (currentSectionIndex === sections.length - 1) {
             questionEntries.push(
                 <StyledView className="mb-4" key="general-comments">
-                    <StyledText className="text-lg font-semibold mb-2 text-white">General Comments</StyledText>
+                    <StyledText style={applyFontToStyle({}, 'semibold', 18)} className="mb-2 text-white">General Comments</StyledText>
                     <StyledTextInput
                         className="bg-white p-2 rounded border border-gray-300"
-                        style={applyFontToStyle({ bold: true })}
+                        style={applyFontToStyle({}, 'regular', 16)}
                         multiline
                         numberOfLines={4}
                         value={formData.generalComments}
@@ -233,11 +225,11 @@ const HsCreateForm = ({ route }) => {
                     />
                 </StyledView>,
                 <StyledView className="mb-4" key="advisory">
-                    <StyledText className="text-lg font-semibold mb-2 text-white">Advisory</StyledText>
+                    <StyledText style={applyFontToStyle({}, 'semibold', 18)} className="mb-2 text-white">Advisory</StyledText>
                     <StyledTextInput
                         className="bg-white p-2 rounded border border-gray-300"
                         multiline
-                        style={applyFontToStyle({ bold: true })}
+                        style={applyFontToStyle({}, 'regular', 16)}
                         numberOfLines={4}
                         value={formData.advisory}
                         onChangeText={(text) => handleInputChange('advisory', text)}
@@ -246,7 +238,7 @@ const HsCreateForm = ({ route }) => {
                     />
                 </StyledView>,
                 <StyledView className="mb-4" key="signature">
-                    <StyledText className="text-lg font-semibold mb-2 text-white">Signature</StyledText>
+                    <StyledText style={applyFontToStyle({}, 'semibold', 18)} className="mb-2 text-white">Signature</StyledText>
                     <SignatureField 
                         ref={signatureRef} 
                         onSign={(signature) => handleInputChange('signature', signature)} 
@@ -258,13 +250,13 @@ const HsCreateForm = ({ route }) => {
                         onPress={handleSave}
                         disabled={isLoading}
                     >
-                        <Text style={[applyFontToStyle(), styles.buttonText]}>{isLoading ? 'Saving...' : 'Save'}</Text>
+                        <Text style={[applyFontToStyle({}, 'medium', 18), styles.buttonText]}>{isLoading ? 'Saving...' : 'Save'}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity 
-                        style={[styles.button, { backgroundColor: Colors.GRAY }]}
+                        style={[styles.button, { backgroundColor: Colors.PRIMARY }]}
                         onPress={handleSubmit}
                     >
-                        <Text style={[applyFontToStyle(), styles.buttonText]}>Submit</Text>
+                        <Text style={[applyFontToStyle({}, 'medium', 18), styles.buttonText]}>Submit</Text>
                     </TouchableOpacity>
                 </View>
             );
@@ -274,13 +266,13 @@ const HsCreateForm = ({ route }) => {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { paddingTop: insets.top }]}>
             <StyledScrollView
                 ref={scrollViewRef}
                 refreshControl={
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                 }
-                contentContainerStyle={styles.contentContainer}
+                contentContainerStyle={[styles.contentContainer, { paddingBottom: insets.bottom + 80 }]}
             >
                 <StyledView className="p-4" style={{ marginTop: 60 }}>
                     {showPerformance && formData.selectedProject && initialData.projectData && (
@@ -301,20 +293,18 @@ const HsCreateForm = ({ route }) => {
 
             </StyledScrollView>
           
-                   
-            <View style={styles.paginationContainer}>
+            <View style={[styles.paginationContainer, { paddingBottom: insets.bottom }]}>
                 {currentSectionIndex > 0 && (
                     <TouchableOpacity
                         style={[styles.paginationButton, styles.paginationBorder]}
                         onPress={() => setCurrentSectionIndex(prev => Math.max(prev - 1, 0))}
                     >
                         <MaterialIcons name="arrow-back-ios" size={24} color={Colors.WHITE} />
-      
-                        <Text style={[applyFontToStyle(), { color: Colors.WHITE, fontSize:16,paddingVertical:8 }]}>Back</Text>
+                        <Text style={[applyFontToStyle({}, 'regular', 18), { color: Colors.WHITE, paddingVertical: 8 }]}>Back</Text>
                     </TouchableOpacity>
                 )}
 
-                <Text style={[applyFontToStyle({ medium: true }), { color: Colors.WHITE,fontSize:16 }, styles.paginationText]}>
+                <Text style={[applyFontToStyle({}, 'medium', 18), { color: Colors.WHITE }, styles.paginationText]}>
                     Section {currentSectionIndex + 1} / {sections.length}
                 </Text>
 
@@ -323,7 +313,7 @@ const HsCreateForm = ({ route }) => {
                         style={[styles.paginationButton, styles.paginationBorder]}
                         onPress={() => setCurrentSectionIndex(prev => Math.min(prev + 1, sections.length - 1))}
                     >
-                        <Text style={[applyFontToStyle(), { color: Colors.WHITE,fontSize:16,paddingVertical:8 }]}>Next</Text>
+                        <Text style={[applyFontToStyle({}, 'regular', 18), { color: Colors.WHITE, paddingVertical: 8 }]}>Next</Text>
                         <MaterialIcons name="arrow-forward-ios" size={24} color={Colors.WHITE} />
                     </TouchableOpacity>
                 )}
@@ -339,13 +329,6 @@ const styles = StyleSheet.create({
     },
     contentContainer: {
         paddingBottom: 80,
-      
-    },
-    before: {
-        backgroundColor: Colors.WHITE,
-        height: 15,
-        // paddingHorizontal: 20,
-        width: '100%',
     },
     buttonContainer: {
         flexDirection: 'row',
@@ -371,7 +354,6 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.BACKGROUND,
         borderTopWidth: 6, 
         borderTopColor: Colors.BACKGROUND_DARK, 
-
         position: 'absolute',
         bottom: 0,
         left: 0,
@@ -380,7 +362,6 @@ const styles = StyleSheet.create({
     paginationButton: {
         flexDirection: 'row',
         alignItems: 'center',
-
     },
     paginationBorder: {
         borderColor: Colors.BACKGROUND_DARK,
@@ -390,7 +371,6 @@ const styles = StyleSheet.create({
     },
     paginationText: {
         paddingHorizontal: 16,
-        
     },
     signatureContainer: {
         borderWidth: 1,
@@ -404,14 +384,18 @@ const styles = StyleSheet.create({
         position: 'absolute',
         bottom: 5,
         right: 5,
-        backgroundColor: Colors.GRAY,
+        backgroundColor: Colors.BACKGROUND,
         paddingHorizontal: 10,
         borderRadius: 8,
         paddingVertical: 5,
+        borderColor: Colors.PRIMARY,
+        borderWidth: 2,
+
     },
     clearText: {
         color: Colors.WHITE,
         textAlign: 'center',
+        
     },
 });
 

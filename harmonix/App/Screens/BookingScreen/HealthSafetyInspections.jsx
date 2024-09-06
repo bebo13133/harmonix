@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TouchableOpacity, SectionList, StyleSheet, SafeAreaView, StatusBar, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, SectionList, StyleSheet, SafeAreaView, StatusBar, Animated, Platform } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { MaterialIcons } from '@expo/vector-icons';
 import Colors from '../../Utils/Colors';
 import Sizes from '../../Utils/Sizes';
-import { globalTextStyle, globalMediumTextStyle, globalBoldTextStyle } from '../../Utils/GlobalStyles';
+import { applyFontToStyle, globalBoldTextStyle } from '../../Utils/GlobalStyles';
 import moment from 'moment';
 
 const mockData = [
@@ -48,12 +48,12 @@ const CustomSwitch = ({ value, onValueChange }) => {
 
   const switchTranslate = toggleAnimation.interpolate({
     inputRange: [0, 1],
-    outputRange: [2, 68], 
+    outputRange: [2, 68],
   });
 
   const textTranslate = toggleAnimation.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, -40], 
+    outputRange: [0, -40],
   });
 
   return (
@@ -125,31 +125,31 @@ const filterData = (data, count) => {
 const renderItem = ({ item }) => (
   <View style={styles.card} accessibilityLabel={`Inspection ${item.projectNumber}`}>
     <View style={styles.cardHeader}>
-      <Text style={[styles.projectNumber, globalBoldTextStyle]}>{item.projectNumber}</Text>
-      <Text style={[styles.date, globalTextStyle]}>{item.date}</Text>
+      <Text style={[styles.projectNumber, applyFontToStyle({}, 'bold', Sizes.FONT_SIZE_LARGE)]}>{item.projectNumber}</Text>
+      <Text style={[styles.date, applyFontToStyle({}, 'regular', Sizes.FONT_SIZE_LARGE)]}>{item.date}</Text>
     </View>
-    <Text style={[styles.address, globalMediumTextStyle]}>{item.address}</Text>
+    <Text style={[styles.address, applyFontToStyle({}, 'medium', Sizes.FONT_SIZE_LARGE)]}>{item.address}</Text>
     <View style={styles.cardDetails}>
       <View style={[styles.detailColumn, { flex: 2 }]}>
-        <Text style={[styles.detailLabel, globalTextStyle]}>Completed By</Text>
-        <Text style={[styles.detailValue, globalMediumTextStyle]}>{item.completedBy || 'Not completed'}</Text>
+        <Text style={[styles.detailLabel, applyFontToStyle({}, 'bold', 17)]}>Completed By</Text>
+        <Text style={[styles.detailValue, applyFontToStyle({}, 'medium', 15)]}>{item.completedBy || 'Not completed'}</Text>
       </View>
       <View style={styles.detailColumn}>
-        <Text style={[styles.detailLabel, globalTextStyle]}>Status</Text>
-        <Text style={[styles.detailValue, globalBoldTextStyle, {textAlign:'center', color: item.status === 'Closed' ? Colors.STATUS_CLOSED : item.status === 'Open' ? Colors.STATUS_OPEN : Colors.STATUS_DRAFT }]}>{item.status}</Text>
+        <Text style={[styles.detailLabel, applyFontToStyle({}, 'bold', 17)]}>Status</Text>
+        <Text style={[styles.detailValue, applyFontToStyle({}, 'bold', 15), { textAlign: 'center', color: item.status === 'Closed' ? Colors.STATUS_CLOSED : item.status === 'Open' ? Colors.STATUS_OPEN : Colors.STATUS_DRAFT }]}>{item.status}</Text>
       </View>
       <View style={styles.detailColumn}>
-        <Text style={[styles.detailLabel, globalTextStyle]}>Score</Text>
-        <Text style={[styles.detailValue, globalBoldTextStyle, {textAlign:'center'}]}>{item.score}%</Text>
+        <Text style={[styles.detailLabel, applyFontToStyle({}, 'bold', 17)]}>Score</Text>
+        <Text style={[styles.detailValue, applyFontToStyle({}, 'bold', 15), { textAlign: 'center' }]}>{item.score}%</Text>
       </View>
       <View style={styles.detailColumn}>
-        <Text style={[styles.detailLabel, globalTextStyle]}>Update</Text>
-        <Text style={[styles.detailValue, globalBoldTextStyle,{textAlign:'center'}]}>{item.updates}</Text>
+        <Text style={[styles.detailLabel, applyFontToStyle({}, 'bold', 17)]}>Update</Text>
+        <Text style={[styles.detailValue, applyFontToStyle({}, 'bold', 15), { textAlign: 'center' }]}>{item.updates}</Text>
       </View>
     </View>
     <View style={styles.cardFooter}>
       <TouchableOpacity style={styles.viewButton} accessibilityLabel={`View details of inspection ${item.projectNumber}`}>
-        <Text style={[styles.viewButtonText, globalBoldTextStyle]}>View Details</Text>
+        <Text style={[styles.viewButtonText, applyFontToStyle({}, 'bold', Sizes.FONT_SIZE_MEDIUM)]}>View Details</Text>
       </TouchableOpacity>
       <TouchableOpacity accessibilityLabel={`Delete inspection ${item.projectNumber}`}>
         <MaterialIcons name="delete" size={24} color={Colors.ERROR} />
@@ -157,6 +157,7 @@ const renderItem = ({ item }) => (
     </View>
   </View>
 );
+
 export const HealthSafetyInspections = () => {
   const [resultsCount, setResultsCount] = useState('ALL');
   const [showCompleted, setShowCompleted] = useState(true);
@@ -187,9 +188,10 @@ export const HealthSafetyInspections = () => {
           <View style={styles.pickerContainer}>
             <Picker
               selectedValue={resultsCount}
-              style={[styles.picker, globalTextStyle]}
+              style={[styles.picker, applyFontToStyle()]}
               onValueChange={(itemValue) => setResultsCount(itemValue)}
               accessibilityLabel="Select number of results"
+              itemStyle={applyFontToStyle({}, 'regular', Sizes.FONT_SIZE_MEDIUM)}
             >
               <Picker.Item label="ALL" value="ALL" />
               <Picker.Item label="10" value="10" />
@@ -210,7 +212,7 @@ export const HealthSafetyInspections = () => {
           renderItem={renderItem}
           keyExtractor={item => item.id.toString()}
           renderSectionHeader={({ section: { title } }) => (
-            <Text style={styles.sectionHeader}>{title}</Text>
+            <Text style={[styles.sectionHeader, applyFontToStyle({}, 'bold', Sizes.FONT_SIZE_LARGE)]}>{title}</Text>
           )}
           contentContainerStyle={styles.listContainer}
           onScroll={handleScroll}
@@ -243,6 +245,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 28,
     marginBottom: Sizes.PADDING,
+
   },
   pickerContainer: {
     flex: 2,
@@ -251,7 +254,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   picker: {
-    height: Sizes.PICKER_HEIGHT,
+    height:12,
+    fontSize: Sizes.FONT_SIZE_MEDIUM,
   },
   switchContainer: {
     width: 105,
@@ -288,15 +292,15 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   projectNumber: {
-    fontSize: Sizes.FONT_SIZE_LARGE,
+    // fontSize: Sizes.FONT_SIZE_LARGE,
     color: Colors.WHITE,
   },
   date: {
-    fontSize: Sizes.FONT_SIZE_MEDIUM,
+    // fontSize: Sizes.FONT_SIZE_MEDIUM,
     color: Colors.TEXT_LIGHT,
   },
   address: {
-    fontSize: Sizes.FONT_SIZE_MEDIUM,
+    // fontSize: Sizes.FONT_SIZE_MEDIUM,
     color: Colors.WHITE,
     marginBottom: 30,
   },
@@ -313,13 +317,13 @@ const styles = StyleSheet.create({
     color: Colors.TEXT_LIGHT,
     width: '100%',
     marginBottom: 5,
-    fontSize: 15,
+    // fontSize: 15,
     fontWeight: 'bold',
     textAlign: 'left',
   },
   detailValue: {
     color: Colors.WHITE,
-    fontSize: 13,
+    // fontSize: 13,
     textAlign: 'left',
   },
   cardFooter: {
@@ -335,10 +339,10 @@ const styles = StyleSheet.create({
   },
   viewButtonText: {
     color: Colors.WHITE,
-    fontSize: Sizes.FONT_SIZE_SMALL,
+    // fontSize: Sizes.FONT_SIZE_SMALL,
   },
   sectionHeader: {
-    fontSize: Sizes.FONT_SIZE_LARGE,
+    // fontSize: Sizes.FONT_SIZE_LARGE,
     color: Colors.TEXT_LIGHT,
     marginVertical: 10,
     backgroundColor: Colors.BACKGROUND_DARK,
@@ -348,12 +352,26 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 20,
     bottom: 20,
-    backgroundColor: Colors.BUTTON_BACKGROUND,
+    backgroundColor: Colors.PRIMARY,
     borderRadius: Sizes.SCROLL_TOP_BUTTON_SIZE / 2,
     width: Sizes.SCROLL_TOP_BUTTON_SIZE,
     height: Sizes.SCROLL_TOP_BUTTON_SIZE,
     justifyContent: 'center',
     alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+      },
+      android: {
+        elevation: 18, // Увеличаваме стойността на elevation за по-видима сянка
+      },
+    }),
   },
 });
 

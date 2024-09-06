@@ -1,63 +1,63 @@
-
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Animated, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, Animated, ScrollView, Platform } from 'react-native';
 import { styled } from 'nativewind';
 import { Ionicons } from '@expo/vector-icons';
 import PerformanceChart from './PerformanceChart';
 import { projects, inspectors, personsInControl, projectDirectors, divisionalDirectors } from '../../Utils/mockData';
 import Colors from '../../Utils/Colors';
+import { applyFontToStyle } from '../../Utils/GlobalStyles';
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTouchableOpacity = styled(TouchableOpacity);
 const StyledScrollView = styled(ScrollView);
 
-const FormTypeButton =  ({ title, icon, onPress })  => (
-  <StyledTouchableOpacity
-  className="flex-row items-center justify-between p-4 mb-6 rounded-lg w-full max-w-sm mx-auto"
-  style={{ 
-    backgroundColor: Colors.BACKGROUND,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
+const getShadowStyle = (elevation = 5) => {
+  return Platform.select({
+    ios: {
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
     },
-    shadowOpacity: 0.4,
-    shadowRadius: 4.65,
-    elevation: 8,
-  }}
-  onPress={onPress}
->
-  <StyledView className="flex-row items-center">
-    <Ionicons name={icon} size={24} color="white" style={{ marginRight: 12 }} />
-    <StyledText className="text-white text-lg">{title}</StyledText>
-  </StyledView>
-  <Ionicons name="chevron-forward" size={24} color="white" />
-</StyledTouchableOpacity>
-);
+    android: {
+      elevation: elevation,
+    },
+  });
+};
 
+const FormTypeButton = ({ title, icon, onPress }) => (
+  <StyledTouchableOpacity
+    className="flex-row items-center justify-between p-4 mb-6 rounded-lg w-full max-w-sm mx-auto"
+    style={[
+      { backgroundColor: Colors.BACKGROUND },
+      getShadowStyle(8),
+    ]}
+    onPress={onPress}
+  >
+    <StyledView className="flex-row items-center">
+      <Ionicons name={icon} size={24} color="white" style={{ marginRight: 12 }} />
+      <StyledText style={applyFontToStyle({}, 'medium', 18)} className="text-white">{title}</StyledText>
+    </StyledView>
+    <Ionicons name="chevron-forward" size={24} color="white" />
+  </StyledTouchableOpacity>
+);
 
 const CustomPicker = ({ label, value, setValue, items }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <StyledView className="mb-4">
-      <StyledText className="text-white text-sm mb-2">{label}</StyledText>
+    <StyledView className="mb-7">
+      <StyledText style={applyFontToStyle({}, 'medium', 18)} className="text-white mb-2">{label}</StyledText>
       <StyledTouchableOpacity 
         className="bg-gray-700 rounded-md p-3 flex-row justify-between items-center"
-        style={{
-          shadowColor: "#000",
-          shadowOffset: {
-            width: 0,
-            height: 2,
-          },
-          shadowOpacity: 0.25,
-          shadowRadius: 3.84,
-          elevation: 5,
-        }}
+        style={getShadowStyle(5)}
         onPress={() => setIsExpanded(!isExpanded)}
       >
-        <StyledText className="text-white">
+        <StyledText style={applyFontToStyle({}, 'regular', 16)} className="text-white">
           {value ? items.find(item => item.id === value)?.name : `Select ${label}`}
         </StyledText>
         <Ionicons name={isExpanded ? "chevron-up" : "chevron-down"} size={20} color="white" />
@@ -65,16 +65,7 @@ const CustomPicker = ({ label, value, setValue, items }) => {
       {isExpanded && (
         <StyledView 
           className="bg-gray-600 rounded-md mt-1"
-          style={{
-            shadowColor: "#000",
-            shadowOffset: {
-              width: 0,
-              height: 2,
-            },
-            shadowOpacity: 0.25,
-            shadowRadius: 3.84,
-            elevation: 5,
-          }}
+          style={getShadowStyle(5)}
         >
           {items.map((item) => (
             <StyledTouchableOpacity
@@ -85,7 +76,7 @@ const CustomPicker = ({ label, value, setValue, items }) => {
                 setIsExpanded(false);
               }}
             >
-              <StyledText className="text-white">{item.name}</StyledText>
+              <StyledText style={applyFontToStyle({}, 'regular', 16)} className="text-white">{item.name}</StyledText>
             </StyledTouchableOpacity>
           ))}
         </StyledView>
@@ -93,8 +84,9 @@ const CustomPicker = ({ label, value, setValue, items }) => {
     </StyledView>
   );
 };
+
 const InspectionModal = ({ isVisible, onClose, onStartInspection }) => {
-  const [step, setStep] = useState('formType'); // 'formType' or 'details'
+  const [step, setStep] = useState('formType');
   const [formType, setFormType] = useState('');
   const [selectedProject, setSelectedProject] = useState('');
   const [selectedInspector, setSelectedInspector] = useState('');
@@ -132,7 +124,6 @@ const InspectionModal = ({ isVisible, onClose, onStartInspection }) => {
   const handleBack = () => {
     setStep('formType');
     setFormType('');
-    // Reset all selections
     setSelectedProject('');
     setSelectedInspector('');
     setSelectedPersonInControl('');
@@ -146,59 +137,59 @@ const InspectionModal = ({ isVisible, onClose, onStartInspection }) => {
 
   if (!isVisible) return null;
 
-    return (
-      <Animated.View 
-        style={{ 
-          transform: [{ translateY: translateY }],
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: '90%',
-        }}
-        className="bg-gray-800 rounded-t-3xl"
-      >
-        <StyledView className="flex-1">
-          <StyledTouchableOpacity
-            className="absolute top-4 right-4 z-10"
-            onPress={onClose}
-          >
-            <Ionicons name="close" size={24} color="white" />
-          </StyledTouchableOpacity>
-  
-          {step === 'formType' ? (
-            <StyledScrollView className="flex-1 px-8 pt-16">
-              <StyledText className="text-white text-xl font-bold mb-6 text-center">Select Form Type</StyledText>
-              <StyledView className="items-center">
-                <FormTypeButton 
-                  title="Health & Safety" 
-                  icon="fitness" 
-                  onPress={() => handleFormTypeSelect('healthSafety')} 
-                />
-                <FormTypeButton 
-                  title="Environmental" 
-                  icon="leaf" 
-                  onPress={() => handleFormTypeSelect('environmental')} 
-                />
-                <FormTypeButton 
-                  title="Quality Assurance" 
-                  icon="checkmark-circle" 
-                  onPress={() => handleFormTypeSelect('qualityAssurance')} 
-                />
-                <FormTypeButton 
-                  title="Document Control" 
-                  icon="document-text" 
-                  onPress={() => handleFormTypeSelect('documentControl')} 
-                />
-              </StyledView>
-            </StyledScrollView>
-          ) : (
-            <StyledScrollView className="flex-1">
-            <StyledView className="px-6 pt-6 flex-grow">
+  return (
+    <Animated.View 
+      style={{ 
+        transform: [{ translateY: translateY }],
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: '90%',
+      }}
+      className="bg-gray-800 rounded-t-3xl"
+    >
+      <StyledView className="flex-1">
+        <StyledTouchableOpacity
+          className="absolute top-4 right-4 z-10"
+          onPress={onClose}
+        >
+          <Ionicons name="close" size={24} color="white" />
+        </StyledTouchableOpacity>
+
+        {step === 'formType' ? (
+          <StyledScrollView className="flex-1 px-8 pt-16">
+            <StyledText style={applyFontToStyle({}, 'bold', 22)} className="text-white mb-6 text-center">Select Form Type</StyledText>
+            <StyledView className="items-center">
+              <FormTypeButton 
+                title="Health & Safety" 
+                icon="fitness" 
+                onPress={() => handleFormTypeSelect('healthSafety')} 
+              />
+              <FormTypeButton 
+                title="Environmental" 
+                icon="leaf" 
+                onPress={() => handleFormTypeSelect('environmental')} 
+              />
+              <FormTypeButton 
+                title="Quality Assurance" 
+                icon="checkmark-circle" 
+                onPress={() => handleFormTypeSelect('qualityAssurance')} 
+              />
+              <FormTypeButton 
+                title="Document Control" 
+                icon="document-text" 
+                onPress={() => handleFormTypeSelect('documentControl')} 
+              />
+            </StyledView>
+          </StyledScrollView>
+        ) : (
+          <StyledScrollView className="flex-1">
+            <StyledView className="px-4 pt-6 flex-grow">
               <StyledTouchableOpacity onPress={handleBack} className="mb-4">
                 <Ionicons name="arrow-back" size={24} color="white" />
               </StyledTouchableOpacity>
-              <StyledText className="text-white text-xl font-bold mb-4">New Inspection: {formType}</StyledText>
+              <StyledText style={applyFontToStyle({}, 'bold', 22)} className="text-white mb-4">New Inspection: {formType}</StyledText>
               
               {showPerformance && selectedProject && (
                 <StyledView className="mb-4">
@@ -245,7 +236,6 @@ const InspectionModal = ({ isVisible, onClose, onStartInspection }) => {
                 items={divisionalDirectors}
               />
               
-              {/* Добавяме празен View, за да създадем пространство след последния селект */}
               <StyledView className="h-16" />
             </StyledView>
           </StyledScrollView>
@@ -265,7 +255,7 @@ const InspectionModal = ({ isVisible, onClose, onStartInspection }) => {
                 selectedDivisionalDirector
               })}
             >
-              <StyledText className="text-white text-center font-bold">Start Inspection</StyledText>
+              <StyledText style={applyFontToStyle({}, 'bold', 22)} className="text-white text-center">Start Inspection</StyledText>
             </StyledTouchableOpacity>
           </StyledView>
         )}

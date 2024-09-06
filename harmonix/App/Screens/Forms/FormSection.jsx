@@ -5,6 +5,8 @@ import * as ImagePicker from 'expo-image-picker';
 import Colors from '../../Utils/Colors';
 import { styled } from 'nativewind';
 import ImageView from "react-native-image-viewing";
+import { applyFontToStyle } from '../../Utils/GlobalStyles';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -21,6 +23,8 @@ const FormSection = ({ section, updateFormSection }) => {
     const [isImageViewVisible, setIsImageViewVisible] = useState(false);
     const [previousStatusModalVisible, setPreviousStatusModalVisible] = useState(false);
     const [currentQuestion, setCurrentQuestion] = useState(null);
+
+    const insets = useSafeAreaInsets();
 
     useEffect(() => {
         updateFormSection({
@@ -59,7 +63,7 @@ const FormSection = ({ section, updateFormSection }) => {
     const handleTakePhoto = async () => {
         const { status } = await ImagePicker.requestCameraPermissionsAsync();
         if (status !== 'granted') {
-            alert('Съжаляваме, но се нуждаем от разрешение за достъп до камерата!');
+            Alert.alert('Permission Required', 'We need permission to access the camera.');
             return;
         }
 
@@ -82,7 +86,7 @@ const FormSection = ({ section, updateFormSection }) => {
     const handleChooseImage = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
-            alert('Съжаляваме, но се нуждаем от разрешение за достъп до галерията!');
+            Alert.alert('Permission Required', 'We need permission to access the media library.');
             return;
         }
 
@@ -135,8 +139,8 @@ const FormSection = ({ section, updateFormSection }) => {
 
         return (
             <StyledView key={question.id} className="mb-4 p-2 rounded-lg" style={{ backgroundColor: Colors.BACKGROUND }}>
-                <StyledView className="flex-row justify-between items-center mb-2">
-                    <Text className="text-lg font-bold text-white flex-1">{question.text}</Text>
+                <StyledView className="flex-row justify-between items-center mb-3">
+                    <Text style={applyFontToStyle({}, 'bold', 22)} className="text-white flex-1">{question.text}</Text>
                     {question.previousStatus && (question.previousStatus === 'Amber' || question.previousStatus === 'RED') && (
                         <TouchableOpacity onPress={() => showPreviousStatusModal(question)}>
                             <MaterialIcons 
@@ -152,23 +156,23 @@ const FormSection = ({ section, updateFormSection }) => {
                     <TouchableOpacity
                         key={statusOption}
                         onPress={() => handleStatusChange(question.id, statusOption)}
-                        className={`py-3 px-4 mb-2 rounded-lg`}
+                        className={`py-4 px-4 mb-3 rounded-lg`}
                         style={{
                             backgroundColor: selectedStatuses[question.id] === statusOption ? statusColors[statusOption] : Colors.BACKGROUND_DARK,
                         }}
                     >
-                        <Text className="text-center text-white">{statusOption}</Text>
+                        <Text style={applyFontToStyle({}, 'medium', 18)} className="text-center text-white">{statusOption}</Text>
                     </TouchableOpacity>
                 ))}
 
                 <View className="flex-row justify-between mt-4">
                     <TouchableOpacity onPress={() => handleAddNote(question.id)} className="flex-row items-center">
                         <MaterialIcons name="note-add" size={24} color={Colors.WHITE} />
-                        <Text className="text-white ml-2">Add Note</Text>
+                        <Text style={applyFontToStyle({}, 'regular', 16)} className="text-white ml-2">Add Note</Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => handleAddMedia(question.id)} className="flex-row items-center">
                         <MaterialIcons name="photo-library" size={24} color={Colors.WHITE} />
-                        <Text className="text-white ml-2">Media</Text>
+                        <Text style={applyFontToStyle({}, 'regular', 16)} className="text-white ml-2">Media</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -187,12 +191,12 @@ const FormSection = ({ section, updateFormSection }) => {
 
     return (
         <StyledView className="p-1 bg-background-dark rounded-lg mb-4" style={{paddingTop:40}}>
-            <StyledText className="text-xl font-bold text-white mb-4">{section.title}</StyledText>
+            <StyledText style={applyFontToStyle({}, 'bold', 24)} className="text-white mb-4">{section.title}</StyledText>
 
             {section.questions.map(renderQuestion)}
 
             <Modal visible={noteModalVisible} transparent={true}>
-                <View className="flex-1 bg-opacity-75" style={{ backgroundColor: Colors.BACKGROUND }}>
+                <View className="flex-1 bg-opacity-75" style={{ backgroundColor: Colors.BACKGROUND, paddingTop: insets.top, paddingBottom: insets.bottom }}>
                     <View className="bg-background-dark p-4 rounded-lg" style={{ height: '40%' }}>
                         <View className="flex-row justify-between mb-4">
                             <TouchableOpacity onPress={() => setNoteModalVisible(false)}>
@@ -204,6 +208,7 @@ const FormSection = ({ section, updateFormSection }) => {
                         </View>
                         <TextInput
                             className="bg-background p-4 rounded-lg text-white"
+                            style={applyFontToStyle({}, 'regular', 18)}
                             multiline
                             numberOfLines={4}
                             autoFocus={true}
@@ -217,18 +222,18 @@ const FormSection = ({ section, updateFormSection }) => {
             </Modal>
 
             <Modal visible={mediaModalVisible} transparent={true} animationType="slide">
-                <View className="absolute bottom-0 left-0 right-0 p-4 rounded-t-lg" style={{ backgroundColor: Colors.BACKGROUND, minHeight: 200 }}>
-                    <Text className="text-xl text-white mb-4">Add Media</Text>
+                <View className="absolute bottom-0 left-0 right-0 p-4 rounded-t-lg" style={{ backgroundColor: Colors.BACKGROUND, minHeight: 200, paddingBottom: insets.bottom }}>
+                    <Text style={applyFontToStyle({}, 'bold', 20)} className="text-white mb-4">Add Media</Text>
                     <TouchableOpacity onPress={handleTakePhoto} className="flex-row items-center mb-4">
                         <MaterialIcons name="photo-camera" size={24} color={Colors.WHITE} />
-                        <Text className="text-white ml-2">Take Photo</Text>
+                        <Text style={applyFontToStyle({}, 'regular', 18)} className="text-white ml-2">Take Photo</Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={handleChooseImage} className="flex-row items-center mb-4">
                         <MaterialIcons name="photo-library" size={24} color={Colors.WHITE} />
-                        <Text className="text-white ml-2">Choose Image</Text>
+                        <Text style={applyFontToStyle({}, 'regular', 18)} className="text-white ml-2">Choose Image</Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => setMediaModalVisible(false)} className="mt-4">
-                        <Text className="text-center text-white">Cancel</Text>
+                        <Text style={applyFontToStyle({}, 'medium', 18)} className="text-center text-white">Cancel</Text>
                     </TouchableOpacity>
                 </View>
             </Modal>
@@ -239,7 +244,7 @@ const FormSection = ({ section, updateFormSection }) => {
                 visible={isImageViewVisible}
                 onRequestClose={() => setIsImageViewVisible(false)}
                 HeaderComponent={({ imageIndex }) => (
-                    <View style={{ padding: 20, flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <View style={{ padding: 20, flexDirection: 'row', justifyContent: 'space-between', paddingTop: insets.top }}>
                         <TouchableOpacity onPress={() => setIsImageViewVisible(false)}>
                             <MaterialIcons name="arrow-back" size={26} color={Colors.WHITE} />
                         </TouchableOpacity>
@@ -261,13 +266,13 @@ const FormSection = ({ section, updateFormSection }) => {
                             style={{ alignItems: 'center' }}
                         >
                             <AntDesign name="delete" size={24} color="red" />
-                            <Text style={{ color: Colors.WHITE, fontSize: 12, marginTop: 5 }}>Delete</Text>
+                            <Text style={applyFontToStyle({}, 'regular', 16)} className="text-white mt-1">Delete</Text>
                         </TouchableOpacity>
                     </View>
                 )}
                 FooterComponent={({ imageIndex }) => (
-                    <View style={{ padding: 20 }}>
-                        <Text style={{ color: Colors.WHITE, textAlign: 'center' }}>
+                    <View style={{ padding: 20, paddingBottom: insets.bottom }}>
+                        <Text style={applyFontToStyle({}, 'regular', 16)} className="text-white text-center">
                             {imageIndex + 1} / {images[currentQuestionId]?.length}
                         </Text>
                     </View>
@@ -280,21 +285,21 @@ const FormSection = ({ section, updateFormSection }) => {
                 animationType="fade"
                 onRequestClose={() => setPreviousStatusModalVisible(false)}
             >
-                <StyledView className="flex-1 justify-center items-center bg-black bg-opacity-50">
+                <StyledView className="flex-1 justify-center items-center bg-black bg-opacity-50" style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
                     <StyledView className="bg-background-dark p-4 rounded-lg w-4/5">
-                        <StyledText className="text-lg font-bold text-white mb-2">Previous Status</StyledText>
+                        <StyledText style={applyFontToStyle({}, 'bold', 22)} className="text-white mb-2">Previous Status</StyledText>
                         {currentQuestion && (
                             <>
-                                <StyledText className="text-white mb-2">Status: {currentQuestion.previousStatus}</StyledText>
-                                <StyledText className="text-white mb-2">Date: {currentQuestion.previousStatusDate}</StyledText>
-                                <StyledText className="text-white mb-4">Description: {currentQuestion.previousStatusDescription}</StyledText>
+                                <StyledText style={applyFontToStyle({}, 'regular', 18)} className="text-white mb-2">Status: {currentQuestion.previousStatus}</StyledText>
+                                <StyledText style={applyFontToStyle({}, 'regular', 18)} className="text-white mb-2">Date: {currentQuestion.previousStatusDate}</StyledText>
+                                <StyledText style={applyFontToStyle({}, 'regular', 18)} className="text-white mb-4">Description: {currentQuestion.previousStatusDescription}</StyledText>
                             </>
                         )}
                         <TouchableOpacity
                             onPress={() => setPreviousStatusModalVisible(false)}
                             className="bg-blue-500 p-2 rounded-lg"
                         >
-                            <StyledText className="text-white text-center">Close</StyledText>
+                            <StyledText style={applyFontToStyle({}, 'medium', 18)} className="text-white text-center">Close</StyledText>
                         </TouchableOpacity>
                     </StyledView>
                 </StyledView>

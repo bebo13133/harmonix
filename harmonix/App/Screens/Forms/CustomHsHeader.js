@@ -4,8 +4,9 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { Menu, MenuItem } from 'react-native-material-menu';
 import Colors from '../../Utils/Colors';
 import { useNavigation } from '@react-navigation/native';
+import { applyFontToStyle } from '../../Utils/GlobalStyles';
 
-const CustomHsHeader = ({ sections, currentSectionIndex, onSectionChange, formData }) => {
+const CustomHsHeader = ({ sections, currentSectionIndex, onSectionChange, formData, topInset = 0 }) => {
     const [visible, setVisible] = useState(false);
     const navigation = useNavigation();
 
@@ -24,15 +25,8 @@ const CustomHsHeader = ({ sections, currentSectionIndex, onSectionChange, formDa
         let completedQuestions = 0;
         sectionData.questions.forEach(question => {
             const questionId = question.id;
-            if (formData && formData.formSections && formData.formSections[sectionKey]) {
-                const sectionFormData = formData.formSections[sectionKey];
-                const status = sectionFormData.selectedStatuses && sectionFormData.selectedStatuses[questionId];
-                // console.log('Status for question', {sectionFormData, questionId, status, completedQuestions, totalQuestions  });
-                // console.log('Status', section.WELFARE );
-
-                if (status === 'Green' || status === 'Amber'|| status === 'Red'|| status === 'N/A') {
-                    completedQuestions++;
-                }
+            if (formData?.formSections?.[sectionKey]?.selectedStatuses?.[questionId]) {
+                completedQuestions++;
             }
         });
 
@@ -43,8 +37,12 @@ const CustomHsHeader = ({ sections, currentSectionIndex, onSectionChange, formDa
         ? sections[currentSectionIndex]
         : null;
 
+    const sectionTitle = currentSection && currentSection[1] ? currentSection[1].title : 'Select Section';
+    const questionsCount = currentSection && currentSection[1] && currentSection[1].questions ? currentSection[1].questions.length : 0;
+    const completionPercentage = currentSection ? calculateCompletionPercentage(currentSection) : 0;
+
     return (
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: topInset + 10 }]}>
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                 <MaterialIcons name="arrow-back" size={24} color={Colors.WHITE} />
             </TouchableOpacity>
@@ -54,9 +52,7 @@ const CustomHsHeader = ({ sections, currentSectionIndex, onSectionChange, formDa
                     visible={visible}
                     anchor={
                         <TouchableOpacity onPress={showMenu} style={styles.menuButton}>
-                            <Text style={styles.title}>
-                                {currentSection && currentSection[1] ? currentSection[1].title : 'Select Section'}
-                            </Text>
+                            <Text style={[styles.title, applyFontToStyle({}, 'bold')]}>{sectionTitle}</Text>
                             <MaterialIcons name="arrow-drop-down" size={24} color={Colors.WHITE} />
                         </TouchableOpacity>
                     }
@@ -70,20 +66,19 @@ const CustomHsHeader = ({ sections, currentSectionIndex, onSectionChange, formDa
                                 hideMenu();
                             }}
                         >
-                            {section && section[1] && section[1].title ? section[1].title : `Section ${index + 1}`}
+                            <Text style={applyFontToStyle()}>{section && section[1] && section[1].title ? section[1].title : `Section ${index + 1}`}</Text>
                         </MenuItem>
                     ))}
                 </Menu>
 
-                {currentSection && currentSection[1] && (
-                    <Text style={styles.subtitle}>
-                        {`${currentSection[1].questions ? currentSection[1].questions.length : 0} questions | ${calculateCompletionPercentage(currentSection)}% complete`}
-                    </Text>
-                )}
+                <Text style={[styles.subtitle, applyFontToStyle()]}>
+                    {`${questionsCount} questions | ${completionPercentage}% complete`}
+                </Text>
             </View>
         </View>
     );
 };
+
 const styles = StyleSheet.create({
     header: {
         flexDirection: 'row',
@@ -91,7 +86,6 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.BACKGROUND,
         paddingVertical: 10,
         paddingHorizontal: 15,
-        paddingTop: 40,
         position: 'absolute',
         top: 0,
         left: 0,
@@ -111,7 +105,6 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 18,
-        fontWeight: 'bold',
         color: Colors.WHITE,
         marginRight: 5,
     },

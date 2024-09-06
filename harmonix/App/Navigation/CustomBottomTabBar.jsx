@@ -19,11 +19,11 @@ const TabButton = ({ icon, label, isActive, onPress }) => (
   >
     {icon}
     <StyledText 
-      className="text-xs mt-2"
       style={[
-        applyFontToStyle({}, isActive ? 'bold' : 'medium'),
+        applyFontToStyle({}, isActive ? 'bold' : 'medium', 16), 
         { color: isActive ? Colors.WHITE : Colors.GRAY }
       ]}
+      className="mt-1" 
     >
       {label}
     </StyledText>
@@ -79,55 +79,56 @@ export default function CustomBottomTabBar({ activeTab, switchTab }) {
           params: formData 
         });
       } catch (error) {
-        console.error("Грешка:", error);
+        console.error("Error:", error);
       }
     }, 0);
   };
+
   return (
     <>
       <StyledView 
         className="flex-row h-16 items-center justify-between px-1 relative"
-        style={{ backgroundColor: Colors.BACKGROUND,  }}
+        style={{ backgroundColor: Colors.BACKGROUND }}
       >
-        {/* Лява група */}
+        {/* Left group */}
         <StyledView className="flex-row flex-1 justify-start">
           <TabButton 
-            icon={<FontAwesome name="home" size={26} color={activeTab === 'Home' ? Colors.WHITE : Colors.GRAY} />}
+            icon={<FontAwesome name="home" size={22} color={activeTab === 'Home' ? Colors.WHITE : Colors.GRAY} />}
             label="Home"
             isActive={activeTab === 'Home'}
             onPress={() => switchTab('Home')}
           />
           <TabButton 
-            icon={<Feather name="search" size={26} color={activeTab === 'Search' ? Colors.WHITE : Colors.GRAY} />}
+            icon={<Feather name="search" size={22} color={activeTab === 'Search' ? Colors.WHITE : Colors.GRAY} />}
             label="Search"
             isActive={activeTab === 'Search'}
             onPress={() => switchTab('Search')}
           />
         </StyledView>
 
-        {/* Централен бутон */}
-        <StyledView className="absolute left-1/2 -ml-8 -top-8">
+        {/* Center button */}
+        <StyledView className="absolute left-1/2 -ml-8 -top-6">
           <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
             <StyledTouchableOpacity
-              className="w-16 h-16 rounded-full justify-center items-center shadow-lg"
+              className="w-14 h-14 rounded-full justify-center items-center shadow-lg"
               style={{ backgroundColor: Colors.BACKGROUND_LIGHT }}
               onPress={toggleModal}
             >
-              <Feather name="plus" size={30} color="white" />
+              <Feather name="plus" size={26} color="white" />
             </StyledTouchableOpacity>
           </Animated.View>
         </StyledView>
 
-        {/* Дясна група */}
+        {/* Right group */}
         <StyledView className="flex-row flex-1 justify-end">
           <TabButton 
-            icon={<Ionicons name="notifications" size={24} color={activeTab === 'Notifications' ? Colors.WHITE : Colors.GRAY} />}
+            icon={<Ionicons name="notifications" size={22} color={activeTab === 'Notifications' ? Colors.WHITE : Colors.GRAY} />}
             label="Notify"
             isActive={activeTab === 'Notifications'}
             onPress={() => switchTab('Notifications')}
           />
           <TabButton 
-            icon={<FontAwesome name="user" size={24} color={activeTab === 'ProfileSettings' ? Colors.WHITE : Colors.GRAY} />}
+            icon={<FontAwesome name="user" size={22} color={activeTab === 'ProfileSettings' ? Colors.WHITE : Colors.GRAY} />}
             label="Profile"
             isActive={activeTab === 'ProfileSettings'}
             onPress={() => switchTab('ProfileSettings')}

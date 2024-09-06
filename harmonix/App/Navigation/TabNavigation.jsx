@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Platform, SafeAreaView } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, runOnJS } from 'react-native-reanimated';
 import Colors from '../Utils/Colors';
+import { applyFontToStyle, Typography } from '../Utils/GlobalStyles';
 import Home from '../Screens/HomeScreen/Home';
 import Header from '../Screens/Header/Header';
 import ProfileSettings from '../Screens/Profile/ProfileSettings';
@@ -16,20 +17,6 @@ import CustomHsHeader from '../Screens/Forms/CustomHsHeader';
 
 const Stack = createStackNavigator();
 const { width } = Dimensions.get('window');
-
-const selectFont = (options = {}) => {
-  const ios = Platform.OS === 'ios';
-  return {
-    fontFamily: ios
-      ? options.bold
-        ? 'System'
-        : 'System'
-      : options.bold
-        ? 'Montserrat-Bold'
-        : 'Montserrat-Regular',
-    fontWeight: options.bold ? 'bold' : 'normal',
-  };
-};
 
 function TopTabBar({ activeTab, switchTab }) {
   return (
@@ -133,7 +120,7 @@ function HealthSafetyNavigator() {
       <HealthSafetyStack.Screen 
         name="HealthSafetyList" 
         component={HealthSafetyInspections}
-        options={{ header: () => <Header /> }} // Стандартен Header за списъка
+        options={{ header: () => <Header /> }}
       />
       <HealthSafetyStack.Screen 
         name="CreateInspectionHs" 
@@ -154,25 +141,23 @@ function TabNavigator() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <TopTabBar activeTab={activeTab} switchTab={switchTab} />
       <MainContent activeTab={activeTab} switchTab={switchTab} />
       <CustomBottomTabBar activeTab={activeTab} switchTab={switchTab} />
-    </View>
+    </SafeAreaView>
   );
 }
 
 export default function MainNavigator() {
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Stack.Navigator
         screenOptions={({ route }) => ({
           header: ({ navigation }) => {
-            // Не показваме Header за HealthSafety навигатора
             if (route.name === 'HealthSafety') {
               return null;
             }
-            // За всички останали екрани показваме стандартния Header
             return <Header navigation={navigation} />;
           },
         })}
@@ -185,7 +170,7 @@ export default function MainNavigator() {
         />
         <Stack.Screen name="ProfileSettings" component={ProfileSettings} />
       </Stack.Navigator>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -220,11 +205,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   topTabText: {
-    ...selectFont(),
+    ...applyFontToStyle({}, 'regular', 16),
     color: "white",
-    fontSize: 12,
   },
   activeTopTabText: {
+    ...applyFontToStyle({}, 'bold', 16),
     color: "white",
   },
 });
