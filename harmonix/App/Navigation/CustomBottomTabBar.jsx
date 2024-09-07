@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, TouchableOpacity, Text, Animated } from 'react-native';
 import { styled } from 'nativewind';
 import { FontAwesome, Feather, Ionicons } from '@expo/vector-icons';
+import Octicons from '@expo/vector-icons/Octicons';
 
 import { useNavigation } from '@react-navigation/native';
 import InspectionModal from '../Screens/Forms/InspectionModal';
@@ -87,19 +88,19 @@ export default function CustomBottomTabBar({ activeTab, switchTab }) {
   return (
     <>
       <StyledView 
-        className="flex-row h-16 items-center justify-between px-1 relative"
+        className="flex-row h-16 items-center pt-3 pb-3 justify-between px-1 relative"
         style={{ backgroundColor: Colors.BACKGROUND }}
       >
         {/* Left group */}
         <StyledView className="flex-row flex-1 justify-start">
           <TabButton 
-            icon={<FontAwesome name="home" size={22} color={activeTab === 'Home' ? Colors.WHITE : Colors.PRIMARY} />}
+            icon={<Octicons name="home" size={22} color={activeTab === 'Home' ? Colors.WHITE : Colors.PRIMARY} />}
             label="Home"
             isActive={activeTab === 'Home'}
             onPress={() => switchTab('Home')}
           />
           <TabButton 
-            icon={<Feather name="search" size={22} color={activeTab === 'Search' ? Colors.WHITE : Colors.PRIMARY} />}
+            icon={<Octicons name="search" size={22} color={activeTab === 'Search' ? Colors.WHITE : Colors.PRIMARY} />}
             label="Search"
             isActive={activeTab === 'Search'}
             onPress={() => switchTab('Search')}
@@ -107,7 +108,7 @@ export default function CustomBottomTabBar({ activeTab, switchTab }) {
         </StyledView>
 
         {/* Center button */}
-        <StyledView className="absolute left-1/2 -ml-8 -top-6">
+        <StyledView className="absolute left-1/2 -ml-8 -top-7">
           <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
             <StyledTouchableOpacity
               className="w-14 h-14 rounded-full justify-center items-center shadow-lg"
@@ -122,13 +123,13 @@ export default function CustomBottomTabBar({ activeTab, switchTab }) {
         {/* Right group */}
         <StyledView className="flex-row flex-1 justify-end">
           <TabButton 
-            icon={<Ionicons name="notifications" size={22} color={activeTab === 'Notifications' ? Colors.WHITE : Colors.PRIMARY} />}
+            icon={<Feather  name="settings" size={22} color={activeTab === 'Notifications' ? Colors.WHITE : Colors.PRIMARY} />}
             label="Notify"
             isActive={activeTab === 'Notifications'}
             onPress={() => switchTab('Notifications')}
           />
           <TabButton 
-            icon={<FontAwesome name="user" size={22} color={activeTab === 'ProfileSettings' ? Colors.WHITE : Colors.PRIMARY} />}
+            icon={<Octicons name="apps" size={22} color={activeTab === 'ProfileSettings' ? Colors.WHITE : Colors.PRIMARY} />}
             label="Profile"
             isActive={activeTab === 'ProfileSettings'}
             onPress={() => switchTab('ProfileSettings')}
