@@ -29,5 +29,5 @@ export default {
     GRAY: '#808080',
     GREEN: '#28C76F',
     AMBER: '#FF9F43',
-    RED: '#EA5455'
+    RED: '#F44336'
 };

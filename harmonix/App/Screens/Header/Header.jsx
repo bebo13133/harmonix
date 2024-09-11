@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, Animated } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text, Animated, Modal, TouchableWithoutFeedback } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -43,38 +43,54 @@ export default function Header() {
     navigation.navigate('LogoutScreen');
   };
 
+  const menuTopPosition = 60 + insets.top;
+
   return (
-    <View style={[styles.header, { paddingTop: insets.top }]}>
-      <TouchableOpacity onPress={() => navigation.navigate('MainTabs', { screen: 'Home' })}>
-        <Text style={[styles.logo, applyFontToStyle({}, 'bold', 26)]}>Harmonix</Text>
-      </TouchableOpacity>
-      <View style={styles.rightSection}>
-        <TouchableOpacity style={styles.bellIcon}>
-          <BellIcon size={26} color={Colors.WHITE} />
+    <>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
+        <TouchableOpacity onPress={() => navigation.navigate('MainTabs', { screen: 'Home' })}>
+          <Text style={[styles.logo, applyFontToStyle({}, 'bold', 26)]}>Harmonix</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={toggleMenu} style={styles.initialsContainer}>
-          <Text style={[styles.initials, applyFontToStyle({}, 'bold', 24)]}>BI</Text>
-        </TouchableOpacity>
+        <View style={styles.rightSection}>
+          <TouchableOpacity style={styles.bellIcon}>
+            <BellIcon size={26} color={Colors.WHITE} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={toggleMenu} style={styles.initialsContainer}>
+            <Text style={[styles.initials, applyFontToStyle({}, 'bold', 24)]}>BI</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-      {isMenuVisible && (
-        <Animated.View style={[
-          styles.menu,
-          {
-            transform: [{ translateY: menuTranslateY }],
-            opacity: menuOpacity,
-          }
-        ]}>
-          <TouchableOpacity style={styles.menuItem} onPress={handleSettings}>
-            <MaterialIcons name="settings" size={24} color={Colors.TEXT} />
-            <Text style={[styles.menuText, applyFontToStyle({}, 'regular', 16)]}>Настройки</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
-            <MaterialIcons name="logout" size={24} color={Colors.TEXT} />
-            <Text style={[styles.menuText, applyFontToStyle({}, 'regular', 16)]}>Изход</Text>
-          </TouchableOpacity>
-        </Animated.View>
-      )}
-    </View>
+      <Modal
+        visible={isMenuVisible}
+        transparent={true}
+        animationType="none"
+        onRequestClose={toggleMenu}
+      >
+        <TouchableWithoutFeedback onPress={toggleMenu}>
+          <View style={styles.modalOverlay}>
+            <Animated.View 
+              style={[
+                styles.menu,
+                {
+                  transform: [{ translateY: menuTranslateY }],
+                  opacity: menuOpacity,
+                  top: menuTopPosition,
+                }
+              ]}
+            >
+              <TouchableOpacity style={styles.menuItem} onPress={handleSettings}>
+                <MaterialIcons name="settings" size={24} color={Colors.TEXT} />
+                <Text style={[styles.menuText, applyFontToStyle({}, 'regular', 16)]}>Настройки</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
+                <MaterialIcons name="logout" size={24} color={Colors.TEXT} />
+                <Text style={[styles.menuText, applyFontToStyle({}, 'regular', 16)]}>Изход</Text>
+              </TouchableOpacity>
+            </Animated.View>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+    </>
   );
 }
 
@@ -84,13 +100,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: Sizes.PADDING,
-    paddingBottom: Sizes.PADDING -2,
+    paddingBottom: Sizes.PADDING - 2,
     backgroundColor: Colors.BACKGROUND,
-    zIndex: 100,
     marginTop: 15,
-    // borderBottomEndRadius:20,
-    // borderBottomStartRadius:20,
-    overflow: 'hidden',
   },
   logo: {
     color: Colors.WHITE,
@@ -113,9 +125,14 @@ const styles = StyleSheet.create({
   initials: {
     color: Colors.WHITE,
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-end',
+  },
   menu: {
     position: 'absolute',
-    top: 60,
     right: Sizes.PADDING,
     backgroundColor: Colors.WHITE,
     borderRadius: 8,
@@ -128,7 +145,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-    zIndex: 1000,
   },
   menuItem: {
     flexDirection: 'row',

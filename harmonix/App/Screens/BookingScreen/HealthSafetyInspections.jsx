@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, SectionList, StyleSheet, StatusBar, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, SectionList, StyleSheet, StatusBar, Platform, TouchableWithoutFeedback } from 'react-native';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -76,50 +76,52 @@ const getFormTypeIcon = (formType) => {
   }
 };
 
-const renderItem = ({ item }, navigation) => (
-  <TouchableOpacity 
-    style={styles.card} 
-    accessibilityLabel={`Inspection ${item.projectNumber}`}
-    onPress={() => navigation.navigate('InspectionDetails', { inspection: item })}
-  >
-    <View style={styles.cardContent}>
-      <View style={styles.iconContainer}>
-        <Ionicons name={getFormTypeIcon(item.formType)} size={24} color={Colors.WHITE} />
-      </View>
-      <View style={styles.cardMainContent}>
-        <View style={styles.cardHeader}>
-          <Text style={[styles.projectNumber, applyFontToStyle({}, 'bold', Sizes.FONT_SIZE_LARGE + 2)]}>{item.projectNumber}</Text>
+const renderItem = ({ item }, navigation, onDelete) => (
+  <TouchableWithoutFeedback onPress={() => navigation.navigate('InspectionDetails', { inspection: item })}>
+    <View style={styles.card}>
+      <View style={styles.cardContent}>
+        <View style={styles.iconContainer}>
+          <Ionicons name={getFormTypeIcon(item.formType)} size={24} color={Colors.WHITE} />
         </View>
-        <Text style={[styles.address, applyFontToStyle({}, 'medium', Sizes.FONT_SIZE_MEDIUM + 2)]}>{item.address}</Text>
-        <View style={styles.cardDetails}>
-          <View style={styles.detailColumn}>
-            <Text style={[styles.detailLabel, applyFontToStyle({}, 'bold', Sizes.FONT_SIZE_SMALL + 4)]}>Status</Text>
-            <Text style={[styles.detailValue, applyFontToStyle({}, 'medium', Sizes.FONT_SIZE_SMALL + 3)]}>
-              {item.status === 'Draft' ? `Draft (${item.completionPercentage}% Complete)` : item.status}
-            </Text>
+        <View style={styles.cardMainContent}>
+          <View style={styles.cardHeader}>
+            <Text style={[styles.projectNumber, applyFontToStyle({}, 'bold', Sizes.FONT_SIZE_LARGE + 2)]}>{item.projectNumber}</Text>
+            <TouchableOpacity onPress={() => onDelete(item.id)} color={Colors.ERROR} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <MaterialIcons name="delete" size={24} color={Colors.ERROR} />
+            </TouchableOpacity>
           </View>
-          <View style={styles.detailColumn}>
-            <Text style={[styles.detailLabel, applyFontToStyle({}, 'bold', Sizes.FONT_SIZE_SMALL + 4)]}>Score</Text>
-            <Text style={[styles.detailValue, applyFontToStyle({}, 'medium', Sizes.FONT_SIZE_SMALL + 3)]}>
-              {item.score}%
-            </Text>
+          <Text style={[styles.address, applyFontToStyle({}, 'medium', Sizes.FONT_SIZE_MEDIUM + 2)]}>{item.address}</Text>
+          <View style={styles.cardDetails}>
+            <View style={styles.detailColumn}>
+              <Text style={[styles.detailLabel, applyFontToStyle({}, 'bold', Sizes.FONT_SIZE_SMALL + 4)]}>Status</Text>
+              <Text style={[styles.detailValue, applyFontToStyle({}, 'medium', Sizes.FONT_SIZE_SMALL + 3)]}>
+                {item.status === 'Draft' ? `Draft (${item.completionPercentage}% Complete)` : item.status}
+              </Text>
+            </View>
+            <View style={styles.detailColumn}>
+              <Text style={[styles.detailLabel, applyFontToStyle({}, 'bold', Sizes.FONT_SIZE_SMALL + 4)]}>Score</Text>
+              <Text style={[styles.detailValue, applyFontToStyle({}, 'medium', Sizes.FONT_SIZE_SMALL + 3)]}>
+                {item.score}%
+              </Text>
+            </View>
           </View>
         </View>
-      </View>
-      <View style={styles.arrowContainer}>
-        <MaterialIcons name="chevron-right" size={24} color={Colors.TEXT_LIGHT} />
+        <View style={styles.arrowContainer}>
+          <MaterialIcons name="chevron-right" size={24} color={Colors.TEXT_LIGHT} />
+        </View>
       </View>
     </View>
-  </TouchableOpacity>
+  </TouchableWithoutFeedback>
 );
 
 export const HealthSafetyInspections = () => {
   const [showScrollTopButton, setShowScrollTopButton] = useState(false);
+  const [inspections, setInspections] = useState(mockData);
   const sectionListRef = useRef(null);
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
 
-  const sections = groupInspectionsByDate(mockData);
+  const sections = groupInspectionsByDate(inspections);
 
   const handleScroll = (event) => {
     const scrollPosition = event.nativeEvent.contentOffset.y;
@@ -134,6 +136,10 @@ export const HealthSafetyInspections = () => {
     });
   };
 
+  const handleDelete = (id) => {
+    setInspections(prevInspections => prevInspections.filter(inspection => inspection.id !== id));
+  };
+
   return (
     <SafeAreaProvider>
       <SafeAreaView style={[styles.safeArea, { paddingTop: insets.top }]}>
@@ -142,7 +148,7 @@ export const HealthSafetyInspections = () => {
           <SectionList
             ref={sectionListRef}
             sections={sections}
-            renderItem={(props) => renderItem(props, navigation)}
+            renderItem={(props) => renderItem(props, navigation, handleDelete)}
             keyExtractor={item => item.id.toString()}
             renderSectionHeader={({ section: { title } }) => (
               <Text style={[styles.sectionHeader, applyFontToStyle({}, 'bold', Sizes.FONT_SIZE_LARGE)]}>{title}</Text>
@@ -197,15 +203,16 @@ const styles = StyleSheet.create({
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 5,
   },
   iconContainer: {
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
-    backgroundColor:Colors.BACKGROUND_DARK,
-    width: 40,  // Добавяме фиксирана ширина
-    height: 40, // Добавяме фиксирана височина
+    backgroundColor: Colors.BACKGROUND_DARK,
+    width: 40,
+    height: 40,
     borderRadius: 20,
   },
   projectNumber: {
@@ -218,19 +225,14 @@ const styles = StyleSheet.create({
   cardDetails: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    // gap: 80,
     alignItems: 'center',
   },
-  // detailColumn: {
-  //   flex: 1,
-  // },
   detailLabel: {
     color: Colors.TEXT_LIGHT,
     marginBottom: 2,
   },
   detailValue: {
     color: Colors.WHITE,
-   
   },
   arrowContainer: {
     justifyContent: 'center',

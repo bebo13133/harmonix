@@ -108,7 +108,7 @@ export default function CustomBottomTabBar({ activeTab, switchTab }) {
         </StyledView>
 
         {/* Center button */}
-        <StyledView className="absolute left-1/2 -ml-8 -top-7">
+        <StyledView className="absolute left-1/2 -ml-7 -top-7">
           <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
             <StyledTouchableOpacity
               className="w-14 h-14 rounded-full justify-center items-center shadow-lg"

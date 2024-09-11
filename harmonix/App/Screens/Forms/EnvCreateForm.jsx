@@ -346,6 +346,7 @@ const styles = StyleSheet.create({
     buttonText: {
         color: '#FFF',
         textAlign: 'center',
+        outlineStyle: 'none',
     },
     paginationContainer: {
         flexDirection: 'row',
