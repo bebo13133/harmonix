@@ -14,6 +14,9 @@ import { HealthSafetyInspections } from '../Screens/BookingScreen/HealthSafetyIn
 import HsCreateForm from '../Screens/Forms/HsCreateForm';
 import CustomBottomTabBar from './CustomBottomTabBar';
 import CustomHsHeader from '../Screens/Forms/CustomHsHeader';
+import EnvCreateForm from '../Screens/Forms/EnvCreateForm';
+import QaCreateForm from '../Screens/Forms/QaCreateForm';
+import DcFormCreate from '../Screens/Forms/DcFormCreate';
 
 const Stack = createStackNavigator();
 const { width } = Dimensions.get('window');
@@ -129,6 +132,27 @@ function HealthSafetyNavigator() {
           header: (props) => <CustomHsHeader {...props} />,
         }}
       />
+      <HealthSafetyStack.Screen 
+        name="CreateInspectionEnvironmental"
+        component={EnvCreateForm}
+        options={{
+          header: (props) => <CustomHsHeader {...props} />,
+        }}
+      />
+        <HealthSafetyStack.Screen 
+        name="CreateInspectionQa"
+        component={QaCreateForm}
+        options={{
+          header: (props) => <CustomHsHeader {...props} />,
+        }}
+      />
+         <HealthSafetyStack.Screen 
+        name="CreateInspectionDc"
+        component={DcFormCreate}
+        options={{
+          header: (props) => <CustomHsHeader {...props} />,
+        }}
+      />
     </HealthSafetyStack.Navigator>
   );
 }
@@ -142,7 +166,7 @@ function TabNavigator() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <TopTabBar activeTab={activeTab} switchTab={switchTab} />
+      {/* <TopTabBar activeTab={activeTab} switchTab={switchTab} /> */}
       <MainContent activeTab={activeTab} switchTab={switchTab} />
       <CustomBottomTabBar activeTab={activeTab} switchTab={switchTab} />
     </SafeAreaView>

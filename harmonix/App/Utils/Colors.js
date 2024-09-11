@@ -6,7 +6,7 @@ export default {
     ERROR: '#FF0000',
     SUCCESS: '#00FF00',
     WARNING: '#FFFF00',
-    BACKGROUND: '#3b4253',
+    BACKGROUND: '#283046',
     CARD_BACKGROUND: 'rgba(255, 255, 255, 0.1)',
     TEXT_LIGHT: '#B0B0B0',
     BACKGROUND_LIGHT: '#7367f0',
@@ -27,7 +27,7 @@ export default {
     FORM_TEXT: '#b4b7bd',
     RED_BORDER: '#ea5455',
     GRAY: '#808080',
-    GREEN: '#4CAF50',
-    AMBER: '#FFC107',
+    GREEN: '#28C76F',
+    AMBER: '#FF9F43',
     RED: '#F44336'
 };

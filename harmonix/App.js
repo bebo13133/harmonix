@@ -1,7 +1,7 @@
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View } from "react-native";
 
-import AppLoading from "expo-app-loading";
+// import AppLoading from "expo-app-loading";
 import * as Font from 'expo-font';
 import { useEffect, useState } from "react";
 
@@ -35,9 +35,9 @@ export default function App() {
     loadFonts();
   }, []);
 
-  if (!fontsLoaded) {
-    return <AppLoading />;
-  }
+  // if (!fontsLoaded) {
+  //   return <AppLoading />;
+  // }
 
   return (
     <SafeAreaProvider>
@@ -54,4 +54,5 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
  
   },
+  outlineStyle: 'none'
 });

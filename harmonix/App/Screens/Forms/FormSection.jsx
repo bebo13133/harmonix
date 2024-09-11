@@ -156,7 +156,7 @@ const FormSection = ({ section, updateFormSection }) => {
                     <TouchableOpacity
                         key={statusOption}
                         onPress={() => handleStatusChange(question.id, statusOption)}
-                        className={`py-4 px-4 mb-3 rounded-lg`}
+                        className={`py-3.5 px-4 mb-3 rounded-lg`}
                         style={{
                             backgroundColor: selectedStatuses[question.id] === statusOption ? statusColors[statusOption] : Colors.BACKGROUND_DARK,
                         }}
@@ -168,7 +168,7 @@ const FormSection = ({ section, updateFormSection }) => {
                 <View className="flex-row justify-between mt-4">
                     <TouchableOpacity onPress={() => handleAddNote(question.id)} className="flex-row items-center">
                         <MaterialIcons name="note-add" size={24} color={Colors.WHITE} />
-                        <Text style={applyFontToStyle({}, 'regular', 16)} className="text-white ml-2">Add Note</Text>
+                        <Text style={applyFontToStyle({}, 'regular', 16)} className="text-white ml-2">Comment</Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => handleAddMedia(question.id)} className="flex-row items-center">
                         <MaterialIcons name="photo-library" size={24} color={Colors.WHITE} />

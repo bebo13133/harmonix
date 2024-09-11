@@ -1,4 +1,3 @@
-// App/Utils/GlobalStyles.js
 import { Platform, PixelRatio, Dimensions } from 'react-native';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -30,6 +29,7 @@ const selectFont = (options = {}) => {
     fontFamily,
     fontWeight: options.bold ? 'bold' : (options.medium ? '500' : 'normal'),
     fontSize: options.size ? normalize(options.size) : undefined,
+    outlineStyle:"none", // Добавено за премахване на outline
   };
 };
 
@@ -54,6 +54,7 @@ export const applyFontToStyle = (style = {}, fontType = 'regular', size) => {
     ...baseStyle,
     ...style,
     fontSize: size ? normalize(size) : (style.fontSize || baseStyle.fontSize),
+    outlineStyle: 'none', // Добавено за премахване на outline
   };
 };
 
@@ -62,5 +63,4 @@ export const Typography = {
   subheader: applyFontToStyle({}, 'medium', 20),
   body: applyFontToStyle({}, 'regular', 16),
   caption: applyFontToStyle({}, 'regular', 14),
-  // Добавете повече предефинирани стилове според нуждите
 };

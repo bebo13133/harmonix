@@ -8,13 +8,13 @@ import { styled } from 'nativewind';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { applyFontToStyle } from '../../Utils/GlobalStyles';
-import hsFormQuestions from './hsFormQuestions';
 import FormSection from './FormSection';
 import { useUser } from '../../Contexts/UserContext';
 import { saveImage } from '../../SQLiteBase/FileSystemManager';
 import PerformanceChart from './PerformanceChart';
 import Colors from '../../Utils/Colors';
 import CustomHsHeader from './CustomHsHeader';
+import { EnvFormQuestions } from './EnvFormQuestions';
 
 const StyledScrollView = styled(ScrollView);
 const StyledView = styled(View);
@@ -73,7 +73,7 @@ const SignatureField = React.forwardRef((props, ref) => {
     );
 });
 
-const HsCreateForm = ({ route }) => {
+const EnvCreateForm = ({ route }) => {
     const navigation = useNavigation();
     const { saveFormData } = useUser();
     const initialData = route.params || {};
@@ -97,7 +97,7 @@ const HsCreateForm = ({ route }) => {
     const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
     const questionsPerPage = 3;
 
-    const sections = Object.entries(hsFormQuestions);
+    const sections = Object.entries(EnvFormQuestions);
     const totalPages = Math.ceil((sections.length + 3) / questionsPerPage);
 
     const signatureRef = useRef();
@@ -346,6 +346,7 @@ const styles = StyleSheet.create({
     buttonText: {
         color: '#FFF',
         textAlign: 'center',
+        outlineStyle: 'none',
     },
     paginationContainer: {
         flexDirection: 'row',
@@ -399,4 +400,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default HsCreateForm;
+export default EnvCreateForm;

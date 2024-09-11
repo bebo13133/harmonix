@@ -52,7 +52,7 @@ const CustomHsHeader = ({ sections, currentSectionIndex, onSectionChange, formDa
                     visible={visible}
                     anchor={
                         <TouchableOpacity onPress={showMenu} style={styles.menuButton}>
-                            <Text style={[styles.title, applyFontToStyle({}, 'bold')]}>{sectionTitle}</Text>
+                            <Text style={[styles.title, applyFontToStyle({}, 'bold',22)]}>{sectionTitle}</Text>
                             <MaterialIcons name="arrow-drop-down" size={24} color={Colors.WHITE} />
                         </TouchableOpacity>
                     }
@@ -66,12 +66,12 @@ const CustomHsHeader = ({ sections, currentSectionIndex, onSectionChange, formDa
                                 hideMenu();
                             }}
                         >
-                            <Text style={applyFontToStyle()}>{section && section[1] && section[1].title ? section[1].title : `Section ${index + 1}`}</Text>
+                            <Text style={applyFontToStyle({},'bold',20)}>{section && section[1] && section[1].title ? section[1].title : `Section ${index + 1}`}</Text>
                         </MenuItem>
                     ))}
                 </Menu>
 
-                <Text style={[styles.subtitle, applyFontToStyle()]}>
+                <Text style={[styles.subtitle, applyFontToStyle({},'regular',18)]}>
                     {`${questionsCount} questions | ${completionPercentage}% complete`}
                 </Text>
             </View>
