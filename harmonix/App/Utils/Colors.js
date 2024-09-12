@@ -21,6 +21,7 @@ export default {
     SWITCH_LABEL_COMPLETED: '#FF6B6B',
     SWITCH_LABEL_OPEN: '#4ECB71',
     GRAY:'#575551',
+    BG_BLUE:"rgb(33, 150, 243)",
     ACTIVE: '#2c3e50',
     ACTIVE_TAB: 'rgb(115, 103, 240)',
     BACKGROUND_DARK: '#161d31',

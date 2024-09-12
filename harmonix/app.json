@@ -1,37 +1,30 @@
 {
   "expo": {
-    "name": "harmonix",
-    "slug": "harmonix",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "ios": {
       "supportsTablet": true,
-      "jsEngine": "jsc"
+      "jsEngine": "jsc",
+      "infoPlist": {
+        "UIFileSharingEnabled": true,
+        "LSSupportsOpeningDocumentsInPlace": true,
+        "NSPhotoLibraryUsageDescription": "This app requires access to the photo library to save and share PDF files.",
+        "NSPhotoLibraryAddUsageDescription": "This app requires access to the photo library to save PDF files."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.bebo13133.harmonix"
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
+      "package": "com.bebo13133.harmonix",
+      "permissions": [
+      "WRITE_EXTERNAL_STORAGE",
+        "READ_EXTERNAL_STORAGE"
+      ]
     },
     "plugins": [
-      "expo-font"
-    ],
-    "extra": {
-      "eas": {
-        "projectId": "2d34f77e-a2e2-4aa7-8a4c-8859606c860d"
-      }
-    }
+      "expo-font",
+      "expo-file-system"
+    ]
+
   }
 }
