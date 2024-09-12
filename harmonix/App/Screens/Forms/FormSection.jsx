@@ -7,6 +7,7 @@ import { styled } from 'nativewind';
 import ImageView from "react-native-image-viewing";
 import { applyFontToStyle } from '../../Utils/GlobalStyles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import SvgIcon from '../../Components/SvgIcon';
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -142,13 +143,15 @@ const FormSection = ({ section, updateFormSection }) => {
                 <StyledView className="flex-row justify-between items-center mb-3">
                     <Text style={applyFontToStyle({}, 'bold', 22)} className="text-white flex-1">{question.text}</Text>
                     {question.previousStatus && (question.previousStatus === 'Amber' || question.previousStatus === 'RED') && (
-                        <TouchableOpacity onPress={() => showPreviousStatusModal(question)}>
-                            <MaterialIcons 
-                                name="warning" 
-                                size={24} 
+                        // <TouchableOpacity onPress={() => showPreviousStatusModal(question)}>
+                            <SvgIcon 
+                                name="attentionIcon" 
+                                size={35} 
                                 color={question.previousStatus === 'Amber' ? Colors.AMBER : Colors.RED} 
+                                onPress={() => showPreviousStatusModal(question)}
+                                //  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                             />
-                        </TouchableOpacity>
+                        // </TouchableOpacity>
                     )}
                 </StyledView>
 

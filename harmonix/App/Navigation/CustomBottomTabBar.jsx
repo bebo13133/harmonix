@@ -8,6 +8,7 @@ import { useNavigation } from '@react-navigation/native';
 import InspectionModal from '../Screens/Forms/InspectionModal';
 import { applyFontToStyle } from '../Utils/GlobalStyles';
 import Colors from '../Utils/Colors';
+import SvgIcon from '../Components/SvgIcon';
 
 const StyledView = styled(View);
 const StyledTouchableOpacity = styled(TouchableOpacity);
@@ -94,13 +95,25 @@ export default function CustomBottomTabBar({ activeTab, switchTab }) {
         {/* Left group */}
         <StyledView className="flex-row flex-1 justify-start">
           <TabButton 
-            icon={<Octicons name="home" size={22} color={activeTab === 'Home' ? Colors.WHITE : Colors.PRIMARY} />}
+                icon={<SvgIcon 
+                  name="homeIcon"
+                  size={22}  
+                  color="black"  
+                  // onPress={() => switchTab('Home')}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                />}
             label="Home"
             isActive={activeTab === 'Home'}
             onPress={() => switchTab('Home')}
           />
           <TabButton 
-            icon={<Octicons name="search" size={22} color={activeTab === 'Search' ? Colors.WHITE : Colors.PRIMARY} />}
+            icon={<SvgIcon 
+              name="searchIcon"
+              size={22}  
+              color="black"  
+              // onPress={() => switchTab('Search')}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            />}
             label="Search"
             isActive={activeTab === 'Search'}
             onPress={() => switchTab('Search')}
@@ -123,16 +136,28 @@ export default function CustomBottomTabBar({ activeTab, switchTab }) {
         {/* Right group */}
         <StyledView className="flex-row flex-1 justify-end">
           <TabButton 
-            icon={<Feather  name="settings" size={22} color={activeTab === 'Notifications' ? Colors.WHITE : Colors.PRIMARY} />}
-            label="Notify"
+            icon={<SvgIcon 
+              name="settingIcon"
+              size={22}  
+              color="black"  
+              // onPress={() => switchTab('Notifications')}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            />}
+            label="Settings"
             isActive={activeTab === 'Notifications'}
             onPress={() => switchTab('Notifications')}
           />
           <TabButton 
-            icon={<Octicons name="apps" size={22} color={activeTab === 'ProfileSettings' ? Colors.WHITE : Colors.PRIMARY} />}
-            label="Profile"
+            icon={<SvgIcon 
+              name="moreIcon"
+              size={22}  
+              color="black"  
+              // onPress={() => switchTab('ProfileSettings')}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            />}
+            label="More"
             isActive={activeTab === 'ProfileSettings'}
-            onPress={() => switchTab('ProfileSettings')}
+             onPress={() => switchTab('ProfileSettings')}
           />
         </StyledView>
       </StyledView>

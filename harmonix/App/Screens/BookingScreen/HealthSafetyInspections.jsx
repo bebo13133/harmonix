@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, SectionList, StyleSheet, StatusBar, Platform, TouchableWithoutFeedback } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, TouchableOpacity, SectionList, StyleSheet, StatusBar, Platform, TouchableWithoutFeedback, Modal, Dimensions, Animated } from 'react-native';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -8,22 +8,25 @@ import Sizes from '../../Utils/Sizes';
 import { applyFontToStyle } from '../../Utils/GlobalStyles';
 import moment from 'moment';
 
+const { height } = Dimensions.get('window');
+import SvgIcon from '../../Components/SvgIcon';
+import InspectionsModal from './InspectionsModal';
 const mockData = [
-  { id: 1, projectNumber: 'PRJ001', date: moment().format('YYYY-MM-DD'), address: '123 Main St, London', status: 'Draft', completionPercentage: 67, score: 85, formType: 'healthSafety' },
-  { id: 2, projectNumber: 'PRJ002', date: '2024-09-12', address: '456 Oak Ave, Manchester', status: 'Pending Upload', completionPercentage: 100, score: 92, formType: 'environmental' },
-  { id: 3, projectNumber: 'PRJ003', date: '2024-09-11', address: '789 Pine Rd, Birmingham', status: 'Draft', completionPercentage: 45, score: 78, formType: 'qualityAssurance' },
-  { id: 4, projectNumber: 'PRJ004', date: '2024-09-10', address: '101 Elm St, Leeds', status: 'Pending Upload', completionPercentage: 100, score: 95, formType: 'documentControl' },
-  { id: 5, projectNumber: 'PRJ005', date: '2024-09-09', address: '202 Oak Ln, Liverpool', status: 'Draft', completionPercentage: 80, score: 88, formType: 'healthSafety' },
-  { id: 6, projectNumber: 'PRJ006', date: '2024-09-08', address: '303 Maple Ave, Glasgow', status: 'Draft', completionPercentage: 60, score: 72, formType: 'environmental' },
-  { id: 7, projectNumber: 'PRJ007', date: '2024-09-07', address: '404 Birch Rd, Edinburgh', status: 'Pending Upload', completionPercentage: 100, score: 90, formType: 'qualityAssurance' },
-  { id: 8, projectNumber: 'PRJ008', date: '2024-09-06', address: '505 Cedar St, Bristol', status: 'Draft', completionPercentage: 75, score: 83, formType: 'documentControl' },
-  { id: 9, projectNumber: 'PRJ009', date: '2024-09-05', address: '606 Pine Ave, Sheffield', status: 'Draft', completionPercentage: 50, score: 70, formType: 'healthSafety' },
-  { id: 10, projectNumber: 'PRJ010', date: '2024-09-04', address: '707 Oak Rd, Newcastle', status: 'Pending Upload', completionPercentage: 100, score: 93, formType: 'environmental' },
-  { id: 11, projectNumber: 'PRJ011', date: '2024-09-03', address: '808 Elm Ln, Cardiff', status: 'Draft', completionPercentage: 85, score: 89, formType: 'qualityAssurance' },
-  { id: 12, projectNumber: 'PRJ012', date: '2024-09-02', address: '909 Birch Ave, Belfast', status: 'Draft', completionPercentage: 70, score: 81, formType: 'documentControl' },
-  { id: 13, projectNumber: 'PRJ013', date: '2024-09-01', address: '111 Cedar Rd, Southampton', status: 'Pending Upload', completionPercentage: 100, score: 94, formType: 'healthSafety' },
-  { id: 14, projectNumber: 'PRJ014', date: '2024-08-31', address: '222 Pine St, Portsmouth', status: 'Draft', completionPercentage: 55, score: 75, formType: 'environmental' },
-  { id: 15, projectNumber: 'PRJ015', date: '2024-08-30', address: '333 Oak Ave, Leicester', status: 'Draft', completionPercentage: 90, score: 91, formType: 'qualityAssurance' },
+  { id: 1, projectNumber: 'PRJ001', date: moment().format('YYYY-MM-DD'), address: '123 Main St, London', status: 'Draft', completionPercentage: 67, score: 85, formType: 'healthSafety', inspectorName: 'John Smith' },
+  { id: 2, projectNumber: 'PRJ002', date: '2024-09-12', address: '456 Oak Ave, Manchester', status: 'Pending Upload', completionPercentage: 100, score: 92, formType: 'environmental', inspectorName: 'Emma Johnson' },
+  { id: 3, projectNumber: 'PRJ003', date: '2024-09-11', address: '789 Pine Rd, Birmingham', status: 'Draft', completionPercentage: 45, score: 78, formType: 'qualityAssurance', inspectorName: 'Michael Brown' },
+  { id: 4, projectNumber: 'PRJ004', date: '2024-09-10', address: '101 Elm St, Leeds', status: 'Pending Upload', completionPercentage: 100, score: 95, formType: 'documentControl', inspectorName: 'Sarah Davis' },
+  { id: 5, projectNumber: 'PRJ005', date: '2024-09-09', address: '202 Oak Ln, Liverpool', status: 'Draft', completionPercentage: 80, score: 88, formType: 'healthSafety', inspectorName: 'David Wilson' },
+  { id: 6, projectNumber: 'PRJ006', date: '2024-09-08', address: '303 Maple Ave, Glasgow', status: 'Draft', completionPercentage: 60, score: 72, formType: 'environmental', inspectorName: 'Lisa Taylor' },
+  { id: 7, projectNumber: 'PRJ007', date: '2024-09-07', address: '404 Birch Rd, Edinburgh', status: 'Pending Upload', completionPercentage: 100, score: 90, formType: 'qualityAssurance', inspectorName: 'James Anderson' },
+  { id: 8, projectNumber: 'PRJ008', date: '2024-09-06', address: '505 Cedar St, Bristol', status: 'Draft', completionPercentage: 75, score: 83, formType: 'documentControl', inspectorName: 'Emily White' },
+  { id: 9, projectNumber: 'PRJ009', date: '2024-09-05', address: '606 Pine Ave, Sheffield', status: 'Draft', completionPercentage: 50, score: 70, formType: 'healthSafety', inspectorName: 'Robert Green' },
+  { id: 10, projectNumber: 'PRJ010', date: '2024-09-04', address: '707 Oak Rd, Newcastle', status: 'Pending Upload', completionPercentage: 100, score: 93, formType: 'environmental', inspectorName: 'Jessica Lee' },
+  { id: 11, projectNumber: 'PRJ011', date: '2024-09-03', address: '808 Elm Ln, Cardiff', status: 'Draft', completionPercentage: 85, score: 89, formType: 'qualityAssurance', inspectorName: 'Andrew Clark' },
+  { id: 12, projectNumber: 'PRJ012', date: '2024-09-02', address: '909 Birch Ave, Belfast', status: 'Draft', completionPercentage: 70, score: 81, formType: 'documentControl', inspectorName: 'Olivia Harris' },
+  { id: 13, projectNumber: 'PRJ013', date: '2024-09-01', address: '111 Cedar Rd, Southampton', status: 'Pending Upload', completionPercentage: 100, score: 94, formType: 'healthSafety', inspectorName: 'Daniel Martin' },
+  { id: 14, projectNumber: 'PRJ014', date: '2024-08-31', address: '222 Pine St, Portsmouth', status: 'Draft', completionPercentage: 55, score: 75, formType: 'environmental', inspectorName: 'Sophie Turner' },
+  { id: 15, projectNumber: 'PRJ015', date: '2024-08-30', address: '333 Oak Ave, Leicester', status: 'Draft', completionPercentage: 90, score: 91, formType: 'qualityAssurance', inspectorName: 'Thomas Baker' },
 ];
 
 const groupInspectionsByDate = (data) => {
@@ -76,8 +79,9 @@ const getFormTypeIcon = (formType) => {
   }
 };
 
-const renderItem = ({ item }, navigation, onDelete) => (
-  <TouchableWithoutFeedback onPress={() => navigation.navigate('InspectionDetails', { inspection: item })}>
+
+const renderItem = ({ item }, navigation, onDelete, onPress) => (
+  <TouchableWithoutFeedback onPress={() => onPress(item)}>
     <View style={styles.card}>
       <View style={styles.cardContent}>
         <View style={styles.iconContainer}>
@@ -86,9 +90,11 @@ const renderItem = ({ item }, navigation, onDelete) => (
         <View style={styles.cardMainContent}>
           <View style={styles.cardHeader}>
             <Text style={[styles.projectNumber, applyFontToStyle({}, 'bold', Sizes.FONT_SIZE_LARGE + 2)]}>{item.projectNumber}</Text>
-            <TouchableOpacity onPress={() => onDelete(item.id)} color={Colors.ERROR} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <MaterialIcons name="delete" size={24} color={Colors.ERROR} />
-            </TouchableOpacity>
+            <SvgIcon name="deleteIcon"
+              size={24}
+              color={Colors.RED}
+              onPress={() => onDelete(item.id)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} />
           </View>
           <Text style={[styles.address, applyFontToStyle({}, 'medium', Sizes.FONT_SIZE_MEDIUM + 2)]}>{item.address}</Text>
           <View style={styles.cardDetails}>
@@ -120,6 +126,8 @@ export const HealthSafetyInspections = () => {
   const sectionListRef = useRef(null);
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
+  const [selectedInspection, setSelectedInspection] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const sections = groupInspectionsByDate(inspections);
 
@@ -140,6 +148,16 @@ export const HealthSafetyInspections = () => {
     setInspections(prevInspections => prevInspections.filter(inspection => inspection.id !== id));
   };
 
+  const handleInspectionPress = (inspection) => {
+    setSelectedInspection(inspection);
+    setIsModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setIsModalVisible(false);
+    setSelectedInspection(null);
+  };
+
   return (
     <SafeAreaProvider>
       <SafeAreaView style={[styles.safeArea, { paddingTop: insets.top }]}>
@@ -148,7 +166,7 @@ export const HealthSafetyInspections = () => {
           <SectionList
             ref={sectionListRef}
             sections={sections}
-            renderItem={(props) => renderItem(props, navigation, handleDelete)}
+            renderItem={(props) => renderItem(props, navigation, handleDelete, handleInspectionPress)}
             keyExtractor={item => item.id.toString()}
             renderSectionHeader={({ section: { title } }) => (
               <Text style={[styles.sectionHeader, applyFontToStyle({}, 'bold', Sizes.FONT_SIZE_LARGE)]}>{title}</Text>
@@ -161,12 +179,20 @@ export const HealthSafetyInspections = () => {
           />
 
           {showScrollTopButton && (
-            <TouchableOpacity 
-              style={[styles.scrollTopButton, { bottom: insets.bottom + 20 }]} 
+            <TouchableOpacity
+              style={[styles.scrollTopButton, { bottom: insets.bottom + 20 }]}
               onPress={scrollToTop}
             >
               <MaterialIcons name="arrow-upward" size={24} color={Colors.WHITE} />
             </TouchableOpacity>
+          )}
+
+          {selectedInspection && (
+            <InspectionsModal
+              isVisible={isModalVisible}
+              onClose={closeModal}
+              inspection={selectedInspection}
+            />
           )}
         </View>
       </SafeAreaView>
@@ -269,6 +295,7 @@ const styles = StyleSheet.create({
       },
     }),
   },
+ 
 });
 
 export default HealthSafetyInspections;
