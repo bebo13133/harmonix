@@ -8,6 +8,7 @@ import Sizes from '../../Utils/Sizes';
 import { applyFontToStyle } from '../../Utils/GlobalStyles';
 import moment from 'moment';
 
+import SvgIcon from '../../Components/SvgIcon';
 const mockData = [
   { id: 1, projectNumber: 'PRJ001', date: moment().format('YYYY-MM-DD'), address: '123 Main St, London', status: 'Draft', completionPercentage: 67, score: 85, formType: 'healthSafety' },
   { id: 2, projectNumber: 'PRJ002', date: '2024-09-12', address: '456 Oak Ave, Manchester', status: 'Pending Upload', completionPercentage: 100, score: 92, formType: 'environmental' },
@@ -76,43 +77,51 @@ const getFormTypeIcon = (formType) => {
   }
 };
 
-const renderItem = ({ item }, navigation, onDelete) => (
-  <TouchableWithoutFeedback onPress={() => navigation.navigate('InspectionDetails', { inspection: item })}>
-    <View style={styles.card}>
-      <View style={styles.cardContent}>
-        <View style={styles.iconContainer}>
-          <Ionicons name={getFormTypeIcon(item.formType)} size={24} color={Colors.WHITE} />
-        </View>
-        <View style={styles.cardMainContent}>
-          <View style={styles.cardHeader}>
-            <Text style={[styles.projectNumber, applyFontToStyle({}, 'bold', Sizes.FONT_SIZE_LARGE + 2)]}>{item.projectNumber}</Text>
-            <TouchableOpacity onPress={() => onDelete(item.id)} color={Colors.ERROR} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <MaterialIcons name="delete" size={24} color={Colors.ERROR} />
-            </TouchableOpacity>
+const renderItem = ({ item }, navigation, onDelete) => {
+
+  return (
+    <TouchableWithoutFeedback onPress={() => navigation.navigate('InspectionDetails', { inspection: item })}>
+      <View style={styles.card}>
+        <View style={styles.cardContent}>
+          <View style={styles.iconContainer}>
+            <Ionicons name={getFormTypeIcon(item.formType)} size={24} color={Colors.WHITE} />
           </View>
-          <Text style={[styles.address, applyFontToStyle({}, 'medium', Sizes.FONT_SIZE_MEDIUM + 2)]}>{item.address}</Text>
-          <View style={styles.cardDetails}>
-            <View style={styles.detailColumn}>
-              <Text style={[styles.detailLabel, applyFontToStyle({}, 'bold', Sizes.FONT_SIZE_SMALL + 4)]}>Status</Text>
-              <Text style={[styles.detailValue, applyFontToStyle({}, 'medium', Sizes.FONT_SIZE_SMALL + 3)]}>
-                {item.status === 'Draft' ? `Draft (${item.completionPercentage}% Complete)` : item.status}
-              </Text>
+          <View style={styles.cardMainContent}>
+            <View style={styles.cardHeader}>
+              <Text style={[styles.projectNumber, applyFontToStyle({}, 'bold', Sizes.FONT_SIZE_LARGE + 2)]}>{item.projectNumber}</Text>
+
+              <SvgIcon name="deleteIcon"
+                size={24}
+                color={Colors.RED}
+                onPress={() => onDelete(item.id)}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} />
+
             </View>
-            <View style={styles.detailColumn}>
-              <Text style={[styles.detailLabel, applyFontToStyle({}, 'bold', Sizes.FONT_SIZE_SMALL + 4)]}>Score</Text>
-              <Text style={[styles.detailValue, applyFontToStyle({}, 'medium', Sizes.FONT_SIZE_SMALL + 3)]}>
-                {item.score}%
-              </Text>
+            <Text style={[styles.address, applyFontToStyle({}, 'medium', Sizes.FONT_SIZE_MEDIUM + 2)]}>{item.address}</Text>
+            <View style={styles.cardDetails}>
+              <View style={styles.detailColumn}>
+                <Text style={[styles.detailLabel, applyFontToStyle({}, 'bold', Sizes.FONT_SIZE_SMALL + 4)]}>Status</Text>
+                <Text style={[styles.detailValue, applyFontToStyle({}, 'medium', Sizes.FONT_SIZE_SMALL + 3)]}>
+                  {item.status === 'Draft' ? `Draft (${item.completionPercentage}% Complete)` : item.status}
+                </Text>
+              </View>
+              <View style={styles.detailColumn}>
+                <Text style={[styles.detailLabel, applyFontToStyle({}, 'bold', Sizes.FONT_SIZE_SMALL + 4)]}>Score</Text>
+                <Text style={[styles.detailValue, applyFontToStyle({}, 'medium', Sizes.FONT_SIZE_SMALL + 3)]}>
+                  {item.score}%
+                </Text>
+              </View>
             </View>
           </View>
-        </View>
-        <View style={styles.arrowContainer}>
-          <MaterialIcons name="chevron-right" size={24} color={Colors.TEXT_LIGHT} />
+          <View style={styles.arrowContainer}>
+            <MaterialIcons name="chevron-right" size={24} color={Colors.TEXT_LIGHT} />
+          </View>
         </View>
       </View>
-    </View>
-  </TouchableWithoutFeedback>
-);
+    </TouchableWithoutFeedback>
+  )
+
+};
 
 export const HealthSafetyInspections = () => {
   const [showScrollTopButton, setShowScrollTopButton] = useState(false);
@@ -161,8 +170,8 @@ export const HealthSafetyInspections = () => {
           />
 
           {showScrollTopButton && (
-            <TouchableOpacity 
-              style={[styles.scrollTopButton, { bottom: insets.bottom + 20 }]} 
+            <TouchableOpacity
+              style={[styles.scrollTopButton, { bottom: insets.bottom + 20 }]}
               onPress={scrollToTop}
             >
               <MaterialIcons name="arrow-upward" size={24} color={Colors.WHITE} />

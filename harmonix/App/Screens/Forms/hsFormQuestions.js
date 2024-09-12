@@ -386,7 +386,7 @@ export const hsFormQuestions = {
       {
         "id": "7",
         "text": "Operatives are not wearing earbuds/headphones while on live areas.",
-        "previousStatus": "Amber",
+        "previousStatus": "Red",
         "previousStatusDate": "29/07/2024 10:20:46",
         "previousStatusDescription": "Dev Team - 29/07/2024 10:20:46"
       },
@@ -400,7 +400,7 @@ export const hsFormQuestions = {
       {
         "id": "9",
         "text": "Additional high risk works section (confined spaces, excavations, vehicle plant). Suitable Procedures, management and rescue plans are in place.",
-        "previousStatus": "Amber",
+        "previousStatus": "RED",
         "previousStatusDate": "29/07/2024 10:20:46",
         "previousStatusDescription": "Dev Team - 29/07/2024 10:20:46"
       },
