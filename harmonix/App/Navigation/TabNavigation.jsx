@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Platform, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Platform, SafeAreaView, StatusBar } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, runOnJS } from 'react-native-reanimated';
@@ -17,6 +17,10 @@ import CustomHsHeader from '../Screens/Forms/CustomHsHeader';
 import EnvCreateForm from '../Screens/Forms/EnvCreateForm';
 import QaCreateForm from '../Screens/Forms/QaCreateForm';
 import DcFormCreate from '../Screens/Forms/DcFormCreate';
+import DetailsScreen from '../Screens/DetailsScreen/DetailsScreen';
+import { Ionicons } from '@expo/vector-icons';
+import Sizes from '../Utils/Sizes';
+
 
 const Stack = createStackNavigator();
 const { width } = Dimensions.get('window');
@@ -139,14 +143,14 @@ function HealthSafetyNavigator() {
           header: (props) => <CustomHsHeader {...props} />,
         }}
       />
-        <HealthSafetyStack.Screen 
+      <HealthSafetyStack.Screen 
         name="CreateInspectionQa"
         component={QaCreateForm}
         options={{
           header: (props) => <CustomHsHeader {...props} />,
         }}
       />
-         <HealthSafetyStack.Screen 
+      <HealthSafetyStack.Screen 
         name="CreateInspectionDc"
         component={DcFormCreate}
         options={{
@@ -172,27 +176,51 @@ function TabNavigator() {
     </SafeAreaView>
   );
 }
-
+const CustomInspectionHeader = ({ navigation, route }) => {
+  const { inspection } = route.params;
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar backgroundColor={Colors.BACKGROUND_DARK} barStyle="light-content" />
+      <View style={styles.headerContainer}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color={Colors.WHITE} />
+        </TouchableOpacity>
+        <View style={styles.headerTextContainer}>
+          <Text style={[styles.headerDate, applyFontToStyle({}, 'bold', Sizes.FONT_SIZE_LARGE)]}>{inspection.date}</Text>
+          <Text style={[styles.headerInspector, applyFontToStyle({}, 'medium', Sizes.FONT_SIZE_MEDIUM)]}>{inspection.inspectorName}</Text>
+        </View>
+        <TouchableOpacity style={styles.moreButton}>
+          <Ionicons name="ellipsis-vertical" size={24} color={Colors.WHITE} />
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
+};
 export default function MainNavigator() {
   return (
     <SafeAreaView style={styles.container}>
-      <Stack.Navigator
-        screenOptions={({ route }) => ({
-          header: ({ navigation }) => {
-            if (route.name === 'HealthSafety') {
-              return null;
-            }
-            return <Header navigation={navigation} />;
-          },
-        })}
-      >
-        <Stack.Screen name="MainTabs" component={TabNavigator} />
+      <Stack.Navigator>
+        <Stack.Screen 
+          name="MainTabs" 
+          component={TabNavigator}
+          options={{ headerShown: false }}
+        />
         <Stack.Screen 
           name="HealthSafety" 
           component={HealthSafetyNavigator} 
           options={{ headerShown: false }}
         />
-        <Stack.Screen name="ProfileSettings" component={ProfileSettings} />
+        <Stack.Screen 
+          name="ProfileSettings" 
+          component={ProfileSettings}
+        />
+        <Stack.Screen
+          name="InspectionDetails"
+          component={DetailsScreen}
+          options={({ route, navigation }) => ({
+            header: () => <CustomInspectionHeader navigation={navigation} route={route} />,
+          })}
+        />
       </Stack.Navigator>
     </SafeAreaView>
   );
@@ -235,5 +263,41 @@ const styles = StyleSheet.create({
   activeTopTabText: {
     ...applyFontToStyle({}, 'bold', 16),
     color: "white",
+  },
+  safeArea: {
+    backgroundColor: Colors.BACKGROUND_DARK,
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: Colors.BACKGROUND_DARK,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    ...Platform.select({
+      ios: {
+        paddingTop: 44, // Дава допълнително място за статус лентата на iOS
+      },
+      android: {
+        paddingTop: 40,
+      },
+    }),
+  },
+  backButton: {
+    padding: 5,
+  },
+  headerTextContainer: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  headerDate: {
+    color: Colors.WHITE,
+    marginBottom: 4,
+  },
+  headerInspector: {
+    color: Colors.TEXT_LIGHT,
+  },
+  moreButton: {
+    padding: 5,
   },
 });

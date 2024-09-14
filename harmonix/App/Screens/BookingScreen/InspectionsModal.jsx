@@ -9,13 +9,14 @@ import ExportOptionsModal from './ExportOptionsModal';
 import { generatePDF, downloadPDF, sharePDF } from '../../Utils/pdfUtils';
 
 import * as Sharing from 'expo-sharing';
+import { useNavigation } from '@react-navigation/native';
 
 const { height } = Dimensions.get('window');
 
 const InspectionsModal = ({ isVisible, onClose, inspection }) => {
   const [showExportOptions, setShowExportOptions] = useState(false);
   const slideAnim = useRef(new Animated.Value(height)).current;
-
+  const navigation = useNavigation();
   useEffect(() => {
     if (isVisible) {
       Animated.spring(slideAnim, {
@@ -40,7 +41,8 @@ const InspectionsModal = ({ isVisible, onClose, inspection }) => {
   };
 
   const handleDetails = () => {
-    console.log('View details for inspection:', inspection.id);
+    onClose();
+    navigation.navigate('InspectionDetails', { inspection });
   };
 
   const handleContinueSubmit = () => {
@@ -86,7 +88,7 @@ const InspectionsModal = ({ isVisible, onClose, inspection }) => {
       onRequestClose={onClose}
     >
       <View style={styles.modalOverlay}>
-        <Animated.View 
+        <Animated.View
           style={[
             styles.modalContent,
             {
@@ -101,7 +103,7 @@ const InspectionsModal = ({ isVisible, onClose, inspection }) => {
           <Text style={[styles.modalTitle, applyFontToStyle({}, 'bold', Sizes.FONT_SIZE_LARGE + 4)]}>
             {moment(inspection.date).format('MMMM D, YYYY')} / {inspection.inspectorName}
           </Text>
-      
+
           <TouchableOpacity style={styles.modalOption} onPress={handleManageAccess}>
             <Ionicons name="people" size={24} color={Colors.WHITE} />
             <Text style={[styles.modalOptionText, applyFontToStyle({}, 'medium', Sizes.FONT_SIZE_LARGE)]}>Manage access</Text>
