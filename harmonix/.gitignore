@@ -35,3 +35,4 @@ npm-debug.*
 web-build/
 /android
 /ios
+/package-lock.json

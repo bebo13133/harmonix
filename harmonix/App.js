@@ -1,6 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View } from "react-native";
-
+// import 'tailwindcss/tailwind.css';
 // import AppLoading from "expo-app-loading";
 import * as Font from 'expo-font';
 import { useEffect, useState } from "react";
