@@ -24,14 +24,19 @@ const Home = () => {
   const navigation = useNavigation();
 
   const quickAccessItems = [
-    { title: 'Health & Safety', icon: 'security', route: 'HealthSafety' },
-    { title: 'Observation', icon: 'visibility', route: 'ObservationInspections' },
-    { title: 'Scaffold', icon: 'build', route: 'ScaffoldInspections' },
-    { title: 'Temporary Works', icon: 'construction', route: 'TemporaryWorksInspections' },
+    { 
+      title: 'Health & Safety', 
+      icon: 'security', 
+      onPress: () => {navigation.navigate('HealthSafety', { screen: 'HealthSafetyList' }) 
+        console.log("Hello")}
+    },
+    { title: 'Observation', icon: 'visibility', onPress: () => navigation.navigate('ObservationInspections') },
+    { title: 'Scaffold', icon: 'build', onPress: () => navigation.navigate('ScaffoldInspections') },
+    { title: 'Temporary Works', icon: 'construction', onPress: () => navigation.navigate('TemporaryWorksInspections') },
   ];
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} >
       <View style={styles.header}>
         <Image
           source={{ uri: 'https://harmonix.emage.co.uk/storage/photos/1714728588.jpg' }}
@@ -51,7 +56,7 @@ const Home = () => {
                 key={index}
                 title={item.title}
                 icon={item.icon}
-                onPress={() => navigation.navigate(item.route)}
+                onPress={item.onPress}
               />
             ))}
           </View>
@@ -91,6 +96,7 @@ const Home = () => {
         </LinearGradient>
       </View>
     </ScrollView>
+    
   );
 };
 
@@ -101,7 +107,7 @@ const styles = StyleSheet.create({
   },
   header: {
     height: 180,
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
     padding: Sizes.PADDING,
   },
   backgroundImage: {
@@ -111,6 +117,9 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     opacity: 0.7,
+    borderBottomLeftRadius: 25,
+    borderBottomRightRadius: 25,
+    overflow: 'hidden',
   },
   darkOverlay: {
     position: 'absolute',
@@ -118,7 +127,10 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',  
+    backgroundColor: 'rgba(0, 0, 0, 0.4)', 
+    borderBottomLeftRadius: 25,
+    borderBottomRightRadius: 25,
+    overflow: 'hidden', 
   },
   welcome: {
     color: Colors.WHITE,
@@ -137,7 +149,7 @@ const styles = StyleSheet.create({
     paddingBottom: Sizes.PADDING / 2,
   },
   sectionTitle: {
-    fontSize: Sizes.FONT_SIZE_LARGE,
+    fontSize: Sizes.FONT_SIZE_MEDIUM,
     fontWeight: 'bold',
     marginBottom: Sizes.PADDING / 2,
     color: Colors.BLACK,
@@ -184,6 +196,7 @@ const styles = StyleSheet.create({
   statsContainer: {
     padding: Sizes.PADDING,
     marginTop: Sizes.PADDING,
+    marginBottom: Sizes.PADDING,
     marginHorizontal: Sizes.PADDING,
     borderRadius: Sizes.BORDER_RADIUS,
     shadowColor: Colors.BLACK,

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, ImageBackground, StyleSheet, Animated, Easing } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Sizes from '../../Utils/Sizes';
 import Colors from '../../Utils/Colors';
 import { applyFontToStyle } from '../../Utils/GlobalStyles';
@@ -49,37 +50,48 @@ const LoginScreen = () => {
   });
 
   return (
-    <ImageBackground
-      source={{ uri: 'https://harmonix.emage.co.uk/storage/photos/1676029429.jpg' }}
-      style={styles.background}
-    >
-      <View style={styles.overlay}>
-        <Animated.Image
-          source={{ uri: 'https://harmonix.emage.co.uk/images/logo/logo.png' }}
-          style={[
-            styles.logo,
-            {
-              transform: [
-                { translateX: translateX },
-                { rotate: spin },
-              ],
-            },
-          ]}
-        />
-        <Text style={applyFontToStyle(styles.title, 'bold')}>Welcome to Harmonix</Text>
-        <Text style={applyFontToStyle(styles.subtitle, 'medium')}>Your partner in building management</Text>
-        <TouchableOpacity 
-          style={styles.button}
-          onPress={() => navigation.navigate('LoginForm')}
-        >
-          <Text style={applyFontToStyle(styles.buttonText, 'bold')}>Get Started</Text>
-        </TouchableOpacity>
-      </View>
-    </ImageBackground>
+    <SafeAreaView style={styles.container}>
+      <ImageBackground
+        source={{ uri: 'https://harmonix.emage.co.uk/storage/photos/1676029429.jpg' }}
+        style={styles.background}
+      >
+        <View style={styles.overlay}>
+          <Animated.Image
+            source={{ uri: 'https://harmonix.emage.co.uk/images/logo/logo.png' }}
+            style={[
+              styles.logo,
+              {
+                transform: [
+                  { translateX: translateX },
+                  { rotate: spin },
+                ],
+              },
+            ]}
+          />
+          <Text style={applyFontToStyle(styles.title, 'bold', Sizes.FONT_SIZE_EXTRA_LARGE)}>
+            Welcome to Harmonix
+          </Text>
+          <Text style={applyFontToStyle(styles.subtitle, 'medium', Sizes.FONT_SIZE_MEDIUM)}>
+            Your partner in building management
+          </Text>
+          <TouchableOpacity 
+            style={styles.button}
+            onPress={() => navigation.navigate('LoginForm')}
+          >
+            <Text style={applyFontToStyle(styles.buttonText, 'bold', Sizes.FONT_SIZE_MEDIUM)}>
+              Get Started
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ImageBackground>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   background: {
     flex: 1,
     width: '100%',
@@ -98,13 +110,11 @@ const styles = StyleSheet.create({
     marginBottom: Sizes.PADDING * 2,
   },
   title: {
-    fontSize: 28,  
     color: Colors.WHITE,
     marginBottom: Sizes.PADDING,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: Sizes.FONT_SIZE_MEDIUM,
     color: Colors.WHITE,
     marginBottom: Sizes.PADDING * 2,
     textAlign: 'center',
@@ -116,7 +126,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: Colors.WHITE,
-    fontSize: Sizes.FONT_SIZE_MEDIUM,
   },
 });
 
