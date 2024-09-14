@@ -97,7 +97,7 @@ const HsCreateForm = ({ route }) => {
     const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
     const questionsPerPage = 3;
 
-    const sections = Object.entries(hsFormQuestions);
+    const sections = Object.entries(hsFormQuestions); //заявка и вопрос
     const totalPages = Math.ceil((sections.length + 3) / questionsPerPage);
 
     const signatureRef = useRef();

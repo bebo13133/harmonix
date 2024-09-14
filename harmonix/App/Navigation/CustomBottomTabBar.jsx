@@ -19,11 +19,11 @@ const TabButton = ({ icon, label, isActive, onPress }) => (
     className="flex items-center px-4"
     onPress={onPress}
   >
-    {icon}
+    {React.cloneElement(icon, { color: isActive ? Colors.BG_TAB_BUTTON : Colors.BACKGROUND })}
     <StyledText 
       style={[
         applyFontToStyle({}, isActive ? 'bold' : 'medium', 16), 
-        { color: isActive ? Colors.WHITE : Colors.WHITE }
+        { color: Colors.WHITE }
       ]}
       className="mt-1 mb-2" 
     >
@@ -89,19 +89,17 @@ export default function CustomBottomTabBar({ activeTab, switchTab }) {
   return (
     <>
       <StyledView 
-        className="flex-row h-16 items-center pt-3 pb-3 justify-between px-1 relative"
+        className="flex-row h-18 items-center pt-3 pb-2 justify-between px-1.5 relative"
         style={{ backgroundColor: Colors.BACKGROUND }}
       >
         {/* Left group */}
         <StyledView className="flex-row flex-1 justify-start">
           <TabButton 
-                icon={<SvgIcon 
-                  name="homeIcon"
-                  size={22}  
-                  color="black"  
-                  // onPress={() => switchTab('Home')}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                />}
+            icon={<SvgIcon 
+              name="homeIcon"
+              size={22}  
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            />}
             label="Home"
             isActive={activeTab === 'Home'}
             onPress={() => switchTab('Home')}
@@ -110,8 +108,6 @@ export default function CustomBottomTabBar({ activeTab, switchTab }) {
             icon={<SvgIcon 
               name="searchIcon"
               size={22}  
-              color="black"  
-              // onPress={() => switchTab('Search')}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             />}
             label="Search"
@@ -139,8 +135,6 @@ export default function CustomBottomTabBar({ activeTab, switchTab }) {
             icon={<SvgIcon 
               name="settingIcon"
               size={22}  
-              color="black"  
-              // onPress={() => switchTab('Notifications')}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             />}
             label="Settings"
@@ -151,13 +145,11 @@ export default function CustomBottomTabBar({ activeTab, switchTab }) {
             icon={<SvgIcon 
               name="moreIcon"
               size={22}  
-              color="black"  
-              // onPress={() => switchTab('ProfileSettings')}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             />}
             label="More"
             isActive={activeTab === 'ProfileSettings'}
-             onPress={() => switchTab('ProfileSettings')}
+            onPress={() => switchTab('ProfileSettings')}
           />
         </StyledView>
       </StyledView>
