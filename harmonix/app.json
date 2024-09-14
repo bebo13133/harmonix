@@ -1,5 +1,7 @@
 {
   "expo": {
+    "name": "HarmonixApp",
+    "version": "1.0.0",
     "ios": {
       "supportsTablet": true,
       "jsEngine": "jsc",
@@ -17,14 +19,35 @@
       },
       "package": "com.bebo13133.harmonix",
       "permissions": [
-      "WRITE_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
         "READ_EXTERNAL_STORAGE"
       ]
     },
     "plugins": [
       "expo-font",
       "expo-file-system"
+    ],
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "fonts": [
+      {
+        "asset": "./assets/fonts/Montserrat-Regular.ttf",
+        "family": "Montserrat-Regular"
+      },
+      {
+        "asset": "./assets/fonts/Montserrat-Medium.ttf",
+        "family": "Montserrat-Medium"
+      },
+      {
+        "asset": "./assets/fonts/Montserrat-Bold.ttf",
+        "family": "Montserrat-Bold"
+      }
+    ],
+    "assetBundlePatterns": [
+      "**/*"
     ]
-
   }
 }

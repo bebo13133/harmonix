@@ -1,13 +1,14 @@
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
-// import 'tailwindcss/tailwind.css';
-// import AppLoading from "expo-app-loading";
+import { StyleSheet, View } from "react-native";
 import * as Font from 'expo-font';
-import { useEffect, useState } from "react";
-
+import { useCallback, useEffect, useState } from "react";
 import { UserProvider, useUser } from "./App/Contexts/UserContext";
 import { AuthGuard, PublicGuard } from "./App/Guards/Guards";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import * as SplashScreen from 'expo-splash-screen';
+
+// Предотвратяване на автоматичното скриване на splash screen
+SplashScreen.preventAutoHideAsync();
 
 const AppContent = () => {
   const { isAuthenticated } = useUser();
@@ -19,31 +20,45 @@ const AppContent = () => {
     </View>
   );
 };
+
 export default function App() {
-  const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [appIsReady, setAppIsReady] = useState(false);
+
   useEffect(() => {
-    async function loadFonts() {
-      await Font.loadAsync({
-        'Montserrat-Regular': require('./assets/fonts/Montserrat-Regular.ttf'),
-        'Montserrat-Medium': require('./assets/fonts/Montserrat-Medium.ttf'),
-        'Montserrat-Bold': require('./assets/fonts/Montserrat-Bold.ttf'),
-      
-      });
-      setFontsLoaded(true);
+    async function prepare() {
+      try {
+        // Зареждане на шрифтовете
+        await Font.loadAsync({
+          'Montserrat-Regular': require('./assets/fonts/Montserrat-Regular.ttf'),
+          'Montserrat-Medium': require('./assets/fonts/Montserrat-Medium.ttf'),
+          'Montserrat-Bold': require('./assets/fonts/Montserrat-Bold.ttf'),
+        });
+        // Изчакване за други ресурси да се заредят тук
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        setAppIsReady(true);
+      }
     }
 
-    loadFonts();
+    prepare();
   }, []);
 
-  // if (!fontsLoaded) {
-  //   return <AppLoading />;
-  // }
+  const onLayoutRootView = useCallback(async () => {
+    if (appIsReady) {
+      await SplashScreen.hideAsync();
+    }
+  }, [appIsReady]);
+
+  if (!appIsReady) {
+    return null;
+  }
 
   return (
-    <SafeAreaProvider>
-    <UserProvider>
-      <AppContent />
-    </UserProvider>
+    <SafeAreaProvider onLayout={onLayoutRootView}>
+      <UserProvider>
+        <AppContent />
+      </UserProvider>
     </SafeAreaProvider>
   );
 }
@@ -52,7 +67,5 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
- 
   },
-  outlineStyle: 'none'
 });

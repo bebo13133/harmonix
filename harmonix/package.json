@@ -33,8 +33,10 @@
     "expo-splash-screen": "^0.27.5",
     "expo-sqlite": "^14.0.6",
     "expo-status-bar": "~1.12.1",
+    "install": "^0.13.0",
     "moment": "^2.30.1",
-     "postcss": "8.4.42",
+    "nativewind": "2.0.11",
+    "postcss": "8.4.42",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-native": "0.74.5",
@@ -56,8 +58,7 @@
     "react-native-svg-transformer": "^1.5.0",
     "react-native-tab-view": "^3.5.2",
     "react-native-web": "~0.19.10",
-    "react-native-webview": "13.8.6",
-    "nativewind": "2.0.11"
+    "react-native-webview": "13.8.6"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
