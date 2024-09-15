@@ -190,8 +190,7 @@ const HsCreateForm = ({ route }) => {
               for (const image of images) {
                 try {
                   const savedUri = await saveImage(image.uri); 
-                  console.log(`Image saved at: ${savedUri}`);
-                  updatedImages.push({ ...image, uri: savedUri });
+                 updatedImages.push({ ...image, uri: savedUri });
                 } catch (error) {
                         Alert.alert('Error', 'Error saving one of the images. Please try again.');
                   setIsLoading(false);

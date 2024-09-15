@@ -11,7 +11,6 @@ export const initDatabase = async () => {
     await createTableIfNotExists(db);
     await addMissingColumns(db);
 
-    console.log('Database initialized successfully');
     return db;
   } catch (error) {
     console.error('Error initializing database:', error);
@@ -93,7 +92,6 @@ export const saveFormDataToDb = async (db, data) => {
       JSON.stringify(data.formSections)
     ]);
 
-    console.log("Data inserted successfully");
   } catch (error) {
     console.error("Error inserting data:", error);
     throw error;
@@ -108,7 +106,6 @@ export const loadFormDataFromDb = async (db) => {
       signature: JSON.parse(row.signature),
       formSections: JSON.parse(row.formSections)
     }));
-    console.log('Data loaded successfully:', forms);
     return forms;
   } catch (error) {
     console.error('Error loading data from database:', error);
