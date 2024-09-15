@@ -132,6 +132,23 @@ const InspectionModal = ({ isVisible, onClose, onStartInspection }) => {
     setShowPerformance(false);
   };
 
+  const handleStartInspection = () => {
+    const selectedProjectData = projects.find(p => p.id === selectedProject);
+    const selectedInspectorData = inspectors.find(i => i.id === selectedInspector);
+  
+    onStartInspection({
+      formType,
+      projectNumber: selectedProjectData?.projectNumber || '',
+      address: selectedProjectData?.address || '',
+      inspectorName: selectedInspectorData?.name || '',
+      selectedProject,
+      selectedInspector,
+      selectedPersonInControl,
+      selectedProjectDirector,
+      selectedDivisionalDirector,
+    });
+  };
+
   const isFormValid = selectedProject && selectedInspector && selectedPersonInControl && 
                       selectedProjectDirector && selectedDivisionalDirector;
 
@@ -147,7 +164,6 @@ const InspectionModal = ({ isVisible, onClose, onStartInspection }) => {
         right: 0,
         height: '90%',
       }}
-      
       className="bg-gray-800 rounded-t-3xl"
     >
       <StyledView className="flex-1">
@@ -247,14 +263,7 @@ const InspectionModal = ({ isVisible, onClose, onStartInspection }) => {
             <StyledTouchableOpacity
               className={`py-3 px-6 rounded-full ${isFormValid ? 'bg-blue-500' : 'bg-gray-500'}`}
               disabled={!isFormValid}
-              onPress={() => onStartInspection({
-                formType,
-                selectedProject,
-                selectedInspector,
-                selectedPersonInControl,
-                selectedProjectDirector,
-                selectedDivisionalDirector
-              })}
+              onPress={handleStartInspection}
             >
               <StyledText style={applyFontToStyle({}, 'bold', 22)} className="text-white text-center">Start Inspection</StyledText>
             </StyledTouchableOpacity>
