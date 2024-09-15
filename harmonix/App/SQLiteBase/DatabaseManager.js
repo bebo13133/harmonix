@@ -54,7 +54,7 @@ const addMissingColumns = async (db) => {
     await db.execAsync(`
       ALTER TABLE inspections ADD COLUMN ${columnName} ${columnType};
     `).catch(error => {
-      // Игнорируем ошибку, если колонка уже существует
+ 
       if (!error.message.includes('duplicate column name')) {
         console.error(`Error adding column ${columnName}:`, error);
       }
