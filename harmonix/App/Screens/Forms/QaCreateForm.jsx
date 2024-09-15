@@ -8,14 +8,13 @@ import { styled } from 'nativewind';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { applyFontToStyle } from '../../Utils/GlobalStyles';
-
+import { QaFormQuestions } from './QaFormQuestions';
 import FormSection from './FormSection';
 import { useUser } from '../../Contexts/UserContext';
 import { saveImage } from '../../SQLiteBase/FileSystemManager';
 import PerformanceChart from './PerformanceChart';
 import Colors from '../../Utils/Colors';
 import CustomHsHeader from './CustomHsHeader';
-import { QaFormQuestions } from './QaFormQuestions';
 
 const StyledScrollView = styled(ScrollView);
 const StyledView = styled(View);
@@ -94,19 +93,39 @@ const QaCreateForm = ({ route }) => {
         advisory: '',
         signature: null,
         formSections: {},
-      });
+    });
 
     const [refreshing, setRefreshing] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [showPerformance, setShowPerformance] = useState(false);
     const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
-    const questionsPerPage = 3;
 
     const sections = Object.entries(QaFormQuestions);
-    const totalPages = Math.ceil((sections.length + 3) / questionsPerPage);
-
     const signatureRef = useRef();
     const scrollViewRef = useRef();
+
+    const saveCurrentSectionData = () => {
+        const currentSectionKey = sections[currentSectionIndex][0];
+        updateFormSection(currentSectionKey, formData.formSections[currentSectionKey]);
+    };
+
+    const loadSectionData = (index) => {
+        const sectionKey = sections[index][0];
+        return formData.formSections[sectionKey] || {};
+    };
+
+    const handleSectionChange = (newIndex) => {
+        saveCurrentSectionData();
+        setCurrentSectionIndex(newIndex);
+        const newSectionData = loadSectionData(newIndex);
+        setFormData((prev) => ({
+            ...prev,
+            formSections: {
+                ...prev.formSections,
+                [sections[newIndex][0]]: newSectionData
+            }
+        }));
+    };
 
     useEffect(() => {
         if (formData.selectedProject) {
@@ -120,10 +139,7 @@ const QaCreateForm = ({ route }) => {
                 <CustomHsHeader
                     sections={sections}
                     currentSectionIndex={currentSectionIndex}
-                    onSectionChange={(index) => {
-                        setCurrentSectionIndex(index);
-                        scrollViewRef.current?.scrollTo({ y: 0, animated: true });
-                    }}
+                    onSectionChange={handleSectionChange}
                     formData={formData}
                     topInset={insets.top}
                 />
@@ -158,50 +174,56 @@ const QaCreateForm = ({ route }) => {
     const handleSave = async () => {
         if (isLoading) return;
       
-        setIsLoading(true);
+        setIsLoading(true); 
+           
         try {
-          // Обработваме секциите на формата и запазваме изображенията
-          const updatedFormSections = await Promise.all(
-            Object.entries(formData.formSections).map(async ([sectionKey, sectionData]) => {
-              const updatedQuestions = await Promise.all(
-                Object.entries(sectionData.images || {}).map(async ([questionId, images]) => {
-                  const updatedImages = await Promise.all(
-                    images.map(async (image) => {
-                      const savedUri = await saveImage(image.uri);
-                      return { ...image, uri: savedUri };
-                    })
-                  );
-                  return [questionId, updatedImages];
-                })
-              );
-              return [
-                sectionKey,
-                {
-                  ...sectionData,
-                  images: Object.fromEntries(updatedQuestions)
-                }
-              ];
-            })
-          );
+          const updatedFormSections = {};
       
-          // Подготвяме данните за запазване
+          for (const [sectionKey, sectionData] of Object.entries(formData.formSections)) {
+            const updatedQuestions = {};
+      
+            for (const [questionId, images] of Object.entries(sectionData.images || {})) {
+              const updatedImages = [];
+      
+              for (const image of images) {
+                try {
+                  const savedUri = await saveImage(image.uri); 
+                  console.log(`Image saved at: ${savedUri}`);
+                  updatedImages.push({ ...image, uri: savedUri });
+                } catch (error) {
+                        Alert.alert('Error', 'Error saving one of the images. Please try again.');
+                  setIsLoading(false);
+                  return; 
+                }
+              }
+      
+              updatedQuestions[questionId] = updatedImages;
+            }
+      
+            updatedFormSections[sectionKey] = {
+              ...sectionData,
+              images: updatedQuestions,
+            };
+          }
+      
           const dataToSave = {
             ...formData,
-            formSections: Object.fromEntries(updatedFormSections),
+            formSections: updatedFormSections,
             date: new Date().toISOString().split('T')[0],
             status: 'Draft',
           };
       
-          // Запазваме данните
-          await saveFormData(dataToSave);
-          navigation.navigate('MainTabs', { screen: 'Home' })
-
+          await saveFormData(dataToSave); 
+      
+          setIsLoading(false); 
+          navigation.navigate('MainTabs', { screen: 'Home' });
         } catch (error) {
-          Alert.alert('Error while saving form', 'Please try again.');
-        } finally {
-          setIsLoading(false);
+        
+          Alert.alert('Error', 'Error while saving form. Please try again.');
+          setIsLoading(false); // 
         }
       };
+
     const handleSubmit = () => {
         // Implement submit logic
     };
@@ -209,15 +231,16 @@ const QaCreateForm = ({ route }) => {
     const renderQuestions = () => {
         const startIndex = currentSectionIndex;
         const endIndex = startIndex + 1;
-    
+
         const questionEntries = sections.slice(startIndex, endIndex).map(([key, section]) => (
             <FormSection 
                 key={key} 
                 section={section} 
                 updateFormSection={(sectionData) => updateFormSection(key, sectionData)}
+                savedSectionData={formData.formSections[key] || {}}
             />
         ));
-    
+
         if (currentSectionIndex === sections.length - 1) {
             questionEntries.push(
                 <StyledView className="mb-4" key="general-comments">
@@ -270,7 +293,7 @@ const QaCreateForm = ({ route }) => {
                 </View>
             );
         }
-    
+
         return questionEntries;
     };
 
@@ -306,7 +329,7 @@ const QaCreateForm = ({ route }) => {
                 {currentSectionIndex > 0 && (
                     <TouchableOpacity
                         style={[styles.paginationButton, styles.paginationBorder]}
-                        onPress={() => setCurrentSectionIndex(prev => Math.max(prev - 1, 0))}
+                        onPress={() => handleSectionChange(Math.max(currentSectionIndex - 1, 0))}
                     >
                         <MaterialIcons name="arrow-back-ios" size={24} color={Colors.WHITE} />
                         <Text style={[applyFontToStyle({}, 'regular', 18), { color: Colors.WHITE, paddingVertical: 8 }]}>Back</Text>
@@ -320,7 +343,7 @@ const QaCreateForm = ({ route }) => {
                 {currentSectionIndex < sections.length - 1 && (
                     <TouchableOpacity
                         style={[styles.paginationButton, styles.paginationBorder]}
-                        onPress={() => setCurrentSectionIndex(prev => Math.min(prev + 1, sections.length - 1))}
+                        onPress={() => handleSectionChange(Math.min(currentSectionIndex + 1, sections.length - 1))}
                     >
                         <Text style={[applyFontToStyle({}, 'regular', 18), { color: Colors.WHITE, paddingVertical: 8 }]}>Next</Text>
                         <MaterialIcons name="arrow-forward-ios" size={24} color={Colors.WHITE} />

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Animated, ScrollView, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, Animated, ScrollView, Platform, TextInput } from 'react-native';
 import { styled } from 'nativewind';
 import { Ionicons } from '@expo/vector-icons';
 import PerformanceChart from './PerformanceChart';
@@ -11,6 +11,7 @@ const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTouchableOpacity = styled(TouchableOpacity);
 const StyledScrollView = styled(ScrollView);
+const StyledTextInput = styled(TextInput);
 
 const getShadowStyle = (elevation = 5) => {
   return Platform.select({
@@ -48,10 +49,23 @@ const FormTypeButton = ({ title, icon, onPress }) => (
 
 const CustomPicker = ({ label, value, setValue, items }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [filteredItems, setFilteredItems] = useState(items);
+
+  useEffect(() => {
+    if (searchText) {
+      const filtered = items.filter(item => 
+        item.name.toLowerCase().includes(searchText.toLowerCase())
+      );
+      setFilteredItems(filtered);
+    } else {
+      setFilteredItems(items);
+    }
+  }, [searchText, items]);
 
   return (
     <StyledView className="mb-7">
-      <StyledText style={applyFontToStyle({}, 'medium', 18)} className="text-white mb-2">{label}</StyledText>
+      <StyledText style={applyFontToStyle({}, 'semibold', 18)} className="text-white mb-2">{label}</StyledText>
       <StyledTouchableOpacity 
         className="bg-gray-700 rounded-md p-3 flex-row justify-between items-center"
         style={[getShadowStyle(5),  { backgroundColor: Colors.BACKGROUND }]}
@@ -65,26 +79,39 @@ const CustomPicker = ({ label, value, setValue, items }) => {
       {isExpanded && (
         <StyledView 
           className="bg-gray-600 rounded-md mt-1"
-          style={[getShadowStyle(5),{borderBottomLeftRadius:10, borderBottomRightRadius:10, overflow: 'hidden'}]}
+          style={[getShadowStyle(5), {borderBottomLeftRadius:10, borderBottomRightRadius:10, overflow: 'hidden'}]}
         >
-          {items.map((item) => (
-            <StyledTouchableOpacity
-              key={item.id}
-              className="p-3 border-b border-gray-500"
-              onPress={() => {
-                setValue(item.id);
-                setIsExpanded(false);
-              }}
-            >
-              <StyledText style={applyFontToStyle({}, 'regular', 16)} className="text-white">{item.name}</StyledText>
-            </StyledTouchableOpacity>
-          ))}
+          <StyledTextInput
+            className="bg-gray-700 p-2 m-2 rounded-md text-white"
+            style={[
+              applyFontToStyle({}, 'regular', 16),
+              { color: 'white' }  // Добавяме това, за да сме сигурни, че текстът е бял
+            ]}
+            placeholderTextColor="#999"
+            placeholder="Search..."
+            value={searchText}
+            onChangeText={setSearchText}
+          />
+          <ScrollView style={{ maxHeight: 200 }}>
+            {filteredItems.map((item) => (
+              <StyledTouchableOpacity
+                key={item.id}
+                className="p-3 border-b border-gray-500"
+                onPress={() => {
+                  setValue(item.id);
+                  setIsExpanded(false);
+                  setSearchText('');
+                }}
+              >
+                <StyledText style={applyFontToStyle({}, 'regular', 16)} className="text-white">{item.name}</StyledText>
+              </StyledTouchableOpacity>
+            ))}
+          </ScrollView>
         </StyledView>
       )}
     </StyledView>
   );
 };
-
 const InspectionModal = ({ isVisible, onClose, onStartInspection }) => {
   const [step, setStep] = useState('formType');
   const [formType, setFormType] = useState('');
@@ -176,7 +203,7 @@ const InspectionModal = ({ isVisible, onClose, onStartInspection }) => {
 
         {step === 'formType' ? (
           <StyledScrollView className="flex-1 px-8 pt-16">
-            <StyledText style={applyFontToStyle({}, 'bold', 22)} className="text-white mb-6 text-center">Select Form Type</StyledText>
+            <StyledText style={applyFontToStyle({}, 'bold', 24)} className="text-white mb-6 text-center">Select Form Type</StyledText>
             <StyledView className="items-center">
               <FormTypeButton 
                 title="Health & Safety" 
@@ -206,7 +233,7 @@ const InspectionModal = ({ isVisible, onClose, onStartInspection }) => {
               <StyledTouchableOpacity onPress={handleBack} className="mb-4">
                 <Ionicons name="arrow-back" size={24} color="white" />
               </StyledTouchableOpacity>
-              <StyledText style={applyFontToStyle({}, 'bold', 22)} className="text-white mb-4">New Inspection: {formType}</StyledText>
+              <StyledText style={applyFontToStyle({}, 'bold', 24)} className="text-white mb-4">New Inspection: {formType}</StyledText>
               
               {showPerformance && selectedProject && (
                 <StyledView className="mb-4">
