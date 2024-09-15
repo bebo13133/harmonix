@@ -81,6 +81,10 @@ const DcFormCreate = ({ route }) => {
     const insets = useSafeAreaInsets();
 
     const [formData, setFormData] = useState({
+        formType: initialData.formType || '', 
+        projectNumber: initialData.projectNumber || '', 
+        address: initialData.address || '', 
+        inspectorName: initialData.inspectorName || '', 
         selectedProject: initialData.selectedProject || '',
         selectedInspector: initialData.selectedInspector || '',
         selectedPersonInControl: initialData.selectedPersonInControl || '',
@@ -90,7 +94,7 @@ const DcFormCreate = ({ route }) => {
         advisory: '',
         signature: null,
         formSections: {},
-    });
+      });
 
     const [refreshing, setRefreshing] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -153,46 +157,51 @@ const DcFormCreate = ({ route }) => {
 
     const handleSave = async () => {
         if (isLoading) return;
-    
+      
         setIsLoading(true);
         try {
-            const updatedFormSections = await Promise.all(
-                Object.entries(formData.formSections).map(async ([sectionKey, sectionData]) => {
-                    const updatedQuestions = await Promise.all(
-                        Object.entries(sectionData.images || {}).map(async ([questionId, images]) => {
-                            const updatedImages = await Promise.all(
-                                images.map(async (image) => {
-                                    const savedUri = await saveImage(image.uri);
-                                    return { ...image, uri: savedUri };
-                                })
-                            );
-                            return [questionId, updatedImages];
-                        })
-                    );
-                    return [
-                        sectionKey,
-                        {
-                            ...sectionData,
-                            images: Object.fromEntries(updatedQuestions)
-                        }
-                    ];
+          // Обработваме секциите на формата и запазваме изображенията
+          const updatedFormSections = await Promise.all(
+            Object.entries(formData.formSections).map(async ([sectionKey, sectionData]) => {
+              const updatedQuestions = await Promise.all(
+                Object.entries(sectionData.images || {}).map(async ([questionId, images]) => {
+                  const updatedImages = await Promise.all(
+                    images.map(async (image) => {
+                      const savedUri = await saveImage(image.uri);
+                      return { ...image, uri: savedUri };
+                    })
+                  );
+                  return [questionId, updatedImages];
                 })
-            );
-    
-            const dataToSave = {
-                ...formData,
-                formSections: Object.fromEntries(updatedFormSections),
-                date: new Date().toISOString().split('T')[0],
-                status: 'Draft',
-            };
-    
-            await saveFormData(dataToSave);
+              );
+              return [
+                sectionKey,
+                {
+                  ...sectionData,
+                  images: Object.fromEntries(updatedQuestions)
+                }
+              ];
+            })
+          );
+      
+          // Подготвяме данните за запазване
+          const dataToSave = {
+            ...formData,
+            formSections: Object.fromEntries(updatedFormSections),
+            date: new Date().toISOString().split('T')[0],
+            status: 'Draft',
+          };
+      
+          // Запазваме данните
+          await saveFormData(dataToSave);
+          navigation.navigate('MainTabs', { screen: 'Home' })
+
         } catch (error) {
-            Alert.alert('Error while saving form', 'Please try again.');
+          Alert.alert('Error while saving form', 'Please try again.');
         } finally {
-            setIsLoading(false);
+          setIsLoading(false);
         }
-    };
+      };
     
     const handleSubmit = () => {
         // Implement submit logic
