@@ -118,7 +118,7 @@ export const deleteFormFromDb = async (db, id) => {
       DELETE FROM inspections WHERE id = ?;
     `, [id]);
 
-    console.log("Form deleted successfully");
+ 
   } catch (error) {
     console.error("Error deleting form:", error);
     throw error;
@@ -169,7 +169,7 @@ export const updateFormDataInDb = async (db, data) => {
       data.id
     ]);
 
-    console.log("Form updated successfully");
+ 
   } catch (error) {
     console.error("Error updating form:", error);
     throw error;
@@ -181,7 +181,7 @@ export const deleteInspectionFromDb = async (db, id) => {
           DELETE FROM inspections WHERE id = ?;
       `, [id]);
 
-      console.log("Inspection deleted successfully");
+ 
   } catch (error) {
       console.error("Error deleting inspection:", error);
       throw error;
