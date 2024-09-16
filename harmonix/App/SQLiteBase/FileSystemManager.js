@@ -1,6 +1,7 @@
 import * as MediaLibrary from 'expo-media-library';
 import * as ImageManipulator from 'expo-image-manipulator';
-
+import * as FileSystem from 'expo-file-system';
+import { Asset } from 'expo-asset';
 // Лимит на активни операции за запазване
 const MAX_ACTIVE_OPERATIONS = 3;
 
@@ -88,4 +89,15 @@ export const processImages = async (images) => {
     }
   }
   return results;
+};
+export const getBase64FromAssets = async (assetPath) => {
+  try {
+      const asset = Asset.fromModule(assetPath); // Зареждаме изображението
+      await asset.downloadAsync(); // Уверяваме се, че е изтеглено
+      const base64Image = await FileSystem.readAsStringAsync(asset.localUri, { encoding: FileSystem.EncodingType.Base64 });
+      return `data:image/png;base64,${base64Image}`;
+  } catch (error) {
+      console.error('Error loading image from assets:', error);
+      return null;
+  }
 };
