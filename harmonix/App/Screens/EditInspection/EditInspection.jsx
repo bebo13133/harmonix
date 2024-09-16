@@ -3,18 +3,21 @@ import { RefreshControl, Alert, ScrollView, View, Text, TextInput, TouchableOpac
 import { MaterialIcons } from '@expo/vector-icons';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import Svg, { Path } from 'react-native-svg';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { styled } from 'nativewind';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { applyFontToStyle } from '../../Utils/GlobalStyles';
-import hsFormQuestions from './hsFormQuestions';
-import FormSection from './FormSection';
 import { useUser } from '../../Contexts/UserContext';
-import { saveImage } from '../../SQLiteBase/FileSystemManager';
-import PerformanceChart from './PerformanceChart';
 import Colors from '../../Utils/Colors';
-import CustomHsHeader from './CustomHsHeader';
+import FormSection from '../Forms/FormSection';
+import CustomHsHeader from '../Forms/CustomHsHeader';
+import PerformanceChart from '../Forms/PerformanceChart';
+import hsFormQuestions from '../Forms/hsFormQuestions';
+import { EnvFormQuestions } from '../Forms/EnvFormQuestions';
+import { QaFormQuestions } from '../Forms/QaFormQuestions';
+import { DcFormQuestions } from '../Forms/DcFormQuestions';
+import { saveImage } from '../../SQLiteBase/FileSystemManager';
 
 const StyledScrollView = styled(ScrollView);
 const StyledView = styled(View);
@@ -73,50 +76,55 @@ const SignatureField = React.forwardRef((props, ref) => {
     );
 });
 
-const HsCreateForm = ({ route }) => {
+const EditInspection = () => {
     const navigation = useNavigation();
-    const { saveFormData } = useUser();
-    const initialData = route.params || {};
+    const route = useRoute();
+    const { inspection } = route.params;
+    const { saveFormData, deleteInspection } = useUser();
     const insets = useSafeAreaInsets();
 
+    const getQuestions = useCallback((formType) => {
+        switch (formType) {
+            case 'healthSafety':
+                return hsFormQuestions;
+            case 'environmental':
+                return EnvFormQuestions;
+            case 'qualityAssurance':
+                return QaFormQuestions;
+            case 'documentControl':
+                return DcFormQuestions;
+            default:
+                console.warn('Unknown form type:', formType);
+                return {};
+        }
+    }, []);
+
     const [formData, setFormData] = useState({
-        formType: initialData.formType || '', 
-        projectNumber: initialData.projectNumber || '', 
-        address: initialData.address || '', 
-        inspectorName: initialData.inspectorName || '', 
-        selectedProject: initialData.selectedProject || '',
-        selectedInspector: initialData.selectedInspector || '',
-        selectedPersonInControl: initialData.selectedPersonInControl || '',
-        selectedProjectDirector: initialData.selectedProjectDirector || '',
-        selectedDivisionalDirector: initialData.selectedDivisionalDirector || '',
-        generalComments: '',
-        advisory: '',
-        signature: null,
-        formSections: {},
-      });
+        ...inspection,
+        formSections: inspection.formSections || {},
+    });
 
     const [refreshing, setRefreshing] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [showPerformance, setShowPerformance] = useState(false);
     const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
 
-    const sections = Object.entries(hsFormQuestions);
+    const questions = getQuestions(inspection.formType);
+    const sections = Object.entries(questions);
     const signatureRef = useRef();
     const scrollViewRef = useRef();
 
-    // Функция за съхранение на текущите данни на секция преди смяната
-    const saveCurrentSectionData = () => {
+    const saveCurrentSectionData = useCallback(() => {
         const currentSectionKey = sections[currentSectionIndex][0];
         updateFormSection(currentSectionKey, formData.formSections[currentSectionKey]);
-    };
+    }, [currentSectionIndex, sections, formData.formSections, updateFormSection]);
 
-    // Извличане на съществуващите данни, ако има такива, за текущата секция
-    const loadSectionData = (index) => {
+    const loadSectionData = useCallback((index) => {
         const sectionKey = sections[index][0];
         return formData.formSections[sectionKey] || {};
-    };
+    }, [sections, formData.formSections]);
 
-    const handleSectionChange = (newIndex) => {
+    const handleSectionChange = useCallback((newIndex) => {
         saveCurrentSectionData();
         setCurrentSectionIndex(newIndex);
         const newSectionData = loadSectionData(newIndex);
@@ -127,7 +135,7 @@ const HsCreateForm = ({ route }) => {
                 [sections[newIndex][0]]: newSectionData
             }
         }));
-    };
+    }, [saveCurrentSectionData, loadSectionData, sections]);
 
     useEffect(() => {
         if (formData.selectedProject) {
@@ -147,7 +155,7 @@ const HsCreateForm = ({ route }) => {
                 />
             ),
         });
-    }, [navigation, currentSectionIndex, formData, sections, insets.top]);
+    }, [navigation, currentSectionIndex, formData, sections, insets.top, handleSectionChange]);
 
     const onRefresh = useCallback(() => {
         setRefreshing(true);
@@ -156,12 +164,12 @@ const HsCreateForm = ({ route }) => {
         }, 2000);
     }, []);
 
-    const handleInputChange = (field, value) => {
+    const handleInputChange = useCallback((field, value) => {
         setFormData(prevData => ({
             ...prevData,
             [field]: value
         }));
-    };
+    }, []);
 
     const updateFormSection = useCallback((sectionKey, sectionData) => {
         setFormData(prevData => ({
@@ -173,70 +181,106 @@ const HsCreateForm = ({ route }) => {
         }));
     }, []);
 
-    const handleSave = async () => {
+    const handleSave = useCallback(async () => {
         if (isLoading) return;
-      
-        setIsLoading(true); 
-         
-        try {
-          const updatedFormSections = {};
-      
-          for (const [sectionKey, sectionData] of Object.entries(formData.formSections)) {
-            const updatedQuestions = {};
-      
-            for (const [questionId, images] of Object.entries(sectionData.images || {})) {
-              const updatedImages = [];
-      
-              for (const image of images) {
-                try {
-                  const savedUri = await saveImage(image.uri); 
-                 updatedImages.push({ ...image, uri: savedUri });
-                } catch (error) {
-                        Alert.alert('Error', 'Error saving one of the images. Please try again.');
-                  setIsLoading(false);
-                  return; 
-                }
-              }
-      
-              updatedQuestions[questionId] = updatedImages;
-            }
-      
-            updatedFormSections[sectionKey] = {
-              ...sectionData,
-              images: updatedQuestions,
-            };
-          }
-      
-          const dataToSave = {
-            ...formData,
-            formSections: updatedFormSections,
-            date: new Date().toISOString().split('T')[0],
-            status: 'Draft',
-          };
-      
-          await saveFormData(dataToSave); 
-      
-          setIsLoading(false); 
-          navigation.navigate('MainTabs', { screen: 'Home' });
-        } catch (error) {
-        
-          Alert.alert('Error', 'Error while saving form. Please try again.');
-          setIsLoading(false); // 
-        }
-      };
-      
-    const handleSubmit = () => {
-        // Implement submit logic
-    };
 
-    const renderQuestions = () => {
+        setIsLoading(true);
+
+        try {
+            const updatedFormSections = {};
+
+            for (const [sectionKey, sectionData] of Object.entries(formData.formSections)) {
+                const updatedQuestions = {};
+
+                for (const [questionId, images] of Object.entries(sectionData.images || {})) {
+                    const updatedImages = [];
+
+                    for (const image of images) {
+                        try {
+                            if (!image || !image.uri) {
+                                console.warn('Skipping image with null or undefined URI');
+                                continue;
+                            }
+                            if (typeof image.uri !== 'string' || image.uri.trim() === '') {
+                                console.warn('Invalid image URI:', image.uri);
+                                continue;
+                            }
+                            const savedUri = await saveImage(image.uri);
+                            updatedImages.push({ ...image, uri: savedUri });
+                        } catch (error) {
+                            console.error('Error saving image:', error);
+                            console.warn('Skipping image due to error:', error.message);
+                        }
+                    }
+
+                    if (updatedImages.length > 0) {
+                        updatedQuestions[questionId] = updatedImages;
+                    }
+                }
+
+                updatedFormSections[sectionKey] = {
+                    ...sectionData,
+                    images: updatedQuestions,
+                };
+            }
+
+            const dataToSave = {
+                ...formData,
+                formSections: updatedFormSections,
+                lastModified: new Date().toISOString(),
+                status: 'Draft',
+                date: new Date().toISOString().split('T')[0],
+            };
+
+
+            if (inspection.id) {
+
+                await deleteInspection(inspection.id);
+                dataToSave.id = inspection.id;
+            }
+
+            await saveFormData(dataToSave);
+       
+            setIsLoading(false);
+            navigation.navigate('MainTabs', { screen: 'Home' });
+        } catch (error) {
+          
+            Alert.alert('Error', 'Error while saving form. Please try again.');
+            setIsLoading(false);
+        }
+    }, [isLoading, formData, navigation, saveFormData, deleteInspection, inspection]);
+
+    const handleSubmit = useCallback(async () => {
+        if (isLoading) return;
+
+        setIsLoading(true);
+
+        try {
+            const dataToSubmit = {
+                ...formData,
+                status: 'Submitted',
+                lastModified: new Date().toISOString(),
+            };
+
+            await saveFormData(dataToSubmit);
+
+            setIsLoading(false);
+            navigation.navigate('MainTabs', { screen: 'Home' });
+        } catch (error) {
+            console.error('Error in handleSubmit:', error);
+            Alert.alert('Error', 'Error while submitting form. Please try again.');
+            setIsLoading(false);
+        }
+    }, [isLoading, formData, navigation, saveFormData]);
+
+    const renderQuestions = useCallback(() => {
         const startIndex = currentSectionIndex;
         const endIndex = startIndex + 1;
 
         const questionEntries = sections.slice(startIndex, endIndex).map(([key, section]) => (
-            <FormSection 
-                key={key} 
-                section={section} 
+            <FormSection
+                key={key}
+                section={section}
                 updateFormSection={(sectionData) => updateFormSection(key, sectionData)}
                 savedSectionData={formData.formSections[key] || {}}
             />
@@ -272,31 +316,32 @@ const HsCreateForm = ({ route }) => {
                 </StyledView>,
                 <StyledView className="mb-4" key="signature">
                     <StyledText style={applyFontToStyle({}, 'semibold', 18)} className="mb-2 text-white">Signature</StyledText>
-                    <SignatureField 
-                        ref={signatureRef} 
-                        onSign={(signature) => handleInputChange('signature', signature)} 
+                    <SignatureField
+                        ref={signatureRef}
+                        onSign={(signature) => handleInputChange('signature', signature)}
                     />
                 </StyledView>,
                 <View style={styles.buttonContainer} key="buttons">
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={[styles.button, { backgroundColor: Colors.GREEN }]}
                         onPress={handleSave}
                         disabled={isLoading}
                     >
                         <Text style={[applyFontToStyle({}, 'medium', 18), styles.buttonText]}>{isLoading ? 'Saving...' : 'Save'}</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={[styles.button, { backgroundColor: Colors.PRIMARY }]}
                         onPress={handleSubmit}
+                        disabled={isLoading}
                     >
-                        <Text style={[applyFontToStyle({}, 'medium', 18), styles.buttonText]}>Submit</Text>
+                        <Text style={[applyFontToStyle({}, 'medium', 18), styles.buttonText]}>{isLoading ? 'Submitting...' : 'Submit'}</Text>
                     </TouchableOpacity>
                 </View>
             );
         }
 
         return questionEntries;
-    };
+    }, [currentSectionIndex, sections, formData, handleInputChange, handleSave, handleSubmit, isLoading, updateFormSection]);
 
     return (
         <SafeAreaView style={[styles.container, { paddingTop: insets.top }]}>
@@ -308,14 +353,14 @@ const HsCreateForm = ({ route }) => {
                 contentContainerStyle={[styles.contentContainer, { paddingBottom: insets.bottom + 80 }]}
             >
                 <StyledView className="p-4" style={{ marginTop: 60 }}>
-                    {showPerformance && formData.selectedProject && initialData.projectData && (
-                        <PerformanceChart 
-                            performance={initialData.projectData.performance || 0}
+                    {showPerformance && formData.selectedProject && (
+                        <PerformanceChart
+                            performance={formData.performance || 0}
                             projectData={{
-                                previousReport: initialData.projectData.previousReport || "No previous report",
-                                imageUrl: initialData.projectData.imageUrl,
-                                ncn: initialData.projectData.ncn || 0,
-                                inspector: initialData.projectData.inspector || "No inspector assigned"
+                                previousReport: formData.previousReport || "No previous report",
+                                imageUrl: formData.imageUrl ? { uri: formData.imageUrl } : null,
+                                ncn: formData.ncn || 0,
+                                inspector: formData.inspectorName || "No inspector assigned"
                             }}
                         />
                     )}
@@ -323,9 +368,8 @@ const HsCreateForm = ({ route }) => {
                     {renderQuestions()}
 
                 </StyledView>
-
             </StyledScrollView>
-          
+
             <View style={[styles.paginationContainer, { paddingBottom: insets.bottom }]}>
                 {currentSectionIndex > 0 && (
                     <TouchableOpacity
@@ -385,8 +429,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         backgroundColor: Colors.BACKGROUND,
-        borderTopWidth: 6, 
-        borderTopColor: Colors.BACKGROUND_DARK, 
+        borderTopWidth: 6,
+        borderTopColor: Colors.BACKGROUND_DARK,
         position: 'absolute',
         bottom: 0,
         left: 0,
@@ -421,7 +465,6 @@ const styles = StyleSheet.create({
         paddingVertical: 5,
         borderColor: Colors.PRIMARY,
         borderWidth: 2,
-
     },
     clearText: {
         color: Colors.WHITE,
@@ -429,4 +472,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default HsCreateForm;
+export default EditInspection;

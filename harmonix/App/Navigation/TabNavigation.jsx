@@ -20,6 +20,7 @@ import DcFormCreate from '../Screens/Forms/DcFormCreate';
 import DetailsScreen from '../Screens/DetailsScreen/DetailsScreen';
 import { Ionicons } from '@expo/vector-icons';
 import Sizes from '../Utils/Sizes';
+import EditInspection from '../Screens/EditInspection/EditInspection';
 
 
 const Stack = createStackNavigator();
@@ -124,33 +125,33 @@ const HealthSafetyStack = createStackNavigator();
 function HealthSafetyNavigator() {
   return (
     <HealthSafetyStack.Navigator>
-      <HealthSafetyStack.Screen 
-        name="HealthSafetyList" 
+      <HealthSafetyStack.Screen
+        name="HealthSafetyList"
         component={HealthSafetyInspections}
         options={{ header: () => <Header /> }}
       />
-      <HealthSafetyStack.Screen 
-        name="CreateInspectionHs" 
+      <HealthSafetyStack.Screen
+        name="CreateInspectionHs"
         component={HsCreateForm}
         options={{
           header: (props) => <CustomHsHeader {...props} />,
         }}
       />
-      <HealthSafetyStack.Screen 
+      <HealthSafetyStack.Screen
         name="CreateInspectionEnvironmental"
         component={EnvCreateForm}
         options={{
           header: (props) => <CustomHsHeader {...props} />,
         }}
       />
-      <HealthSafetyStack.Screen 
+      <HealthSafetyStack.Screen
         name="CreateInspectionQa"
         component={QaCreateForm}
         options={{
           header: (props) => <CustomHsHeader {...props} />,
         }}
       />
-      <HealthSafetyStack.Screen 
+      <HealthSafetyStack.Screen
         name="CreateInspectionDc"
         component={DcFormCreate}
         options={{
@@ -200,18 +201,18 @@ export default function MainNavigator() {
   return (
     <SafeAreaView style={styles.container}>
       <Stack.Navigator>
-        <Stack.Screen 
-          name="MainTabs" 
+        <Stack.Screen
+          name="MainTabs"
           component={TabNavigator}
           options={{ headerShown: false }}
         />
-        <Stack.Screen 
-          name="HealthSafety" 
-          component={HealthSafetyNavigator} 
+        <Stack.Screen
+          name="HealthSafety"
+          component={HealthSafetyNavigator}
           options={{ headerShown: false }}
         />
-        <Stack.Screen 
-          name="ProfileSettings" 
+        <Stack.Screen
+          name="ProfileSettings"
           component={ProfileSettings}
         />
         <Stack.Screen
@@ -219,6 +220,13 @@ export default function MainNavigator() {
           component={DetailsScreen}
           options={({ route, navigation }) => ({
             header: () => <CustomInspectionHeader navigation={navigation} route={route} />,
+          })}
+        />
+        <Stack.Screen
+          name="EditInspection"
+          component={EditInspection}
+          options={({ route }) => ({
+            title: `Edit ${route.params.formType} Inspection`,
           })}
         />
       </Stack.Navigator>

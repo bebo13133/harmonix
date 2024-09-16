@@ -24,7 +24,7 @@ const FormSection = ({ section, updateFormSection, savedSectionData }) => {
   const [imageIndex, setImageIndex] = useState(0);
   const [isImageViewVisible, setIsImageViewVisible] = useState(false);
   const [isProcessingImages, setIsProcessingImages] = useState(false); // Добавяне на индикация за обработка на снимки
-
+  const [tempImages, setTempImages] = useState({});
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
@@ -63,25 +63,25 @@ const FormSection = ({ section, updateFormSection, savedSectionData }) => {
   const handleTakePhoto = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
-        Alert.alert('Permission Required', 'We need permission to access the camera.');
-        return;
+      Alert.alert('Permission Required', 'We need permission to access the camera.');
+      return;
     }
 
     let result = await ImagePicker.launchCameraAsync({
-        allowsEditing: false,
-        aspect: [4, 3],
-        quality: 1,
+      allowsEditing: false,
+      aspect: [4, 3],
+      quality: 1,
     });
 
     if (!result.canceled) {
-        const newImage = { uri: result.assets[0].uri };
-        setImages(prev => ({
-            ...prev,
-            [currentQuestionId]: [...(prev[currentQuestionId] || []), newImage]
-        }));
+      const newImage = { uri: result.assets[0].uri };
+      setImages(prev => ({
+        ...prev,
+        [currentQuestionId]: [...(prev[currentQuestionId] || []), newImage]
+      }));
     }
     setMediaModalVisible(false);
-};
+  };
   const handleChooseImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
@@ -98,27 +98,27 @@ const FormSection = ({ section, updateFormSection, savedSectionData }) => {
 
     if (!result.canceled) {
       const newImages = result.assets.map((asset) => ({ uri: asset.uri }));
-
-      // Показваме изображенията веднага, докато ги обработваме
       setImages((prev) => ({
         ...prev,
         [currentQuestionId]: [...(prev[currentQuestionId] || []), ...newImages],
       }));
-
-      setIsProcessingImages(true);
-
-      // Обработваме изображенията асинхронно
-      const optimizedImages = await processImages(newImages);
-
-      setImages((prev) => ({
-        ...prev,
-        [currentQuestionId]: [...(prev[currentQuestionId] || []), ...optimizedImages],
-      }));
-
-      setIsProcessingImages(false);
     }
+    // setIsProcessingImages(true);
+
+    // // Обработваме изображенията асинхронно
+    // const optimizedImages = await processImages(newImages);
+
+    // setImages((prev) => ({
+    //   ...prev,
+    //   [currentQuestionId]: [...(prev[currentQuestionId] || []), ...optimizedImages],
+    // }));
+
+    // setIsProcessingImages(false);
     setMediaModalVisible(false);
-  };
+
+  }
+
+
 
   const handleImagePreview = (questionId, index) => {
     setCurrentQuestionId(questionId);
