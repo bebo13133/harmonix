@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { Text } from 'react-native';
-import { initDatabase, saveFormDataToDb, loadFormDataFromDb, deleteFormFromDb } from '../SQLiteBase/DatabaseManager';
+import { initDatabase, saveFormDataToDb, loadFormDataFromDb, deleteFormFromDb, updateFormDataInDb, deleteInspectionFromDb } from '../SQLiteBase/DatabaseManager';
 import { useNavigation } from '@react-navigation/native';
 
 const UserContext = createContext();
@@ -92,6 +92,34 @@ export const UserProvider = ({ children }) => {
     const calculateScore = (data) => {
         return Math.floor(Math.random() * 100);
     };
+    const updateFormData = async (data) => {
+        if (!isDbReady || !db) {
+          throw new Error('Database is not ready');
+        }
+        try {
+          const updatedFormData = {
+            ...data,
+            lastModified: new Date().toISOString(),
+          };
+          await updateFormDataInDb(db, updatedFormData);
+          await loadAllForms(db);
+        } catch (error) {
+          console.error('Error updating data:', error);
+          throw error;
+        }
+      };
+      const deleteInspection = async (id) => {
+        if (!isDbReady || !db) {
+            throw new Error('Database is not ready');
+        }
+        try {
+            await deleteInspectionFromDb(db, id);
+            await loadAllForms(db);
+        } catch (error) {
+            console.error('Error deleting inspection:', error);
+            throw error;
+        }
+    };
 
     const contextValue = {
         isAuthenticated,
@@ -102,7 +130,9 @@ export const UserProvider = ({ children }) => {
         db,
         savedForms,
         isDbReady,
-        deleteForm
+        deleteForm,
+        updateFormData,
+        deleteInspection
     };
 
     return (

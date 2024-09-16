@@ -124,3 +124,66 @@ export const deleteFormFromDb = async (db, id) => {
     throw error;
   }
 };
+export const updateFormDataInDb = async (db, data) => {
+  try {
+    await db.runAsync(`
+      UPDATE inspections SET
+      projectNumber = ?,
+      date = ?,
+      address = ?,
+      status = ?,
+      completionPercentage = ?,
+      score = ?,
+      formType = ?,
+      inspectorName = ?,
+      lastModified = ?,
+      projectId = ?,
+      inspectorId = ?,
+      personInControlId = ?,
+      projectDirectorId = ?,
+      divisionalDirectorId = ?,
+      generalComments = ?,
+      advisory = ?,
+      signature = ?,
+      formSections = ?
+      WHERE id = ?
+    `, [
+      data.projectNumber,
+      data.date,
+      data.address,
+      data.status,
+      data.completionPercentage,
+      data.score,
+      data.formType,
+      data.inspectorName,
+      data.lastModified,
+      data.projectId,
+      data.inspectorId,
+      data.personInControlId,
+      data.projectDirectorId,
+      data.divisionalDirectorId,
+      data.generalComments,
+      data.advisory,
+      JSON.stringify(data.signature),
+      JSON.stringify(data.formSections),
+      data.id
+    ]);
+
+    console.log("Form updated successfully");
+  } catch (error) {
+    console.error("Error updating form:", error);
+    throw error;
+  }
+};
+export const deleteInspectionFromDb = async (db, id) => {
+  try {
+      await db.runAsync(`
+          DELETE FROM inspections WHERE id = ?;
+      `, [id]);
+
+      console.log("Inspection deleted successfully");
+  } catch (error) {
+      console.error("Error deleting inspection:", error);
+      throw error;
+  }
+};

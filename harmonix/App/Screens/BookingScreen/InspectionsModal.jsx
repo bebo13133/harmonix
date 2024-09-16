@@ -49,7 +49,11 @@ const InspectionsModal = ({ isVisible, onClose, inspection }) => {
     if (inspection.status === 'Pending Upload') {
       console.log('Submit inspection:', inspection.id);
     } else {
-      console.log('Continue inspection:', inspection.id);
+      onClose(); 
+      navigation.navigate('EditInspection', { 
+        inspection: inspection,
+        formType: inspection.formType 
+      });
     }
   };
 
