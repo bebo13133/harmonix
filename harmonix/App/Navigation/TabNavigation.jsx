@@ -21,41 +21,12 @@ import DetailsScreen from '../Screens/DetailsScreen/DetailsScreen';
 import { Ionicons } from '@expo/vector-icons';
 import Sizes from '../Utils/Sizes';
 import EditInspection from '../Screens/EditInspection/EditInspection';
+import LoginScreen from '../Screens/LoginScreen/LoginScreen';
+import LogoutScreen from '../Screens/LogoutScreen/LogoutScreen';
 
 
 const Stack = createStackNavigator();
 const { width } = Dimensions.get('window');
-
-function TopTabBar({ activeTab, switchTab }) {
-  return (
-    <View style={styles.topTabBar}>
-      <TouchableOpacity
-        style={[styles.topTab, activeTab === 'Home' && styles.activeTopTab]}
-        onPress={() => switchTab('Home')}
-      >
-        <Text style={[styles.topTabText, activeTab === 'Home' && styles.activeTopTabText]}>Home</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[styles.topTab, activeTab === 'Search' && styles.activeTopTab]}
-        onPress={() => switchTab('Search')}
-      >
-        <Text style={[styles.topTabText, activeTab === 'Search' && styles.activeTopTabText]}>Search</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[styles.topTab, activeTab === 'Notifications' && styles.activeTopTab]}
-        onPress={() => switchTab('Notifications')}
-      >
-        <Text style={[styles.topTabText, activeTab === 'Notifications' && styles.activeTopTabText]}>Notifications</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[styles.topTab, activeTab === 'ProfileSettings' && styles.activeTopTab]}
-        onPress={() => switchTab('ProfileSettings')}
-      >
-        <Text style={[styles.topTabText, activeTab === 'ProfileSettings' && styles.activeTopTabText]}>Profile</Text>
-      </TouchableOpacity>
-    </View>
-  );
-}
 
 function MainContent({ activeTab, switchTab }) {
   const translateX = useSharedValue(activeTab === 'Home' ? 0 : -width * ['Home', 'Search', 'Notifications', 'ProfileSettings'].indexOf(activeTab));
@@ -125,6 +96,7 @@ const HealthSafetyStack = createStackNavigator();
 function HealthSafetyNavigator() {
   return (
     <HealthSafetyStack.Navigator>
+      
       <HealthSafetyStack.Screen
         name="HealthSafetyList"
         component={HealthSafetyInspections}
@@ -171,6 +143,7 @@ function TabNavigator() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <Header />
       {/* <TopTabBar activeTab={activeTab} switchTab={switchTab} /> */}
       <MainContent activeTab={activeTab} switchTab={switchTab} />
       <CustomBottomTabBar activeTab={activeTab} switchTab={switchTab} />
@@ -197,6 +170,7 @@ const CustomInspectionHeader = ({ navigation, route }) => {
     </SafeAreaView>
   );
 };
+
 export default function MainNavigator() {
   return (
     <SafeAreaView style={styles.container}>
@@ -214,6 +188,17 @@ export default function MainNavigator() {
         <Stack.Screen
           name="ProfileSettings"
           component={ProfileSettings}
+        />
+         <Stack.Screen
+          name="LoginScreen"
+          component={LoginScreen}
+          options={{ headerShown: false }}
+
+        />
+        <Stack.Screen
+          name="LogoutScreen"
+          component={LogoutScreen}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="InspectionDetails"

@@ -1,18 +1,25 @@
 import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ImageBackground } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ImageBackground, Alert } from 'react-native';
 import Sizes from '../../Utils/Sizes';
 import Colors from '../../Utils/Colors';
 import { useForm } from '../../Hooks/useForm';
-import { applyFontToStyle} from '../../Utils/GlobalStyles';
+import { useUser } from '../../Contexts/UserContext';
 
-export const LoginForm = () => {
+const LoginForm = () => {
   const initialValues = { email: '', password: '' };
-  
-  const handleLogin = (formValues) => {
-    console.log('Login with', formValues);
-    //ще се взима от контекста 
-  };
+  const { login } = useUser();
+   
+  const handleLogin = async (formValues) => {
+    try {
+      const success = await login(formValues.email, formValues.password);
+      if (success) {
+     console.log("successful login';")
+      }
+    } catch (error) {
 
+      Alert.alert('Error during login', 'Please check your credentials and try again.');
+    }
+  };
   const { values, errors, onChangeHandler, onSubmit } = useForm(initialValues, handleLogin);
 
   return (
@@ -27,30 +34,30 @@ export const LoginForm = () => {
             style={styles.logo}
           />
            <TextInput
-            style={applyFontToStyle(styles.input)}
+            style={styles.input}
             placeholder="Email"
             placeholderTextColor={Colors.TEXT_LIGHT}
             value={values.email}
             onChangeText={(text) => onChangeHandler('email', text)}
             keyboardType="email-address" 
           />
-          {errors.email && <Text style={applyFontToStyle(styles.errorText)}>{errors.email}</Text>}
+          {errors.email ? <Text style={styles.errorText}>{errors.email}</Text> : null}
           
           <TextInput
-            style={applyFontToStyle(styles.input)}
+            style={styles.input}
             placeholder="Password"
             placeholderTextColor={Colors.TEXT_LIGHT}
             value={values.password}
             onChangeText={(text) => onChangeHandler('password', text)}
             secureTextEntry
           />
-          {errors.password && <Text style={applyFontToStyle(styles.errorText)}>{errors.password}</Text>}
+          {errors.password ? <Text style={styles.errorText}>{errors.password}</Text> : null}
 
           <TouchableOpacity style={styles.forgotPasswordContainer} onPress={() => console.log('Forgot password')}>
-            <Text style={applyFontToStyle(styles.forgotPasswordText, 'medium')}>Forgot password</Text>
+            <Text style={styles.forgotPasswordText}>Forgot password</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.button} onPress={onSubmit}>
-            <Text style={applyFontToStyle(styles.buttonText, 'bold')}>Login</Text>
+            <Text style={styles.buttonText}>Login</Text>
           </TouchableOpacity>
         </View>
       </View>

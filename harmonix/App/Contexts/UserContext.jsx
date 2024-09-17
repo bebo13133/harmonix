@@ -2,11 +2,14 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import { Text } from 'react-native';
 import { initDatabase, saveFormDataToDb, loadFormDataFromDb, deleteFormFromDb, updateFormDataInDb, deleteInspectionFromDb } from '../SQLiteBase/DatabaseManager';
 import { useNavigation } from '@react-navigation/native';
+import { useAsyncStorage } from '../Hooks/useAsyncStorage';
+import userService from '../Services/userService';
 
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-    const [isAuthenticated, setIsAuthenticated] = useState(true);
+    // const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [auth, setAuth] = useAsyncStorage('auth', {});
     const [formData, setFormData] = useState(null);
     const [db, setDb] = useState(null);
     const [savedForms, setSavedForms] = useState([]);
@@ -32,6 +35,26 @@ export const UserProvider = ({ children }) => {
         initDb();
     }, []);
 
+    const login = async (email, password) => {
+        try {
+            const token = await userService.login(email, password);
+            setAuth({ token, email });
+            return true;
+        } catch (error) {
+            console.error('Error during login:', error);
+            throw error;
+        }
+    };
+    const onLogout = async () => {
+        try {
+            await userService.logout();
+            setAuth({});
+        } catch (error) {
+            console.error('Error during logout:', error);
+            throw error;
+        }
+
+    }
     const saveFormData = async (data) => {
         if (!isDbReady || !db) {
             throw new Error('Database is not ready');
@@ -94,21 +117,21 @@ export const UserProvider = ({ children }) => {
     };
     const updateFormData = async (data) => {
         if (!isDbReady || !db) {
-          throw new Error('Database is not ready');
+            throw new Error('Database is not ready');
         }
         try {
-          const updatedFormData = {
-            ...data,
-            lastModified: new Date().toISOString(),
-          };
-          await updateFormDataInDb(db, updatedFormData);
-          await loadAllForms(db);
+            const updatedFormData = {
+                ...data,
+                lastModified: new Date().toISOString(),
+            };
+            await updateFormDataInDb(db, updatedFormData);
+            await loadAllForms(db);
         } catch (error) {
-          console.error('Error updating data:', error);
-          throw error;
+            console.error('Error updating data:', error);
+            throw error;
         }
-      };
-      const deleteInspection = async (id) => {
+    };
+    const deleteInspection = async (id) => {
         if (!isDbReady || !db) {
             throw new Error('Database is not ready');
         }
@@ -122,8 +145,7 @@ export const UserProvider = ({ children }) => {
     };
 
     const contextValue = {
-        isAuthenticated,
-        setIsAuthenticated,
+        isAuthenticated: !!auth.token,
         formData,
         saveFormData,
         loadFormData: () => loadAllForms(db),
@@ -132,7 +154,10 @@ export const UserProvider = ({ children }) => {
         isDbReady,
         deleteForm,
         updateFormData,
-        deleteInspection
+        deleteInspection,
+        login,
+        token: auth.token,
+        onLogout
     };
 
     return (
