@@ -80,11 +80,11 @@ export default function Header() {
             >
               <TouchableOpacity style={styles.menuItem} onPress={handleSettings}>
                 <MaterialIcons name="settings" size={24} color={Colors.TEXT} />
-                <Text style={[styles.menuText, applyFontToStyle({}, 'regular', 16)]}>Настройки</Text>
+                <Text style={[styles.menuText, applyFontToStyle({}, 'regular', 16)]}>Settings</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
                 <MaterialIcons name="logout" size={24} color={Colors.TEXT} />
-                <Text style={[styles.menuText, applyFontToStyle({}, 'regular', 16)]}>Изход</Text>
+                <Text style={[styles.menuText, applyFontToStyle({}, 'regular', 16)]}>Logout</Text>
               </TouchableOpacity>
             </Animated.View>
           </View>
