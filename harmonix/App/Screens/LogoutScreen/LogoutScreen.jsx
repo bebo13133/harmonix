@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { useUser } from '../../Contexts/UserContext';
 import { useNavigation } from '@react-navigation/native';
+import { StatusBar } from 'expo-status-bar';
+import Colors from '../../Utils/Colors';
+import { Typography, applyFontToStyle, normalize } from '../../Utils/GlobalStyles';
 
 export const LogoutScreen = () => {
   const { onLogout, token } = useUser();
@@ -17,29 +20,47 @@ export const LogoutScreen = () => {
           routes: [{ name: 'LoginScreen' }],
         });
       } catch (error) {
-        console.error('Error during logout:', error);
+      
         setIsLoggingOut(false);
       }
     };
 
     performLogout();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onLogout]);
-
-  if (!isLoggingOut) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Error during logout. Please try again.</Text>
-      </View>
-    );
-  }
+  }, [onLogout, token, navigation]);
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <ActivityIndicator size="large" color="#0000ff" />
-      <Text>Logging out...</Text>
+    <View style={styles.container}>
+      <StatusBar style="auto" />
+      {isLoggingOut ? (
+        <>
+          <ActivityIndicator size="large" color={Colors.PRIMARY} />
+          <Text style={styles.text}>Logging out...</Text>
+        </>
+      ) : (
+        <Text style={styles.errorText}>Error during logout. Please try again.</Text>
+      )}
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.BACKGROUND,
+  },
+  text: {
+    ...applyFontToStyle(Typography.body, 'medium', 18),
+    color: Colors.WHITE,
+    marginTop: normalize(20),
+    textAlign: 'center',
+  },
+  errorText: {
+    ...applyFontToStyle(Typography.body, 'regular', 16),
+    color: Colors.ERROR,
+    textAlign: 'center',
+  },
+});
 
 export default LogoutScreen;
