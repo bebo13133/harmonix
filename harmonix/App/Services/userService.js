@@ -1,12 +1,13 @@
-import { post } from "../API/requester";
+import { post } from '../API/requester';
 
+const baseUrl = 'https://harmonix.emage.co.uk/api';
 
 const userService = {
   login: async (email, password) => {
     try {
-      const response = await post('/login', { email, password });
+      const response = await post(`${baseUrl}/login`, { email, password });
       if (response.token) {
-        return response.token;
+        return response;
       } else {
         throw new Error('Error login: Invalid credentials');
       }
@@ -16,9 +17,7 @@ const userService = {
     }
   },
 
-  logout: async () => {
-  
-  }
+  logout: async () => {},
 };
 
 export default userService;
