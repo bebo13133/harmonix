@@ -15,9 +15,16 @@ const userService = {
       throw error;
     }
   },
-
   logout: async () => {
-  
+    try {
+      await post('/logout');
+     
+      console.log('logout:');
+      return true;
+    } catch (error) {
+      console.error('Error logout:', error);
+      throw error;
+    }
   }
 };
 

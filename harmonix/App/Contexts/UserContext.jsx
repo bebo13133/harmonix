@@ -45,9 +45,9 @@ export const UserProvider = ({ children }) => {
             throw error;
         }
     };
-    const onLogout = async () => {
+    const onLogout = async (token) => {
         try {
-            await userService.logout();
+            await userService.logout(token);
             setAuth({});
         } catch (error) {
             console.error('Error during logout:', error);
