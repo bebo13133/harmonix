@@ -3,8 +3,7 @@ import { View, Text, TouchableOpacity, Animated, ScrollView, Platform, TextInput
 import { styled } from 'nativewind';
 import { Ionicons } from '@expo/vector-icons';
 import PerformanceChart from './PerformanceChart';
-// import { projects, inspectors, personsInControl, projectDirectors, divisionalDirectors } from '../../Utils/mockData';
-import { projects, personsInControl, projectDirectors, divisionalDirectors } from '../../Utils/mockData';
+import { projects } from '../../Utils/mockData';
 import Colors from '../../Utils/Colors';
 import { applyFontToStyle } from '../../Utils/GlobalStyles';
 
@@ -117,51 +116,63 @@ const CustomPicker = ({ label, value, setValue, items }) => {
     </StyledView>
   );
 };
+
 const InspectionModal = ({ isVisible, onClose, onStartInspection }) => {
   const [inspectors, setInspectors] = useState([]);
+  const [personsInControl, setPersonsInControl] = useState([]);
+  const [projectDirectors, setProjectDirectors] = useState([]);
+  const [divisionalDirectors, setDivisionalDirectors] = useState([]);
+
   const [selectedInspector, setSelectedInspector] = useState('');
-  const { userData } = useUser();
-  const { loadInspectors } = useDatabase();
-
-  useEffect(() => {
-    const fetchInspectors = async () => {
-      console.log('Fetching inspectors...');
-      const dbInspectors = await loadInspectors();
-      console.log('Fetched inspectors:', dbInspectors);
-      setInspectors(dbInspectors);
-
-      console.log('Current userData:', userData);
-      if (userData && userData.id) {
-        console.log('Searching for inspector with id:', userData.id);
-        const userInspector = dbInspectors.find((inspector) => inspector.id === String(userData.id));
-        console.log('Found user inspector:', userInspector);
-        if (userInspector) {
-          console.log('Setting selected inspector to:', userInspector.id);
-          setSelectedInspector(userInspector.id);
-        } else {
-          console.log('No matching inspector found for user');
-        }
-      } else {
-        console.log('userData or userData.id is not available');
-      }
-    };
-
-    fetchInspectors();
-  }, [loadInspectors, userData]);
-
-  // Add this useEffect to track changes to selectedInspector
-  useEffect(() => {
-    console.log('selectedInspector updated:', selectedInspector);
-  }, [selectedInspector]);
-
-  const [step, setStep] = useState('formType');
-  const [formType, setFormType] = useState('');
-  const [selectedProject, setSelectedProject] = useState('');
-  // const [selectedInspector, setSelectedInspector] = useState('');
   const [selectedPersonInControl, setSelectedPersonInControl] = useState('');
   const [selectedProjectDirector, setSelectedProjectDirector] = useState('');
   const [selectedDivisionalDirector, setSelectedDivisionalDirector] = useState('');
+  const [selectedProject, setSelectedProject] = useState('');
+
+  const [step, setStep] = useState('formType');
+  const [formType, setFormType] = useState('');
   const [showPerformance, setShowPerformance] = useState(false);
+
+  const [dataLoaded, setDataLoaded] = useState(false);
+  const { userData } = useUser();
+  const { completedInThePresenceOf, personInControl, projectDirector, divisionalDirector } = useDatabase();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [dbInspectors, dbPersonsInControl, dbProjectDirectors, dbDivisionalDirectors] = await Promise.all([
+          completedInThePresenceOf.load(),
+          personInControl.load(),
+          projectDirector.load(),
+          divisionalDirector.load(),
+        ]);
+
+        setInspectors(dbInspectors);
+        setPersonsInControl(dbPersonsInControl);
+        setProjectDirectors(dbProjectDirectors);
+        setDivisionalDirectors(dbDivisionalDirectors);
+        setSelectedProject(projects);
+
+        setDataLoaded(true);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, [completedInThePresenceOf, personInControl, projectDirector, divisionalDirector]);
+
+  useEffect(() => {
+    if (dataLoaded && userData && userData.id && inspectors.length > 0) {
+      const userInspector = inspectors.find((inspector) => inspector.id === String(userData.id));
+      if (userInspector) {
+        console.log('Matching inspector found:', userInspector);
+        setSelectedInspector(userInspector.id);
+      } else {
+        console.log('No matching inspector found for user ID:', userData.id);
+      }
+    }
+  }, [dataLoaded, userData, inspectors]);
 
   const translateY = new Animated.Value(300);
 

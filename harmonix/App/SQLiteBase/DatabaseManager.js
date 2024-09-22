@@ -36,7 +36,44 @@ const createTableIfNotExists = async (db) => {
     );
   `);
   await db.execAsync(`
-    CREATE TABLE IF NOT EXISTS inspectors (
+    CREATE TABLE IF NOT EXISTS completedInThePresenceOf (
+      id TEXT PRIMARY KEY,
+      name TEXT
+    );
+  `);
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS divisionalDirector (
+      id TEXT PRIMARY KEY,
+      name TEXT
+    );
+  `);
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS sites (
+      id INTEGER PRIMARY KEY,
+      project_number TEXT,
+      progress TEXT,
+      address1 TEXT,
+      address2 TEXT,
+      address3 TEXT,
+      city TEXT,
+      postcode TEXT,
+      latitude TEXT,
+      longitude TEXT,
+      arhive INTEGER,
+      image TEXT,
+      created_at TEXT,
+      updated_at TEXT,
+      deleted_at TEXT
+    );
+  `);
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS personInControl (
+      id TEXT PRIMARY KEY,
+      name TEXT
+    );
+  `);
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS projectDirector (
       id TEXT PRIMARY KEY,
       name TEXT
     );
@@ -198,45 +235,6 @@ export const deleteInspectionFromDb = async (db, id) => {
     );
   } catch (error) {
     console.error('Error deleting inspection:', error);
-    throw error;
-  }
-};
-
-export const saveInspectorsToDb = async (db, inspectors) => {
-  if (!Array.isArray(inspectors)) {
-    console.error('Expected array of inspectors, got:', typeof inspectors);
-    return;
-  }
-
-  try {
-    await db.runAsync('BEGIN TRANSACTION;');
-    for (const inspector of inspectors) {
-      if (typeof inspector !== 'object' || !inspector.id || !inspector.name) {
-        console.error('Invalid inspector object:', inspector);
-        continue;
-      }
-      await db.runAsync(
-        `
-        INSERT OR REPLACE INTO inspectors (id, name)
-        VALUES (?, ?);
-      `,
-        [inspector.id, inspector.name]
-      );
-    }
-    await db.runAsync('COMMIT;');
-  } catch (error) {
-    await db.runAsync('ROLLBACK;');
-    console.error('Error inserting inspectors:', error);
-    throw error;
-  }
-};
-
-export const loadInspectorsFromDb = async (db) => {
-  try {
-    const result = await db.getAllAsync('SELECT * FROM inspectors;');
-    return result;
-  } catch (error) {
-    console.error('Error loading inspectors from database:', error);
     throw error;
   }
 };
