@@ -135,7 +135,7 @@ const InspectionModal = ({ isVisible, onClose, onStartInspection }) => {
 
   const [dataLoaded, setDataLoaded] = useState(false);
   const { userData } = useUser();
-  const { completedInThePresenceOf, personInControl, projectDirector, divisionalDirector } = useDatabase();
+  const { completedInThePresenceOf, personInControl, projectDirector, divisionalDirector, dbChangeCounter } = useDatabase();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -151,7 +151,6 @@ const InspectionModal = ({ isVisible, onClose, onStartInspection }) => {
         setPersonsInControl(dbPersonsInControl);
         setProjectDirectors(dbProjectDirectors);
         setDivisionalDirectors(dbDivisionalDirectors);
-        setSelectedProject(projects);
 
         setDataLoaded(true);
       } catch (error) {
@@ -160,13 +159,12 @@ const InspectionModal = ({ isVisible, onClose, onStartInspection }) => {
     };
 
     fetchData();
-  }, [completedInThePresenceOf, personInControl, projectDirector, divisionalDirector]);
+  }, [completedInThePresenceOf, personInControl, projectDirector, divisionalDirector, dbChangeCounter]);
 
   useEffect(() => {
     if (dataLoaded && userData && userData.id && inspectors.length > 0) {
       const userInspector = inspectors.find((inspector) => inspector.id === String(userData.id));
       if (userInspector) {
-        console.log('Matching inspector found:', userInspector);
         setSelectedInspector(userInspector.id);
       } else {
         console.log('No matching inspector found for user ID:', userData.id);

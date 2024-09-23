@@ -30,7 +30,6 @@ export const loadDataFromDb = async (db, tableName) => {
 };
 
 export const saveSitesToDb = async (db, sites) => {
-  console.log(sites[0]);
   if (!Array.isArray(sites)) {
     console.error('Expected array of sites, got:', typeof sites);
     return;

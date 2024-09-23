@@ -238,3 +238,24 @@ export const deleteInspectionFromDb = async (db, id) => {
     throw error;
   }
 };
+
+const dropDatabase = async (db) => {
+  try {
+    await db.execAsync(`DROP TABLE IF EXISTS inspections;`);
+    await db.execAsync(`DROP TABLE IF EXISTS completedInThePresenceOf;`);
+    await db.execAsync(`DROP TABLE IF EXISTS divisionalDirector;`);
+    await db.execAsync(`DROP TABLE IF EXISTS sites;`);
+    await db.execAsync(`DROP TABLE IF EXISTS personInControl;`);
+    await db.execAsync(`DROP TABLE IF EXISTS projectDirector;`);
+    console.log('Database dropped successfully.');
+  } catch (error) {
+    console.error('Error dropping database:', error);
+    throw error;
+  }
+};
+
+export const reinitializeDatabase = async (db) => {
+  await dropDatabase(db);
+  await createTableIfNotExists(db);
+  await addMissingColumns(db);
+};

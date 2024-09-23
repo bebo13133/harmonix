@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Button } from 'react-native';
 import * as Font from 'expo-font';
 import { useCallback, useEffect, useState } from 'react';
 import { UserProvider, useUser } from './App/Contexts/UserContext';
@@ -16,7 +16,7 @@ SplashScreen.preventAutoHideAsync();
 
 const AppContent = () => {
   const { isAuthenticated } = useUser();
-  const { completedInThePresenceOf, divisionalDirector, sites, projectDirector, personInControl } = useDatabase();
+  const { completedInThePresenceOf, divisionalDirector, sites, projectDirector, personInControl, dropDB } = useDatabase();
 
   const handleDataFetch = async () => {
     try {
@@ -36,14 +36,21 @@ const AppContent = () => {
     }
   };
 
-  useEffect(() => {
-    handleDataFetch();
-  }, []);
+  const handleDropDB = async () => {
+    await dropDB();
+    console.log('Database dropped and reinitialized');
+  };
+
+  // useEffect(() => {
+  //   handleDataFetch();
+  // }, []);
 
   return (
     <View style={styles.container}>
       <StatusBar style='light' />
       {isAuthenticated ? <AuthGuard /> : <PublicGuard />}
+      <Button title='FORCE FETCH' onPress={handleDataFetch} />
+      <Button title='FORCE DROP DB' onPress={handleDropDB} />
     </View>
   );
 };
