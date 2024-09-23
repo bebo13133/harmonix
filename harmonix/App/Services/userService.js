@@ -5,7 +5,7 @@ const baseUrl = 'https://harmonix.emage.co.uk/api';
 const userService = {
   login: async (email, password) => {
     try {
-      const response = await post(`${baseUrl}/login`, { email, password });
+      const response = await post(`${baseUrl}/login`, { email, password }, false);
       if (response.token) {
         return response;
       } else {
@@ -19,8 +19,8 @@ const userService = {
 
   logout: async () => {
     try {
-      await post('/logout');
-      console.log('logout:');
+      await post(`${baseUrl}/logout`);
+
       return true;
     } catch (error) {
       console.error('Error logout:', error);
