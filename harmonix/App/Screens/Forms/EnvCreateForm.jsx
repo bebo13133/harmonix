@@ -342,7 +342,7 @@ const EnvCreateForm = ({ route }) => {
 
             </StyledScrollView>
           
-            <View style={[styles.paginationContainer, { paddingBottom: insets.bottom }]}>
+            <View style={[styles.paginationContainer]}>
                 {currentSectionIndex > 0 && (
                     <TouchableOpacity
                         style={[styles.paginationButton, styles.paginationBorder]}
@@ -416,7 +416,7 @@ const styles = StyleSheet.create({
     paginationBorder: {
         // borderColor: Colors.BACKGROUND_DARK,
         // borderWidth: 1,
-        padding: 8,
+        padding: 12,
         borderRadius: 4,
     },
     paginationText: {

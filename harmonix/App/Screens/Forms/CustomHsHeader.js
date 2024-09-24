@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Menu, MenuItem } from 'react-native-material-menu';
 import Colors from '../../Utils/Colors';
@@ -42,7 +42,7 @@ const CustomHsHeader = ({ sections, currentSectionIndex, onSectionChange, formDa
     const completionPercentage = currentSection ? calculateCompletionPercentage(currentSection) : 0;
 
     return (
-        <View style={[styles.header, { paddingTop: topInset + 10 }]}>
+        <View style={[styles.header]}>
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                 <MaterialIcons name="arrow-back" size={24} color={Colors.WHITE} />
             </TouchableOpacity>
@@ -86,6 +86,7 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.BACKGROUND,
         paddingVertical: 10,
         paddingHorizontal: 15,
+        marginTop: Platform.OS === 'android' ? 40 : 0, 
         position: 'absolute',
         top: 0,
         left: 0,
