@@ -1,17 +1,18 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, Button } from 'react-native';
+import { StyleSheet, View, Button, Platform } from 'react-native';
 import * as Font from 'expo-font';
 import { useCallback, useEffect, useState } from 'react';
 import { UserProvider, useUser } from './App/Contexts/UserContext';
 import { AuthGuard, PublicGuard } from './App/Guards/Guards';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as SplashScreen from 'expo-splash-screen';
+import Colors from './App/Utils/Colors'; 
 
 import { DatabaseProvider } from './App/Contexts/databaseContext';
 import { useDatabase } from './App/Contexts/databaseContext';
 import backgroundServices from './App/Services/backgroundServices';
 
-// Предотвратяване на автоматичното скриване на splash screen
+
 SplashScreen.preventAutoHideAsync();
 
 const AppContent = () => {
@@ -36,21 +37,31 @@ const AppContent = () => {
     }
   };
 
-  const handleDropDB = async () => {
-    await dropDB();
-    console.log('Database dropped and reinitialized');
-  };
-
-  // useEffect(() => {
-  //   handleDataFetch();
-  // }, []);
-
+  // const handleDropDB = async () => {
+  //   await dropDB();
+  //   console.log('Database dropped and reinitialized');
+  // };
+  useEffect(() => {
+    if(isAuthenticated){
+      handleDataFetch();
+    }
+  }, []);
   return (
     <View style={styles.container}>
-      <StatusBar style='light' />
+   
+      <StatusBar 
+        style="light" 
+        backgroundColor={Platform.OS === 'android' ? Colors.BACKGROUND : undefined} 
+        translucent={Platform.OS === 'android'}
+      />
+
+      {Platform.OS === 'ios' && (
+        <View style={[styles.statusBarBackground, { backgroundColor: Colors.BACKGROUND }]} />
+      )}
+
       {isAuthenticated ? <AuthGuard /> : <PublicGuard />}
-      <Button title='FORCE FETCH' onPress={handleDataFetch} />
-      <Button title='FORCE DROP DB' onPress={handleDropDB} />
+      {/* <Button title='FORCE FETCH' onPress={handleDataFetch} />
+      <Button title='FORCE DROP DB' onPress={handleDropDB} /> */}
     </View>
   );
 };
@@ -101,6 +112,9 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.BACKGROUND, 
+  },
+  statusBarBackground: {
+    height: 50, 
   },
 });
