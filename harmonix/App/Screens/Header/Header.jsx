@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, Animated, Modal, TouchableWithoutFeedback } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text, Animated, Modal, TouchableWithoutFeedback, Platform } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Sizes.PADDING,
     paddingBottom: Sizes.PADDING - 2,
     backgroundColor: Colors.BACKGROUND,
-    marginTop: 15,
+    marginTop: Platform.OS === 'android' ? 15 : -15, 
   },
   logo: {
     color: Colors.WHITE,

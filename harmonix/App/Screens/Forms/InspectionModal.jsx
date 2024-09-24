@@ -87,7 +87,7 @@ const CustomPicker = ({ label, value, setValue, items }) => {
             className='bg-gray-700 p-2 m-2 rounded-md text-white'
             style={[
               applyFontToStyle({}, 'regular', 16),
-              { color: 'white' }, // Добавяме това, за да сме сигурни, че текстът е бял
+              { color: 'white' },
             ]}
             placeholderTextColor='#999'
             placeholder='Search...'

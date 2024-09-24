@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { RefreshControl, Alert, ScrollView, View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
+import { RefreshControl, Alert, ScrollView, View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView,PanResponder} from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import Svg, { Path } from 'react-native-svg';
@@ -25,50 +25,67 @@ const StyledTextInput = styled(TextInput);
 
 const SignatureField = React.forwardRef((props, ref) => {
     const [paths, setPaths] = useState([]);
-    const [currentPath, setCurrentPath] = useState([]);
+    const currentPath = useRef(''); // Текущият път
 
+    // Изчистване на подписа чрез референцията
     React.useImperativeHandle(ref, () => ({
         clearSignature() {
-            setPaths([]);
-            setCurrentPath([]);
-            props.onSign(null);
+            setPaths([]);  // Изчистване на пътищата
+            currentPath.current = '';  // Изчистване на текущия път
+            props.onSign([]);  // Изпращане на празен подпис
         }
     }));
 
-    const onGestureEvent = useCallback((event) => {
-        const { x, y } = event.nativeEvent;
-        setCurrentPath(prevPath => [...prevPath, { x, y }]);
-    }, []);
-
-    const onHandlerStateChange = useCallback((event) => {
-        if (event.nativeEvent.state === State.END) {
-            setPaths(prevPaths => [...prevPaths, currentPath]);
-            setCurrentPath([]);
-            const signature = JSON.stringify([...paths, currentPath]);
-            props.onSign(signature);
-        }
-    }, [paths, currentPath, props]);
+    // Пан жест за рисуване на подписа
+    const panResponder = useRef(
+        PanResponder.create({
+            onStartShouldSetPanResponder: () => true,
+            onMoveShouldSetPanResponder: () => true,
+            onPanResponderGrant: (event) => {
+                const { locationX, locationY } = event.nativeEvent;
+                currentPath.current = `M ${locationX} ${locationY}`;  // Започваме нов път
+            },
+            onPanResponderMove: (event) => {
+                const { locationX, locationY } = event.nativeEvent;
+                currentPath.current += ` L ${locationX} ${locationY}`;  // Добавяме точки към пътя
+                setPaths(prevPaths => [...prevPaths.slice(0, -1), currentPath.current]);  // Актуализираме последния път
+            },
+            onPanResponderRelease: () => {
+                setPaths(prevPaths => {
+                    const newPaths = [...prevPaths, currentPath.current];  // Завършваме пътя
+                    // Забавяме извикването на props.onSign
+                    setTimeout(() => {
+                        props.onSign(newPaths);  // Изпращаме подписа след рендиране
+                    }, 0);
+                    return newPaths;
+                });
+                currentPath.current = '';  // Нулираме текущия път
+            },
+        })
+    ).current;
 
     return (
         <View style={styles.signatureContainer}>
-            <PanGestureHandler
-                onGestureEvent={onGestureEvent}
-                onHandlerStateChange={onHandlerStateChange}
-            >
-                <Svg height="200" width="100%">
-                    {[...paths, currentPath].map((path, index) => (
+            <View style={styles.svgContainer} {...panResponder.panHandlers}>
+                <Svg height="100%" width="100%">
+                    {paths.map((path, index) => (
                         <Path
                             key={index}
-                            d={`M ${path[0]?.x ?? 0} ${path[0]?.y ?? 0} ${path.slice(1).map(p => `L ${p.x ?? 0} ${p.y ?? 0}`).join(' ')}`}
+                            d={path}
                             stroke="black"
-                            strokeWidth="2"
+                            strokeWidth={2}
                             fill="none"
                         />
                     ))}
                 </Svg>
-            </PanGestureHandler>
-            <TouchableOpacity onPress={() => ref.current.clearSignature()} style={styles.clearButton}>
-                <Text style={[applyFontToStyle({}, 'regular', 18), styles.clearText]}>Clear</Text>
+            </View>
+            <TouchableOpacity 
+                onPress={() => ref.current.clearSignature()} 
+                style={styles.clearButton}
+            >
+                <Text style={[applyFontToStyle({}, 'regular', 18), styles.clearText]}>
+                    Clear
+                </Text>
             </TouchableOpacity>
         </View>
     );
