@@ -347,7 +347,7 @@ const HsCreateForm = ({ route }) => {
 
             </StyledScrollView>
           
-            <View style={[styles.paginationContainer, { paddingBottom: insets.bottom }]}>
+            <View style={[styles.paginationContainer,]}>
                 {currentSectionIndex > 0 && (
                     <TouchableOpacity
                         style={[styles.paginationButton, styles.paginationBorder]}
@@ -400,6 +400,7 @@ const styles = StyleSheet.create({
     buttonText: {
         color: '#FFF',
         textAlign: 'center',
+        outlineStyle: 'none',
     },
     paginationContainer: {
         flexDirection: 'row',
@@ -418,7 +419,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     paginationBorder: {
-        padding: 8,
+        // borderColor: Colors.BACKGROUND_DARK,
+        // borderWidth: 1,
+        padding: 12,
         borderRadius: 4,
     },
     paginationText: {
@@ -447,8 +450,8 @@ const styles = StyleSheet.create({
     clearText: {
         color: Colors.WHITE,
         textAlign: 'center',
+        
     },
-    
 });
 
 export default HsCreateForm;
