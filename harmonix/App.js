@@ -6,12 +6,11 @@ import { UserProvider, useUser } from './App/Contexts/UserContext';
 import { AuthGuard, PublicGuard } from './App/Guards/Guards';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as SplashScreen from 'expo-splash-screen';
-import Colors from './App/Utils/Colors';  // Импортираме цветовете
+import Colors from './App/Utils/Colors'; // Импортираме цветовете
 
 import { DatabaseProvider } from './App/Contexts/databaseContext';
 import { useDatabase } from './App/Contexts/databaseContext';
 import backgroundServices from './App/Services/backgroundServices';
-
 
 SplashScreen.preventAutoHideAsync();
 
@@ -20,6 +19,8 @@ const AppContent = () => {
   const { completedInThePresenceOf, divisionalDirector, sites, projectDirector, personInControl, dropDB } = useDatabase();
 
   const handleDataFetch = async () => {
+    if (!isAuthenticated) return false;
+
     try {
       await Promise.all([
         backgroundServices.getCompletedInThePresenceOf(completedInThePresenceOf.save),
@@ -38,21 +39,19 @@ const AppContent = () => {
   };
 
   const handleDropDB = async () => {
+    if (!isAuthenticated) return false;
     await dropDB();
     console.log('Database dropped and reinitialized');
   };
 
+  useEffect(() => {
+    handleDataFetch();
+  }, [isAuthenticated]);
+
   return (
     <View style={styles.container}>
-    
-      <StatusBar 
-        style="light" 
-        backgroundColor={Platform.OS === 'android' ? Colors.BACKGROUND : undefined} 
-        translucent={Platform.OS === 'android'}
-      />
-      {Platform.OS === 'ios' && (
-        <View style={[styles.statusBarBackground, { backgroundColor: Colors.BACKGROUND }]} />
-      )}
+      <StatusBar style='light' backgroundColor={Platform.OS === 'android' ? Colors.BACKGROUND : undefined} translucent={Platform.OS === 'android'} />
+      {Platform.OS === 'ios' && <View style={[styles.statusBarBackground, { backgroundColor: Colors.BACKGROUND }]} />}
 
       {isAuthenticated ? <AuthGuard /> : <PublicGuard />}
       <Button title='FORCE FETCH' onPress={handleDataFetch} />
@@ -107,9 +106,9 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.BACKGROUND, 
+    backgroundColor: Colors.BACKGROUND,
   },
   statusBarBackground: {
-    height: 50, 
+    height: 50,
   },
 });

@@ -7,6 +7,10 @@ const createFetchService =
   async (saveFunction) => {
     try {
       const response = await get(`${baseUrl}/${endpoint}`);
+      if (endpoint === 'sites') {
+        console.log(response[1]);
+        console.log('asd');
+      }
       const transformedData = transformResponse(response);
       await saveFunction(transformedData);
     } catch (err) {

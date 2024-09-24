@@ -58,6 +58,7 @@ export const UserProvider = ({ children }) => {
     try {
       await userService.logout();
       setAuth({});
+      setUserData({});
     } catch (error) {
       console.error('Error during logout:', error);
       throw error;
