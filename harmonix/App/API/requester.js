@@ -14,6 +14,7 @@ async function request(method, endpoint, params, requiresAuth = true) {
 
   if (requiresAuth) {
     try {
+      await new Promise((resolve) => setTimeout(resolve, 50));
       const token = await AsyncStorage.getItem('auth');
       if (token) {
         const parsedToken = JSON.parse(token);
