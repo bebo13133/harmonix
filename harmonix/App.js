@@ -45,8 +45,9 @@ const AppContent = () => {
   };
 
   useEffect(() => {
+    if(isAuthenticated)
     handleDataFetch();
-  }, [isAuthenticated]);
+  }, []);
 
   return (
     <View style={styles.container}>
