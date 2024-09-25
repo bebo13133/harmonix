@@ -1,7 +1,7 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { RefreshControl, Alert, ScrollView, View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
+import React, { useState, useCallback, useRef, useEffect,ForwardRef } from 'react';
+import { RefreshControl, Alert, ScrollView, View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView,PanResponder } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { PanGestureHandler, State } from 'react-native-gesture-handler';
+
 import Svg, { Path } from 'react-native-svg';
 import { useNavigation } from '@react-navigation/native';
 import { styled } from 'nativewind';
@@ -24,54 +24,74 @@ const StyledTextInput = styled(TextInput);
 
 const SignatureField = React.forwardRef((props, ref) => {
     const [paths, setPaths] = useState([]);
-    const [currentPath, setCurrentPath] = useState([]);
+    const currentPath = useRef(''); // Текущият път
 
+    // Изчистване на подписа чрез референцията
     React.useImperativeHandle(ref, () => ({
         clearSignature() {
-            setPaths([]);
-            setCurrentPath([]);
-            props.onSign(null);
+            setPaths([]);  // Изчистване на пътищата
+            currentPath.current = '';  // Изчистване на текущия път
+            props.onSign([]);  // Изпращане на празен подпис
         }
     }));
 
-    const onGestureEvent = useCallback((event) => {
-        const { x, y } = event.nativeEvent;
-        setCurrentPath(prevPath => [...prevPath, { x, y }]);
-    }, []);
-
-    const onHandlerStateChange = useCallback((event) => {
-        if (event.nativeEvent.state === State.END) {
-            setPaths(prevPaths => [...prevPaths, currentPath]);
-            setCurrentPath([]);
-            const signature = JSON.stringify([...paths, currentPath]);
-            props.onSign(signature);
-        }
-    }, [paths, currentPath, props]);
+    // Пан жест за рисуване на подписа
+    const panResponder = useRef(
+        PanResponder.create({
+            onStartShouldSetPanResponder: () => true,
+            onMoveShouldSetPanResponder: () => true,
+            onPanResponderGrant: (event) => {
+                const { locationX, locationY } = event.nativeEvent;
+                currentPath.current = `M ${locationX} ${locationY}`;  // Започваме нов път
+            },
+            onPanResponderMove: (event) => {
+                const { locationX, locationY } = event.nativeEvent;
+                currentPath.current += ` L ${locationX} ${locationY}`;  // Добавяме точки към пътя
+                setPaths(prevPaths => [...prevPaths.slice(0, -1), currentPath.current]);  // Актуализираме последния път
+            },
+            onPanResponderRelease: () => {
+                setPaths(prevPaths => {
+                    const newPaths = [...prevPaths, currentPath.current];  // Завършваме пътя
+                    // Забавяме извикването на props.onSign
+                    setTimeout(() => {
+                        props.onSign(newPaths);  // Изпращаме подписа след рендиране
+                    }, 0);
+                    return newPaths;
+                });
+                currentPath.current = '';  // Нулираме текущия път
+            },
+        })
+    ).current;
 
     return (
         <View style={styles.signatureContainer}>
-            <PanGestureHandler
-                onGestureEvent={onGestureEvent}
-                onHandlerStateChange={onHandlerStateChange}
-            >
-                <Svg height="200" width="100%">
-                    {[...paths, currentPath].map((path, index) => (
+            <View style={styles.svgContainer} {...panResponder.panHandlers}>
+                <Svg height="100%" width="100%">
+                    {paths.map((path, index) => (
                         <Path
                             key={index}
-                            d={`M ${path[0]?.x ?? 0} ${path[0]?.y ?? 0} ${path.slice(1).map(p => `L ${p.x ?? 0} ${p.y ?? 0}`).join(' ')}`}
+                            d={path}
                             stroke="black"
-                            strokeWidth="2"
+                            strokeWidth={2}
                             fill="none"
                         />
                     ))}
                 </Svg>
-            </PanGestureHandler>
-            <TouchableOpacity onPress={() => ref.current.clearSignature()} style={styles.clearButton}>
-                <Text style={[applyFontToStyle({}, 'regular', 18), styles.clearText]}>Clear</Text>
+            </View>
+            <TouchableOpacity 
+                onPress={() => ref.current.clearSignature()} 
+                style={styles.clearButton}
+            >
+                <Text style={[applyFontToStyle({}, 'regular', 18), styles.clearText]}>
+                    Clear
+                </Text>
             </TouchableOpacity>
         </View>
     );
 });
+
+
+
 
 const HsCreateForm = ({ route }) => {
     const navigation = useNavigation();
@@ -80,6 +100,10 @@ const HsCreateForm = ({ route }) => {
     const insets = useSafeAreaInsets();
 
     const [formData, setFormData] = useState({
+        formType: initialData.formType || '', 
+        projectNumber: initialData.projectNumber || '', 
+        address: initialData.address || '', 
+        inspectorName: initialData.inspectorName || '', 
         selectedProject: initialData.selectedProject || '',
         selectedInspector: initialData.selectedInspector || '',
         selectedPersonInControl: initialData.selectedPersonInControl || '',
@@ -89,19 +113,41 @@ const HsCreateForm = ({ route }) => {
         advisory: '',
         signature: null,
         formSections: {},
-    });
+      });
 
     const [refreshing, setRefreshing] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [showPerformance, setShowPerformance] = useState(false);
     const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
-    const questionsPerPage = 3;
 
-    const sections = Object.entries(hsFormQuestions); //заявка и вопрос
-    const totalPages = Math.ceil((sections.length + 3) / questionsPerPage);
-
+    const sections = Object.entries(hsFormQuestions);
     const signatureRef = useRef();
     const scrollViewRef = useRef();
+
+    // Функция за съхранение на текущите данни на секция преди смяната
+    const saveCurrentSectionData = () => {
+        const currentSectionKey = sections[currentSectionIndex][0];
+        updateFormSection(currentSectionKey, formData.formSections[currentSectionKey]);
+    };
+
+    // Извличане на съществуващите данни, ако има такива, за текущата секция
+    const loadSectionData = (index) => {
+        const sectionKey = sections[index][0];
+        return formData.formSections[sectionKey] || {};
+    };
+
+    const handleSectionChange = (newIndex) => {
+        saveCurrentSectionData();
+        setCurrentSectionIndex(newIndex);
+        const newSectionData = loadSectionData(newIndex);
+        setFormData((prev) => ({
+            ...prev,
+            formSections: {
+                ...prev.formSections,
+                [sections[newIndex][0]]: newSectionData
+            }
+        }));
+    };
 
     useEffect(() => {
         if (formData.selectedProject) {
@@ -115,10 +161,7 @@ const HsCreateForm = ({ route }) => {
                 <CustomHsHeader
                     sections={sections}
                     currentSectionIndex={currentSectionIndex}
-                    onSectionChange={(index) => {
-                        setCurrentSectionIndex(index);
-                        scrollViewRef.current?.scrollTo({ y: 0, animated: true });
-                    }}
+                    onSectionChange={handleSectionChange}
                     formData={formData}
                     topInset={insets.top}
                 />
@@ -134,6 +177,7 @@ const HsCreateForm = ({ route }) => {
     }, []);
 
     const handleInputChange = (field, value) => {
+        console.log('handleInputChange', field, value);
         setFormData(prevData => ({
             ...prevData,
             [field]: value
@@ -152,47 +196,56 @@ const HsCreateForm = ({ route }) => {
 
     const handleSave = async () => {
         if (isLoading) return;
-    
-        setIsLoading(true);
+      
+        setIsLoading(true); 
+         
         try {
-            const updatedFormSections = await Promise.all(
-                Object.entries(formData.formSections).map(async ([sectionKey, sectionData]) => {
-                    const updatedQuestions = await Promise.all(
-                        Object.entries(sectionData.images || {}).map(async ([questionId, images]) => {
-                            const updatedImages = await Promise.all(
-                                images.map(async (image) => {
-                                    const savedUri = await saveImage(image.uri);
-                                    return { ...image, uri: savedUri };
-                                })
-                            );
-                            return [questionId, updatedImages];
-                        })
-                    );
-                    return [
-                        sectionKey,
-                        {
-                            ...sectionData,
-                            images: Object.fromEntries(updatedQuestions)
-                        }
-                    ];
-                })
-            );
-    
-            const dataToSave = {
-                ...formData,
-                formSections: Object.fromEntries(updatedFormSections),
-                date: new Date().toISOString().split('T')[0],
-                status: 'Draft',
+          const updatedFormSections = {};
+      
+          for (const [sectionKey, sectionData] of Object.entries(formData.formSections)) {
+            const updatedQuestions = {};
+      
+            for (const [questionId, images] of Object.entries(sectionData.images || {})) {
+              const updatedImages = [];
+      
+              for (const image of images) {
+                try {
+                  const savedUri = await saveImage(image.uri); 
+                 updatedImages.push({ ...image, uri: savedUri });
+                } catch (error) {
+                        Alert.alert('Error', 'Error saving one of the images. Please try again.');
+                  setIsLoading(false);
+                  return; 
+                }
+              }
+      
+              updatedQuestions[questionId] = updatedImages;
+            }
+      
+            updatedFormSections[sectionKey] = {
+              ...sectionData,
+              images: updatedQuestions,
             };
-    
-            await saveFormData(dataToSave);
+          }
+      
+          const dataToSave = {
+            ...formData,
+            formSections: updatedFormSections,
+            date: new Date().toISOString().split('T')[0],
+            status: 'Draft',
+          };
+      
+          await saveFormData(dataToSave); 
+      
+          setIsLoading(false); 
+          navigation.navigate('MainTabs', { screen: 'Home' });
         } catch (error) {
-            Alert.alert('Error while saving form', 'Please try again.');
-        } finally {
-            setIsLoading(false);
+        
+          Alert.alert('Error', 'Error while saving form. Please try again.');
+          setIsLoading(false); // 
         }
-    };
-    
+      };
+      
     const handleSubmit = () => {
         // Implement submit logic
     };
@@ -200,15 +253,16 @@ const HsCreateForm = ({ route }) => {
     const renderQuestions = () => {
         const startIndex = currentSectionIndex;
         const endIndex = startIndex + 1;
-    
+
         const questionEntries = sections.slice(startIndex, endIndex).map(([key, section]) => (
             <FormSection 
                 key={key} 
                 section={section} 
                 updateFormSection={(sectionData) => updateFormSection(key, sectionData)}
+                savedSectionData={formData.formSections[key] || {}}
             />
         ));
-    
+
         if (currentSectionIndex === sections.length - 1) {
             questionEntries.push(
                 <StyledView className="mb-4" key="general-comments">
@@ -240,7 +294,7 @@ const HsCreateForm = ({ route }) => {
                 <StyledView className="mb-4" key="signature">
                     <StyledText style={applyFontToStyle({}, 'semibold', 18)} className="mb-2 text-white">Signature</StyledText>
                     <SignatureField 
-                        ref={signatureRef} 
+                        ref={signatureRef}
                         onSign={(signature) => handleInputChange('signature', signature)} 
                     />
                 </StyledView>,
@@ -261,7 +315,7 @@ const HsCreateForm = ({ route }) => {
                 </View>
             );
         }
-    
+
         return questionEntries;
     };
 
@@ -297,7 +351,7 @@ const HsCreateForm = ({ route }) => {
                 {currentSectionIndex > 0 && (
                     <TouchableOpacity
                         style={[styles.paginationButton, styles.paginationBorder]}
-                        onPress={() => setCurrentSectionIndex(prev => Math.max(prev - 1, 0))}
+                        onPress={() => handleSectionChange(Math.max(currentSectionIndex - 1, 0))}
                     >
                         <MaterialIcons name="arrow-back-ios" size={24} color={Colors.WHITE} />
                         <Text style={[applyFontToStyle({}, 'regular', 18), { color: Colors.WHITE, paddingVertical: 8 }]}>Back</Text>
@@ -311,7 +365,7 @@ const HsCreateForm = ({ route }) => {
                 {currentSectionIndex < sections.length - 1 && (
                     <TouchableOpacity
                         style={[styles.paginationButton, styles.paginationBorder]}
-                        onPress={() => setCurrentSectionIndex(prev => Math.min(prev + 1, sections.length - 1))}
+                        onPress={() => handleSectionChange(Math.min(currentSectionIndex + 1, sections.length - 1))}
                     >
                         <Text style={[applyFontToStyle({}, 'regular', 18), { color: Colors.WHITE, paddingVertical: 8 }]}>Next</Text>
                         <MaterialIcons name="arrow-forward-ios" size={24} color={Colors.WHITE} />
@@ -364,8 +418,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     paginationBorder: {
-        // borderColor: Colors.BACKGROUND_DARK,
-        // borderWidth: 1,
         padding: 8,
         borderRadius: 4,
     },
@@ -395,8 +447,8 @@ const styles = StyleSheet.create({
     clearText: {
         color: Colors.WHITE,
         textAlign: 'center',
-        
     },
+    
 });
 
 export default HsCreateForm;

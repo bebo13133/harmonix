@@ -1,58 +1,40 @@
-import { useState } from 'react';
-import { trimFields, validateEmail, validatePassword } from '../Utils/formValidators';
+import { useState, useCallback } from 'react';
+import { trimFields, validateForm } from '../Utils/formValidators';
 
 export const useForm = (initialValues, onSubmitHandler) => {
     const [values, setValues] = useState(initialValues);
     const [errors, setErrors] = useState({});
   
-    const onChangeHandler = (name, value) => {
-      setValues((state) => ({ ...state, [name]: value }));
-    };
+    const onChangeHandler = useCallback((name, value) => {
+        setValues(prevValues => ({ ...prevValues, [name]: value }));
+        setErrors(prevErrors => ({ ...prevErrors, [name]: '' }));
+    }, []);
   
-    const handleTrimFields = () => {
-      const { email = "", password = "" } = values;
-      const [trimmedEmail, trimmedPassword] = trimFields([email, password]);
-      setValues({
-        email: trimmedEmail,
-        password: trimmedPassword,
-      });
-    };
+    const handleTrimFields = useCallback(() => {
+        const trimmedValues = Object.fromEntries(
+            Object.entries(values).map(([key, value]) => [key, value.trim()])
+        );
+        setValues(trimmedValues);
+    }, [values]);
   
-    const validate = () => {
-      const newErrors = {};
+    const validate = useCallback(() => {
+        const newErrors = validateForm(values);
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    }, [values]);
   
-      if (!values.email) {
-        newErrors.email = 'Email is required';
-      } else {
-        validateEmail(values.email, (error) => {
-          if (error) newErrors.email = error;
-        });
-      }
+    const onSubmit = useCallback(() => {
+        handleTrimFields();
   
-      if (!values.password) {
-        newErrors.password = 'Password is required';
-      } else {
-        validatePassword(values.password, (error) => {
-          if (error) newErrors.password = error;
-        });
-      }
-  
-      setErrors(newErrors);
-      return Object.keys(newErrors).length === 0;
-    };
-  
-    const onSubmit = () => {
-      handleTrimFields();
-  
-      if (validate()) {
-        onSubmitHandler(values);
-      }
-    };
+        if (validate()) {
+            onSubmitHandler(values);
+        }
+    }, [handleTrimFields, validate, values, onSubmitHandler]);
   
     return {
-      values,
-      errors,
-      onChangeHandler,
-      onSubmit,
+        values,
+        errors,
+        onChangeHandler,
+        onSubmit,
     };
-  };
+};

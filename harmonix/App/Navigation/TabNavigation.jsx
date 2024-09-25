@@ -20,41 +20,13 @@ import DcFormCreate from '../Screens/Forms/DcFormCreate';
 import DetailsScreen from '../Screens/DetailsScreen/DetailsScreen';
 import { Ionicons } from '@expo/vector-icons';
 import Sizes from '../Utils/Sizes';
+import EditInspection from '../Screens/EditInspection/EditInspection';
+import LoginScreen from '../Screens/LoginScreen/LoginScreen';
+import LogoutScreen from '../Screens/LogoutScreen/LogoutScreen';
 
 
 const Stack = createStackNavigator();
 const { width } = Dimensions.get('window');
-
-function TopTabBar({ activeTab, switchTab }) {
-  return (
-    <View style={styles.topTabBar}>
-      <TouchableOpacity
-        style={[styles.topTab, activeTab === 'Home' && styles.activeTopTab]}
-        onPress={() => switchTab('Home')}
-      >
-        <Text style={[styles.topTabText, activeTab === 'Home' && styles.activeTopTabText]}>Home</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[styles.topTab, activeTab === 'Search' && styles.activeTopTab]}
-        onPress={() => switchTab('Search')}
-      >
-        <Text style={[styles.topTabText, activeTab === 'Search' && styles.activeTopTabText]}>Search</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[styles.topTab, activeTab === 'Notifications' && styles.activeTopTab]}
-        onPress={() => switchTab('Notifications')}
-      >
-        <Text style={[styles.topTabText, activeTab === 'Notifications' && styles.activeTopTabText]}>Notifications</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[styles.topTab, activeTab === 'ProfileSettings' && styles.activeTopTab]}
-        onPress={() => switchTab('ProfileSettings')}
-      >
-        <Text style={[styles.topTabText, activeTab === 'ProfileSettings' && styles.activeTopTabText]}>Profile</Text>
-      </TouchableOpacity>
-    </View>
-  );
-}
 
 function MainContent({ activeTab, switchTab }) {
   const translateX = useSharedValue(activeTab === 'Home' ? 0 : -width * ['Home', 'Search', 'Notifications', 'ProfileSettings'].indexOf(activeTab));
@@ -124,33 +96,34 @@ const HealthSafetyStack = createStackNavigator();
 function HealthSafetyNavigator() {
   return (
     <HealthSafetyStack.Navigator>
-      <HealthSafetyStack.Screen 
-        name="HealthSafetyList" 
+      
+      <HealthSafetyStack.Screen
+        name="HealthSafetyList"
         component={HealthSafetyInspections}
         options={{ header: () => <Header /> }}
       />
-      <HealthSafetyStack.Screen 
-        name="CreateInspectionHs" 
+      <HealthSafetyStack.Screen
+        name="CreateInspectionHs"
         component={HsCreateForm}
         options={{
           header: (props) => <CustomHsHeader {...props} />,
         }}
       />
-      <HealthSafetyStack.Screen 
+      <HealthSafetyStack.Screen
         name="CreateInspectionEnvironmental"
         component={EnvCreateForm}
         options={{
           header: (props) => <CustomHsHeader {...props} />,
         }}
       />
-      <HealthSafetyStack.Screen 
+      <HealthSafetyStack.Screen
         name="CreateInspectionQa"
         component={QaCreateForm}
         options={{
           header: (props) => <CustomHsHeader {...props} />,
         }}
       />
-      <HealthSafetyStack.Screen 
+      <HealthSafetyStack.Screen
         name="CreateInspectionDc"
         component={DcFormCreate}
         options={{
@@ -170,6 +143,7 @@ function TabNavigator() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <Header />
       {/* <TopTabBar activeTab={activeTab} switchTab={switchTab} /> */}
       <MainContent activeTab={activeTab} switchTab={switchTab} />
       <CustomBottomTabBar activeTab={activeTab} switchTab={switchTab} />
@@ -196,29 +170,48 @@ const CustomInspectionHeader = ({ navigation, route }) => {
     </SafeAreaView>
   );
 };
+
 export default function MainNavigator() {
   return (
     <SafeAreaView style={styles.container}>
       <Stack.Navigator>
-        <Stack.Screen 
-          name="MainTabs" 
+        <Stack.Screen
+          name="MainTabs"
           component={TabNavigator}
           options={{ headerShown: false }}
         />
-        <Stack.Screen 
-          name="HealthSafety" 
-          component={HealthSafetyNavigator} 
+        <Stack.Screen
+          name="HealthSafety"
+          component={HealthSafetyNavigator}
           options={{ headerShown: false }}
         />
-        <Stack.Screen 
-          name="ProfileSettings" 
+        <Stack.Screen
+          name="ProfileSettings"
           component={ProfileSettings}
+        />
+         <Stack.Screen
+          name="LoginScreen"
+          component={LoginScreen}
+          options={{ headerShown: false }}
+
+        />
+        <Stack.Screen
+          name="LogoutScreen"
+          component={LogoutScreen}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="InspectionDetails"
           component={DetailsScreen}
           options={({ route, navigation }) => ({
             header: () => <CustomInspectionHeader navigation={navigation} route={route} />,
+          })}
+        />
+        <Stack.Screen
+          name="EditInspection"
+          component={EditInspection}
+          options={({ route }) => ({
+            title: `Edit ${route.params.formType} Inspection`,
           })}
         />
       </Stack.Navigator>

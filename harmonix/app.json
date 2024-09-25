@@ -10,7 +10,8 @@
         "LSSupportsOpeningDocumentsInPlace": true,
         "NSPhotoLibraryUsageDescription": "This app requires access to the photo library to save and share PDF files.",
         "NSPhotoLibraryAddUsageDescription": "This app requires access to the photo library to save PDF files."
-      }
+      },
+      "bundleIdentifier": "com.bebo13133.harmonix"
     },
     "android": {
       "adaptiveIcon": {
@@ -20,7 +21,10 @@
       "package": "com.bebo13133.harmonix",
       "permissions": [
         "WRITE_EXTERNAL_STORAGE",
-        "READ_EXTERNAL_STORAGE"
+        "READ_EXTERNAL_STORAGE",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.INTERNET"
       ]
     },
     "plugins": [
@@ -48,6 +52,11 @@
     ],
     "assetBundlePatterns": [
       "**/*"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "0f77a01d-cb4b-48b7-8ba3-000fa861da81"
+      }
+    }
   }
 }

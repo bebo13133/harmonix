@@ -1,73 +1,103 @@
-// import * as FileSystem from 'expo-file-system';
-
-// const IMAGES_DIRECTORY = FileSystem.documentDirectory + 'inspectionImages/';
-
-// export const saveImage = async (uri) => {
-//   try {
-//     await FileSystem.makeDirectoryAsync(IMAGES_DIRECTORY, { intermediates: true });
-//     const fileName = new Date().getTime() + '.jpg';
-//     const newUri = IMAGES_DIRECTORY + fileName;
-//     await FileSystem.copyAsync({ from: uri, to: newUri });
-//     return newUri;
-//   } catch (error) {
-//     console.error('Error saving image:', error);
-//     return null;
-//   }
-// };
-
-// export const deleteImage = async (uri) => {
-//   try {
-//     await FileSystem.deleteAsync(uri);
-//   } catch (error) {
-//     console.error('Error deleting image:', error);
-//   }
-// };
-
-// Нова логика 
-import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
+import * as ImageManipulator from 'expo-image-manipulator';
+import * as FileSystem from 'expo-file-system';
+import { Asset } from 'expo-asset';
+// Лимит на активни операции за запазване
+const MAX_ACTIVE_OPERATIONS = 3;
 
-export const saveImage = async (uri) => {
-  try {
-    // Първо поискаме разрешение за достъп до медийната библиотека
+// Променливи за следене на разрешенията
+// let hasMediaLibraryPermission = false;
+let hasCameraPermission = false;
+
+// // Функция за проверка на разрешение за медийната библиотека
+// const checkMediaLibraryPermission = async () => {
+//   if (!hasMediaLibraryPermission) {
+//     const { status } = await MediaLibrary.requestPermissionsAsync();
+//     if (status !== 'granted') {
+//       console.error('Разрешение за достъп до медийната библиотека е отказано');
+//       return false;
+//     }
+//     hasMediaLibraryPermission = true; // Запазваме разрешението
+//   }
+//   return true;
+// };
+
+// Функция за проверка на разрешение за камера
+export const checkCameraPermission = async () => {
+  if (!hasCameraPermission) {
     const { status } = await MediaLibrary.requestPermissionsAsync();
     if (status !== 'granted') {
-      console.error('Разрешение за достъп до медийната библиотека е отказано');
+      return false;
+    }
+    hasCameraPermission = true; // Запазваме разрешението
+  }
+  return true;
+};
+
+// Функция за запазване на изображение
+export const saveImage = async (uri) => {
+  try {
+    // Проверка за разрешение
+    const { status } = await MediaLibrary.requestPermissionsAsync();
+    if (status !== 'granted') {
       return null;
     }
+    //намиране на съществуващо изображение
+    try {
+      const asset = await MediaLibrary.getAssetInfoAsync(uri);
+      if (asset) {
 
-    // Копиране на файла във временна директория
-    const fileName = new Date().getTime() + '.jpg';
-    const newUri = FileSystem.cacheDirectory + fileName;
-    await FileSystem.copyAsync({ from: uri, to: newUri });
-
-    // Запазване на файла в галерията
-    const asset = await MediaLibrary.createAssetAsync(newUri);
-    const album = await MediaLibrary.getAlbumAsync('YourAppName');
-    if (album == null) {
-      await MediaLibrary.createAlbumAsync('YourAppName', asset, false);
-    } else {
-      await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+        return uri;
+      }
+    } catch (error) {
+      console.error(error);
     }
+    const manipulatedImage = await ImageManipulator.manipulateAsync(
+      uri,
+      [{ resize: { width: 800, height: 600 } }],
+      { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG }
+    );
 
-    console.log('Снимката е запазена успешно в галерията');
+    const asset = await MediaLibrary.createAssetAsync(manipulatedImage.uri);
     return asset.uri;
   } catch (error) {
-    console.error('Error saving image to gallery:', error);
     return null;
   }
 };
 
+// Функция за изтриване на изображение
 export const deleteImage = async (uri) => {
   try {
     const asset = await MediaLibrary.getAssetInfoAsync(uri);
     if (asset) {
       await MediaLibrary.deleteAssetsAsync([asset.id]);
-      console.log('Снимката е изтрита успешно от галерията');
     } else {
-      console.error('Снимката не е намерена в галерията');
+      console.error('Снимката не е намерена');
     }
   } catch (error) {
     console.error('Error deleting image from gallery:', error);
+  }
+};
+
+// Лимитирано асинхронно запазване на изображения
+export const processImages = async (images) => {
+  const results = [];
+  for (const image of images) {
+    const processedUri = await saveImage(image.uri);
+    if (processedUri) {
+      results.push({ uri: processedUri });
+    }
+  }
+  return results;
+};
+export const getBase64FromAssets = async (assetPath) => {
+  try {
+      const asset = Asset.fromModule(assetPath); // Зареждаме изображението
+      await asset.downloadAsync(); // Уверяваме се, че е изтеглено
+      const base64Image = await FileSystem.readAsStringAsync(asset.localUri, { encoding: FileSystem.EncodingType.Base64 });
+      return `data:image/png;base64,${base64Image}`;
+  } catch (error) {
+      console.error('Error loading image from assets:', error);
+      return null;
   }
 };

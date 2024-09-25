@@ -1,8 +1,8 @@
 // mockData.js
 export const projects = [
-  { id: '1', name: 'Project Alpha', imageUrl: 'https://harmonix.emage.co.uk/storage/photos/1676029429.jpg', performance: 75 },
-  { id: '2', name: 'Project Beta', imageUrl: 'https://harmonix.emage.co.uk/storage/photos/1676029429.jpg', performance: 60 },
-  { id: '3', name: 'Project Gamma', imageUrl: 'https://harmonix.emage.co.uk/storage/photos/1676029429.jpg', performance: 90 },
+  { id: '1', name: 'Project Alpha', projectNumber: 'PRJ001', address: '123 Main St, London', imageUrl: 'https://harmonix.emage.co.uk/storage/photos/1676029429.jpg', performance: 75 },
+  { id: '2', name: 'Project Beta', projectNumber: 'PRJ002', address: '456 Oak Ave, Manchester', imageUrl: 'https://harmonix.emage.co.uk/storage/photos/1676029429.jpg', performance: 60 },
+  { id: '3', name: 'Project Gamma', projectNumber: 'PRJ003', address: '789 Pine Rd, Birmingham', imageUrl: 'https://harmonix.emage.co.uk/storage/photos/1676029429.jpg', performance: 90 },
 ];
 
 export const inspectors = [
