@@ -39,7 +39,7 @@ const AppContent = () => {
   };
 
   const handleDropDB = async () => {
-    if (!isAuthenticated) return false;
+    // if (!isAuthenticated) return false;
     await dropDB();
     console.log('Database dropped and reinitialized');
   };

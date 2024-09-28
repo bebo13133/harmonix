@@ -42,7 +42,7 @@ const CustomHsHeader = ({ sections, currentSectionIndex, onSectionChange, formDa
     const completionPercentage = currentSection ? calculateCompletionPercentage(currentSection) : 0;
 
     return (
-        <View style={[styles.header]}>
+        <View style={styles.header}>
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                 <MaterialIcons name="arrow-back" size={24} color={Colors.WHITE} />
             </TouchableOpacity>

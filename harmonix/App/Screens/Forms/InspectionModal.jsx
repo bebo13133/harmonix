@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Animated, ScrollView, Platform, TextInput } from 'react-native';
+import React, { useState, useEffect, useMemo } from 'react';
+import { View, Text, TouchableOpacity, Animated, ScrollView, Platform, TextInput, FlatList } from 'react-native';
 import { styled } from 'nativewind';
 import { Ionicons } from '@expo/vector-icons';
 import PerformanceChart from './PerformanceChart';
@@ -9,6 +9,7 @@ import { applyFontToStyle } from '../../Utils/GlobalStyles';
 
 import { useUser } from '../../Contexts/UserContext';
 import { useDatabase } from '../../Contexts/databaseContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -52,16 +53,29 @@ const FormTypeButton = ({ title, icon, onPress }) => (
 const CustomPicker = ({ label, value, setValue, items }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [searchText, setSearchText] = useState('');
-  const [filteredItems, setFilteredItems] = useState(items);
 
-  useEffect(() => {
+  const filteredItems = useMemo(() => {
     if (searchText) {
-      const filtered = items.filter((item) => item.name.toLowerCase().includes(searchText.toLowerCase()));
-      setFilteredItems(filtered);
-    } else {
-      setFilteredItems(items);
+      return items.filter((item) => item.name.toLowerCase().includes(searchText.toLowerCase()));
     }
+    return items;
   }, [searchText, items]);
+
+  const renderItem = ({ item }) => (
+    <StyledTouchableOpacity
+      key={item.id}
+      className='p-3 border-b border-gray-500'
+      onPress={() => {
+        setValue(item.id);
+        setIsExpanded(false);
+        setSearchText('');
+      }}
+    >
+      <StyledText style={applyFontToStyle({}, 'regular', 16)} className='text-white'>
+        {item.name}
+      </StyledText>
+    </StyledTouchableOpacity>
+  );
 
   return (
     <StyledView className='mb-7'>
@@ -81,7 +95,10 @@ const CustomPicker = ({ label, value, setValue, items }) => {
       {isExpanded && (
         <StyledView
           className='bg-gray-600 rounded-md mt-1'
-          style={[getShadowStyle(5), { borderBottomLeftRadius: 10, borderBottomRightRadius: 10, overflow: 'hidden' }]}
+          style={[
+            getShadowStyle(5),
+            { borderBottomLeftRadius: 10, borderBottomRightRadius: 10, overflow: 'hidden', maxHeight: 250 }
+          ]}
         >
           <StyledTextInput
             className='bg-gray-700 p-2 m-2 rounded-md text-white'
@@ -94,29 +111,14 @@ const CustomPicker = ({ label, value, setValue, items }) => {
             value={searchText}
             onChangeText={setSearchText}
           />
-          <ScrollView style={{ maxHeight: 200 }}>
-            {filteredItems.map((item) => (
-              <StyledTouchableOpacity
-                key={item.id}
-                className='p-3 border-b border-gray-500'
-                onPress={() => {
-                  setValue(item.id);
-                  setIsExpanded(false);
-                  setSearchText('');
-                }}
-              >
-                <StyledText style={applyFontToStyle({}, 'regular', 16)} className='text-white'>
-                  {item.name}
-                </StyledText>
-              </StyledTouchableOpacity>
-            ))}
+          <ScrollView nestedScrollEnabled={true} style={{ maxHeight: 200 }}>
+            {filteredItems.map((item) => renderItem({ item }))}
           </ScrollView>
         </StyledView>
       )}
     </StyledView>
   );
 };
-
 const InspectionModal = ({ isVisible, onClose, onStartInspection }) => {
   const [inspectors, setInspectors] = useState([]);
   const [personsInControl, setPersonsInControl] = useState([]);
@@ -202,7 +204,6 @@ const InspectionModal = ({ isVisible, onClose, onStartInspection }) => {
     setStep('formType');
     setFormType('');
     setSelectedProject('');
-    // setSelectedInspector('');
     setSelectedPersonInControl('');
     setSelectedProjectDirector('');
     setSelectedDivisionalDirector('');
@@ -228,6 +229,31 @@ const InspectionModal = ({ isVisible, onClose, onStartInspection }) => {
 
   const isFormValid = selectedProject && selectedInspector && selectedPersonInControl && selectedProjectDirector && selectedDivisionalDirector;
 
+  const renderDetailsItem = ({ item }) => {
+    switch (item.type) {
+      case 'project':
+        return <CustomPicker label='Project Number' value={selectedProject} setValue={handleProjectSelect} items={projects} />;
+      case 'inspector':
+        return <CustomPicker label='Inspection Completed in the Presence of' value={selectedInspector} setValue={setSelectedInspector} items={inspectors} />;
+      case 'personInControl':
+        return <CustomPicker label='Person in Control of Site' value={selectedPersonInControl} setValue={setSelectedPersonInControl} items={personsInControl} />;
+      case 'projectDirector':
+        return <CustomPicker label='Project Director' value={selectedProjectDirector} setValue={setSelectedProjectDirector} items={projectDirectors} />;
+      case 'divisionalDirector':
+        return <CustomPicker label='Divisional Director' value={selectedDivisionalDirector} setValue={setSelectedDivisionalDirector} items={divisionalDirectors} />;
+      default:
+        return null;
+    }
+  };
+
+  const detailsData = [
+    { type: 'project', key: 'project' },
+    { type: 'inspector', key: 'inspector' },
+    { type: 'personInControl', key: 'personInControl' },
+    { type: 'projectDirector', key: 'projectDirector' },
+    { type: 'divisionalDirector', key: 'divisionalDirector' },
+  ];
+
   if (!isVisible) return null;
 
   return (
@@ -242,77 +268,71 @@ const InspectionModal = ({ isVisible, onClose, onStartInspection }) => {
       }}
       className='bg-gray-800 rounded-t-3xl'
     >
-      <StyledView className='flex-1'>
-        <StyledTouchableOpacity className='absolute top-4 right-4 z-10' onPress={onClose}>
-          <Ionicons name='close' size={24} color='white' />
-        </StyledTouchableOpacity>
+      <SafeAreaView style={{ flex: 1 }}>
+        <StyledView className='flex-1'>
+          <StyledTouchableOpacity className='absolute top-4 right-4 z-10' onPress={onClose}>
+            <Ionicons name='close' size={24} color='white' />
+          </StyledTouchableOpacity>
 
-        {step === 'formType' ? (
-          <StyledScrollView className='flex-1 px-8 pt-16'>
-            <StyledText style={applyFontToStyle({}, 'bold', 24)} className='text-white mb-6 text-center'>
-              Select Form Type
-            </StyledText>
-            <StyledView className='items-center'>
-              <FormTypeButton title='Health & Safety' icon='fitness' onPress={() => handleFormTypeSelect('healthSafety')} />
-              <FormTypeButton title='Environmental' icon='leaf' onPress={() => handleFormTypeSelect('environmental')} />
-              <FormTypeButton title='Quality Assurance' icon='checkmark-circle' onPress={() => handleFormTypeSelect('qualityAssurance')} />
-              <FormTypeButton title='Document Control' icon='document-text' onPress={() => handleFormTypeSelect('documentControl')} />
-            </StyledView>
-          </StyledScrollView>
-        ) : (
-          <StyledScrollView className='flex-1'>
-            <StyledView className='px-4 pt-6 flex-grow'>
-              <StyledTouchableOpacity onPress={handleBack} className='mb-4'>
-                <Ionicons name='arrow-back' size={24} color='white' />
-              </StyledTouchableOpacity>
-              <StyledText style={applyFontToStyle({}, 'bold', 24)} className='text-white mb-4'>
-                New Inspection: {formType}
+          {step === 'formType' ? (
+            <StyledScrollView className='flex-1 px-8 pt-16'>
+              <StyledText style={applyFontToStyle({}, 'bold', 24)} className='text-white mb-6 text-center'>
+                Select Form Type
               </StyledText>
-
-              {showPerformance && selectedProject && (
-                <StyledView className='mb-4'>
-                  <PerformanceChart
-                    performance={projects.find((p) => p.id === selectedProject)?.performance || 0}
-                    projectData={{
-                      previousReport: 'Roberts Glen, Meadow, Pateltown, PE21 8PT',
-                      imageUrl: projects.find((p) => p.id === selectedProject)?.imageUrl,
-                      ncn: 5,
-                      inspector: 'John Doe - ACME Corp',
-                    }}
-                  />
-                </StyledView>
+              <StyledView className='items-center'>
+                <FormTypeButton title='Health & Safety' icon='fitness' onPress={() => handleFormTypeSelect('healthSafety')} />
+                <FormTypeButton title='Environmental' icon='leaf' onPress={() => handleFormTypeSelect('environmental')} />
+                <FormTypeButton title='Quality Assurance' icon='checkmark-circle' onPress={() => handleFormTypeSelect('qualityAssurance')} />
+                <FormTypeButton title='Document Control' icon='document-text' onPress={() => handleFormTypeSelect('documentControl')} />
+              </StyledView>
+            </StyledScrollView>
+          ) : (
+            <FlatList
+              data={detailsData}
+              renderItem={renderDetailsItem}
+              keyExtractor={(item) => item.key}
+              ListHeaderComponent={() => (
+                <>
+                  <StyledTouchableOpacity onPress={handleBack} className='mb-4'>
+                    <Ionicons name='arrow-back' size={24} color='white' />
+                  </StyledTouchableOpacity>
+                  <StyledText style={applyFontToStyle({}, 'bold', 24)} className='text-white mb-4'>
+                    New Inspection: {formType}
+                  </StyledText>
+                  {showPerformance && selectedProject && (
+                    <StyledView className='mb-4'>
+                      <PerformanceChart
+                        performance={projects.find((p) => p.id === selectedProject)?.performance || 0}
+                        projectData={{
+                          previousReport: 'Roberts Glen, Meadow, Pateltown, PE21 8PT',
+                          imageUrl: projects.find((p) => p.id === selectedProject)?.imageUrl,
+                          ncn: 5,
+                          inspector: 'John Doe - ACME Corp',
+                        }}
+                      />
+                    </StyledView>
+                  )}
+                </>
               )}
+              contentContainerStyle={{ padding: 16 }}
+            />
+          )}
 
-              <CustomPicker label='Project Number' value={selectedProject} setValue={handleProjectSelect} items={projects} />
-              <CustomPicker label='Inspection Completed in the Presence of' value={selectedInspector} setValue={setSelectedInspector} items={inspectors} />
-              <CustomPicker label='Person in Control of Site' value={selectedPersonInControl} setValue={setSelectedPersonInControl} items={personsInControl} />
-              <CustomPicker label='Project Director' value={selectedProjectDirector} setValue={setSelectedProjectDirector} items={projectDirectors} />
-              <CustomPicker
-                label='Divisional Director'
-                value={selectedDivisionalDirector}
-                setValue={setSelectedDivisionalDirector}
-                items={divisionalDirectors}
-              />
-
-              <StyledView className='h-16' />
+          {step === 'details' && (
+            <StyledView className='p-4 bg-gray-700'>
+              <StyledTouchableOpacity
+                className={`py-3 px-6 rounded-full ${isFormValid ? 'bg-blue-500' : 'bg-gray-500'}`}
+                disabled={!isFormValid}
+                onPress={handleStartInspection}
+              >
+                <StyledText style={applyFontToStyle({}, 'bold', 22)} className='text-white text-center'>
+                  Start Inspection
+                </StyledText>
+              </StyledTouchableOpacity>
             </StyledView>
-          </StyledScrollView>
-        )}
-
-        {step === 'details' && (
-          <StyledView className='p-4 bg-gray-700'>
-            <StyledTouchableOpacity
-              className={`py-3 px-6 rounded-full ${isFormValid ? 'bg-blue-500' : 'bg-gray-500'}`}
-              disabled={!isFormValid}
-              onPress={handleStartInspection}
-            >
-              <StyledText style={applyFontToStyle({}, 'bold', 22)} className='text-white text-center'>
-                Start Inspection
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
-        )}
-      </StyledView>
+          )}
+        </StyledView>
+      </SafeAreaView>
     </Animated.View>
   );
 };
