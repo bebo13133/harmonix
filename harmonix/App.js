@@ -54,8 +54,8 @@ const AppContent = () => {
       {Platform.OS === 'ios' && <View style={[styles.statusBarBackground, { backgroundColor: Colors.BACKGROUND }]} />}
 
       {isAuthenticated ? <AuthGuard /> : <PublicGuard />}
-      <Button title='FORCE FETCH' onPress={handleDataFetch} />
-      <Button title='FORCE DROP DB' onPress={handleDropDB} />
+      {/* <Button title='FORCE FETCH' onPress={handleDataFetch} />
+      <Button title='FORCE DROP DB' onPress={handleDropDB} /> */}
     </View>
   );
 };

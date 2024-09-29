@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.BACKGROUND,
         paddingVertical: 10,
         paddingHorizontal: 15,
-        marginTop: Platform.OS === 'android' ? 40 : 0, 
+        marginTop: Platform.OS === 'android' ? 20 : 0, 
         position: 'absolute',
         top: 0,
         left: 0,
