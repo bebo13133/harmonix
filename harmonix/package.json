@@ -23,6 +23,7 @@
     "appcenter-crashes": "5.0.1",
     "autoprefixer": "^10.4.20",
     "expo": "~51.0.28",
+    "expo-asset": "^10.0.10",
     "expo-dev-client": "^4.0.26",
     "expo-doctor": "^1.10.1",
     "expo-file-system": "^17.0.1",

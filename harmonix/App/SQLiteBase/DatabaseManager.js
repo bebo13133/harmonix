@@ -78,6 +78,14 @@ const createTableIfNotExists = async (db) => {
       name TEXT
     );
   `);
+  await db.execAsync(`CREATE TABLE IF NOT EXISTS qualityQuestions (
+    id TEXT PRIMARY KEY,
+    inspection_type_id TEXT,
+    field_name TEXT,
+    marks TEXT,
+    message TEXT,
+    photo TEXT
+  );`);
 };
 
 const addMissingColumns = async (db) => {

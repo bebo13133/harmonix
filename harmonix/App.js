@@ -12,11 +12,15 @@ import { DatabaseProvider } from './App/Contexts/databaseContext';
 import { useDatabase } from './App/Contexts/databaseContext';
 import backgroundServices from './App/Services/backgroundServices';
 
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+import * as SQLite from 'expo-sqlite';
+
 SplashScreen.preventAutoHideAsync();
 
 const AppContent = () => {
   const { isAuthenticated } = useUser();
-  const { completedInThePresenceOf, divisionalDirector, sites, projectDirector, personInControl, dropDB } = useDatabase();
+  const { qualityQuestions, completedInThePresenceOf, divisionalDirector, sites, projectDirector, personInControl, dropDB } = useDatabase();
 
   const handleDataFetch = async () => {
     if (!isAuthenticated) return false;
@@ -44,9 +48,45 @@ const AppContent = () => {
     console.log('Database dropped and reinitialized');
   };
 
-  useEffect(() => {
-    handleDataFetch();
-  }, [isAuthenticated]);
+  // useEffect(() => {
+  //   handleDataFetch();
+  // }, [isAuthenticated]);
+
+  ///////TESTING QUESTIONS !!!!!
+
+  const handleQualityQuestions = async () => {
+    try {
+      const data = await backgroundServices.getQualityQuestions(qualityQuestions.save);
+      console.log(data);
+    } catch (err) {
+      console.error('Failed to fetch quality questions', err);
+    }
+  };
+
+  const DB_NAME = 'HSForm.db';
+
+  const exportDatabase = async () => {
+    try {
+      // Open the database
+      const db = SQLite.openDatabaseSync(DB_NAME);
+
+      // Get the database file path
+      const dbFilePath = `${FileSystem.documentDirectory}SQLite/${DB_NAME}`;
+
+      // Check if the file exists
+      const { exists } = await FileSystem.getInfoAsync(dbFilePath);
+
+      if (exists) {
+        // Share the file
+        await Sharing.shareAsync(dbFilePath, { UTI: '.db', mimeType: 'application/x-sqlite3' });
+        console.log('Database shared successfully');
+      } else {
+        console.error('Database file not found. Make sure it has been created.');
+      }
+    } catch (error) {
+      console.error('Error exporting database:', error);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -54,8 +94,10 @@ const AppContent = () => {
       {Platform.OS === 'ios' && <View style={[styles.statusBarBackground, { backgroundColor: Colors.BACKGROUND }]} />}
 
       {isAuthenticated ? <AuthGuard /> : <PublicGuard />}
-      {/* <Button title='FORCE FETCH' onPress={handleDataFetch} />
-      <Button title='FORCE DROP DB' onPress={handleDropDB} /> */}
+      <Button title='Quality' onPress={handleQualityQuestions}></Button>
+      <Button title='FORCE FETCH' onPress={handleDataFetch} />
+      <Button onPress={exportDatabase} title='Export Database' />
+      {/* <Button title='FORCE DROP DB' onPress={handleDropDB} /> */}
     </View>
   );
 };

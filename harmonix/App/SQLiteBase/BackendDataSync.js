@@ -19,6 +19,33 @@ export const saveDataToDb = async (db, tableName, data) => {
   }
 };
 
+export const saveQuestionsDataToDb = async (db, tableName, data) => {
+  if (typeof data !== 'object' || data === null) {
+    console.error(`Expected object for ${tableName}, got:`, typeof data);
+    return;
+  }
+
+  const inspectionTypeId = data.inspectionType;
+  delete data.inspectionType;
+
+  for (const [id, questionData] of Object.entries(data)) {
+    if (typeof questionData !== 'object' || questionData === null) {
+      console.error(`Invalid question data for ${id}:`, questionData);
+      continue;
+    }
+
+    const { fieldName, marks, message, photo } = questionData;
+    await db.runAsync(
+      `
+      INSERT OR REPLACE INTO ${tableName} (
+        id, inspection_type_id, field_name, marks, message, photo
+      ) VALUES (?, ?, ?, ?, ?, ?);
+    `,
+      [id, inspectionTypeId, fieldName, marks, message, Array.isArray(photo) ? JSON.stringify(photo) : null]
+    );
+  }
+};
+
 export const loadDataFromDb = async (db, tableName) => {
   try {
     const result = await db.getAllAsync(`SELECT * FROM ${tableName};`);

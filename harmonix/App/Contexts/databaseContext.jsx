@@ -7,7 +7,7 @@ import {
   deleteInspectionFromDb,
   reinitializeDatabase,
 } from '../SQLiteBase/DatabaseManager';
-import { saveDataToDb, loadDataFromDb, loadSitesFromDb, saveSitesToDb } from '../SQLiteBase/BackendDataSync';
+import { saveDataToDb, loadDataFromDb, loadSitesFromDb, saveSitesToDb, saveQuestionsDataToDb } from '../SQLiteBase/BackendDataSync';
 
 const DatabaseContext = createContext();
 
@@ -56,6 +56,7 @@ export const DatabaseProvider = ({ children }) => {
     sites: createDataHandler('sites', loadSitesFromDb, (db, _, data) => saveSitesToDb(db, data)),
     projectDirector: createDataHandler('projectDirector'),
     personInControl: createDataHandler('personInControl'),
+    qualityQuestions: createDataHandler('qualityQuestions', loadDataFromDb, saveQuestionsDataToDb),
     saveFormData,
     loadFormData,
     updateFormData,
