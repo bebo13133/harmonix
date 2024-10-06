@@ -36,7 +36,7 @@ const createFetchService =
 
 const mapToIdNameArray = (response) => Object.entries(response).map(([id, name]) => ({ id, name }));
 
-const filterArray = (response) => {
+const filterQuestions = (response) => {
   const test = {
     inspectionType: null,
   };
@@ -66,8 +66,10 @@ const backgroundServices = {
   getSites: createFetchService('sites'),
   getProjectDirector: createFetchService('projectDirector', mapToIdNameArray),
   getPersonInControl: createFetchService('personInControl', mapToIdNameArray),
-  getHsQuestions: createFetchService('hs'),
-  getQualityQuestions: createFetchService('quality', filterArray),
+  getHsQuestions: createFetchService('hs', filterQuestions),
+  getQualityQuestions: createFetchService('quality', filterQuestions),
+  getEnvironmentalQuestions: createFetchService('environmental', filterQuestions),
+  getDocumentControl: createFetchService('documentControl', filterQuestions),
 };
 
 export default backgroundServices;

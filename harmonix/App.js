@@ -20,7 +20,18 @@ SplashScreen.preventAutoHideAsync();
 
 const AppContent = () => {
   const { isAuthenticated } = useUser();
-  const { qualityQuestions, completedInThePresenceOf, divisionalDirector, sites, projectDirector, personInControl, dropDB } = useDatabase();
+  const {
+    hsQuestions,
+    environmentalQuestions,
+    documentControlQuestions,
+    qualityQuestions,
+    completedInThePresenceOf,
+    divisionalDirector,
+    sites,
+    projectDirector,
+    personInControl,
+    dropDB,
+  } = useDatabase();
 
   const handleDataFetch = async () => {
     if (!isAuthenticated) return false;
@@ -54,10 +65,14 @@ const AppContent = () => {
 
   ///////TESTING QUESTIONS !!!!!
 
-  const handleQualityQuestions = async () => {
+  const handleQuestions = async () => {
     try {
-      const data = await backgroundServices.getQualityQuestions(qualityQuestions.save);
-      console.log(data);
+      await Promise.all([
+        backgroundServices.getQualityQuestions(qualityQuestions.save),
+        backgroundServices.getHsQuestions(hsQuestions.save),
+        backgroundServices.getDocumentControl(documentControlQuestions.save),
+        backgroundServices.getEnvironmentalQuestions(environmentalQuestions.save),
+      ]);
     } catch (err) {
       console.error('Failed to fetch quality questions', err);
     }
@@ -94,10 +109,10 @@ const AppContent = () => {
       {Platform.OS === 'ios' && <View style={[styles.statusBarBackground, { backgroundColor: Colors.BACKGROUND }]} />}
 
       {isAuthenticated ? <AuthGuard /> : <PublicGuard />}
-      <Button title='Quality' onPress={handleQualityQuestions}></Button>
+      <Button title='Questions' onPress={handleQuestions}></Button>
       <Button title='FORCE FETCH' onPress={handleDataFetch} />
       <Button onPress={exportDatabase} title='Export Database' />
-      {/* <Button title='FORCE DROP DB' onPress={handleDropDB} /> */}
+      <Button title='FORCE DROP DB' onPress={handleDropDB} />
     </View>
   );
 };

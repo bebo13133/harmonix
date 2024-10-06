@@ -86,6 +86,32 @@ const createTableIfNotExists = async (db) => {
     message TEXT,
     photo TEXT
   );`);
+  await db.execAsync(`CREATE TABLE IF NOT EXISTS hsQuestions (
+    id TEXT PRIMARY KEY,
+    inspection_type_id TEXT,
+    field_name TEXT,
+    marks TEXT,
+    message TEXT,
+    photo TEXT
+  );`);
+
+  await db.execAsync(`CREATE TABLE IF NOT EXISTS environmentalQuestions (
+    id TEXT PRIMARY KEY,
+    inspection_type_id TEXT,
+    field_name TEXT,
+    marks TEXT,
+    message TEXT,
+    photo TEXT
+  );`);
+
+  await db.execAsync(`CREATE TABLE IF NOT EXISTS documentControlQuestions (
+    id TEXT PRIMARY KEY,
+    inspection_type_id TEXT,
+    field_name TEXT,
+    marks TEXT,
+    message TEXT,
+    photo TEXT
+  );`);
 };
 
 const addMissingColumns = async (db) => {
